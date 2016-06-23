@@ -174,16 +174,18 @@ int main(int argc, char** argv) try
 
 	std::string filename = argv[1];
 
-	ConfigHandler configHandler("processing.config");
 	ProcessingConfig config;
-	config.stockpileLength = configHandler.get("stockpile length", 1000);
-	config.stockpileWidth = configHandler.get("stockpile width", 250);
-	config.reclaimSlope = configHandler.get("reclaim slope", 1u);
-	config.reclaimPosOffset = configHandler.get("reclaim pos offset", 1.0f);
-	config.flowFactor = configHandler.get("flow factor", 100000.0);
-	config.redCorrectionFactor = configHandler.get("red correction factor", 1.0f);
-	config.blueCorrectionFactor = configHandler.get("blue correction factor", 1.0f);
-	config.yellowCorrectionFactor = configHandler.get("yellow correction factor", 1.0f);
+	{
+		ConfigHandler configHandler("processing.config");
+		config.stockpileLength = configHandler.get("stockpile length", 1000);
+		config.stockpileWidth = configHandler.get("stockpile width", 250);
+		config.reclaimSlope = configHandler.get("reclaim slope", 1u);
+		config.reclaimPosOffset = configHandler.get("reclaim pos offset", 1.0f);
+		config.flowFactor = configHandler.get("flow factor", 100000.0);
+		config.redCorrectionFactor = configHandler.get("red correction factor", 1.0f);
+		config.blueCorrectionFactor = configHandler.get("blue correction factor", 1.0f);
+		config.yellowCorrectionFactor = configHandler.get("yellow correction factor", 1.0f);
+	}
 
 	if (filename.find("stack.csv") != std::string::npos) {
 		processStackerFile(filename, config);
