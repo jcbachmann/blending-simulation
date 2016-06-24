@@ -12,8 +12,8 @@ In case of the stack file the stockpile is simulated and a reclaimer output file
 A configuration file `processing.config` is generated with default parameters on first execution and placed in the working directory. This file can be modified to match the real world model.
 
 ## Input-Files
-"\<stockpilename\>.stockpile \<timestamp\> stack.csv" -> Input for blending simulation
-"\<stockpilename\>.stockpile \<timestamp\> reclaim.csv" -> Format is adapted
+* "\<stockpilename\>.stockpile \<timestamp\> stack.csv" -> Input for blending simulation
+* "\<stockpilename\>.stockpile \<timestamp\> reclaim.csv" -> Format is adapted
 
 ## Output-Files
 * "\<stockpilename\>.stockpile \<timestamp\> stack.csv.sim.pile.csv": output of simulation
