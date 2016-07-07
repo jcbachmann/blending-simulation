@@ -93,7 +93,7 @@ void processStackerFile(std::string& filename, ProcessingConfig& config)
 		}
 		fPile << "\n";
 		fPilePlotData << "\n";
-		fSlices << posRelative << "\t" << redCount << "\t" << blueCount << "\t"  << yellowCount << "\n";
+		fSlices << posRelative << "\t" << redCount << "\t" << blueCount << "\t" << yellowCount << "\n";
 		i++;
 	}
 }
