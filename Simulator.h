@@ -9,6 +9,7 @@ class Simulator {
 		void clear();
 		void stack(int position, int red, int blue, int yellow);
 		bool reclaim(int& p, int& r, int& b, int& y, std::vector<int>& heights);
+		void resetReclaimer(void);
 
 	private:
 		// Dimensions of the simulated stockpile

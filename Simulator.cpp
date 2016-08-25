@@ -113,3 +113,8 @@ bool Simulator::reclaim(int& p, int& r, int& b, int& y, std::vector<int>& height
 	reclaimerPos++;
 	return true;
 }
+
+void Simulator::resetReclaimer(void)
+{
+	reclaimerPos = 0;
+}
