@@ -9,8 +9,8 @@
 ProcessingConfig::ProcessingConfig(std::string filename) {
 	ConfigHandler configHandler(filename);
 
-	stockpileLength = configHandler.get("stockpile length", 1000);
-	stockpileWidth = configHandler.get("stockpile width", 250);
+	stockpileLength = configHandler.get("stockpile length", 1000u);
+	stockpileWidth = configHandler.get("stockpile width", 250u);
 	reclaimSlope = configHandler.get("reclaim slope", 1u);
 	reclaimPosOffset = configHandler.get("reclaim pos offset", 1.0f);
 	flowFactor = configHandler.get("flow factor", 100000.0);

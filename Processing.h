@@ -5,8 +5,8 @@
 
 struct ProcessingConfig {
 		// Simulator stockpile dimensions (traverse path range)
-		int stockpileLength;
-		int stockpileWidth;
+		unsigned int stockpileLength;
+		unsigned int stockpileWidth;
 
 		// Slope used when reclaiming the stockpile
 		unsigned int reclaimSlope;
