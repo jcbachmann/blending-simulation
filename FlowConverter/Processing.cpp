@@ -3,7 +3,6 @@
 #include <fstream>
 
 #include "FlowLine.h"
-#include "Simulator.h"
 #include "ConfigHandler.h"
 
 ProcessingConfig::ProcessingConfig(std::string filename) {
@@ -12,7 +11,7 @@ ProcessingConfig::ProcessingConfig(std::string filename) {
 	stockpileLength = configHandler.get("stockpile length", 1000u);
 	stockpileWidth = configHandler.get("stockpile width", 250u);
 	reclaimSlope = configHandler.get("reclaim slope", 1u);
-	reclaimPosOffset = configHandler.get("reclaim pos offset", 1.0f);
+	reclaimSeconds = configHandler.get("reclaim seconds", 600.0);
 	flowFactor = configHandler.get("flow factor", 100000.0);
 	redCorrectionFactor = configHandler.get("red correction factor", 1.0f);
 	blueCorrectionFactor = configHandler.get("blue correction factor", 1.0f);
@@ -30,7 +29,11 @@ void processStackerFile(std::string& filename, ProcessingConfig& config)
 	int lastRed = 0;
 	int lastBlue = 0;
 	int lastYellow = 0;
-	Simulator simulator(config.stockpileLength + config.stockpileWidth, config.stockpileWidth, config.reclaimSlope);
+
+	std::cerr << "Required blending simulator settings:";
+	std::cerr << " --length " << config.stockpileLength + config.stockpileWidth;
+	std::cerr << " --depth " << config.stockpileWidth;
+	std::cerr << " --slope " << config.reclaimSlope << std::endl;
 
 	std::ifstream inputFile(filename);
 
@@ -50,7 +53,11 @@ void processStackerFile(std::string& filename, ProcessingConfig& config)
 		if (posAbsolute >= config.stockpileLength) posAbsolute = config.stockpileLength - 1;
 
 		// Drop particles
-		simulator.stack(posAbsolute + config.stockpileWidth / 2, int(redSum) - lastRed, int(blueSum) - lastBlue, int(yellowSum) - lastYellow);
+		std::cout
+				<< posAbsolute + config.stockpileWidth / 2 << "\t"
+				<< int(redSum) - lastRed << "\t"
+				<< int(blueSum) - lastBlue << "\t"
+				<< int(yellowSum) - lastYellow << "\n";
 
 		// Save running variables for proper particle count calculation
 		lastRed = int(redSum);
@@ -59,43 +66,7 @@ void processStackerFile(std::string& filename, ProcessingConfig& config)
 		lastTimestamp = fl.timestamp;
 	}
 
-	std::ofstream fPile(filename + ".sim.pile.csv");
-	if (!fPile) {
-		throw std::runtime_error("Could not open pile reclaim file stream");
-	}
-
-	std::ofstream fPilePlotData(filename + ".sim.pile.plotdata");
-	if (!fPilePlotData) {
-		throw std::runtime_error("Could not open pile reclaim plot data file stream");
-	}
-
-	std::ofstream fSlices(filename + ".sim.slices.csv");
-	if (!fSlices) {
-		throw std::runtime_error("Could not open slices reclaim file stream");
-	}
-	fSlices << "pos\tred\tblue\tyellow\n";
-
-	int posAbsolute;
-	int redCount;
-	int blueCount;
-	int yellowCount;
-	std::vector<int> heights;
-	int i = 0;
-
-	while (simulator.reclaim(posAbsolute, redCount, blueCount, yellowCount, heights)) {
-		float posRelative = float(posAbsolute - config.stockpileWidth / 2) / float(config.stockpileLength);
-		fPile << posRelative << "\t";
-		for (int j = 0; j < config.stockpileWidth; j++) {
-			fPile << heights[j] << "\t";
-			if ((j > 0 && heights[j - 1]) || heights[j] || (j < config.stockpileWidth - 1 && heights[j + 1])) {
-				fPilePlotData << i << " " << j << " " << heights[j] << "\n";
-			}
-		}
-		fPile << "\n";
-		fPilePlotData << "\n";
-		fSlices << posRelative << "\t" << redCount << "\t" << blueCount << "\t" << yellowCount << "\n";
-		i++;
-	}
+	std::cout << std::flush;
 }
 
 void processReclaimerFile(std::string& filename, ProcessingConfig& config)
@@ -116,12 +87,6 @@ void processReclaimerFile(std::string& filename, ProcessingConfig& config)
 		throw std::runtime_error("Could not read file");
 	}
 
-	std::ofstream fSlices(filename + ".slices.csv");
-	if (!fSlices) {
-		throw std::runtime_error("Could not open slices reclaim file stream");
-	}
-	fSlices << "pos\tred\tblue\tyellow\n";
-
 	// State variables
 	int lastPosIndex = -1;
 
@@ -129,7 +94,7 @@ void processReclaimerFile(std::string& filename, ProcessingConfig& config)
 	while (inputFile >> fl) {
 		// Ignore posRelative from file because it is too inconsistent (slowly updating, skipping a lot of positions)
 		// Use time to generate position
-		fl.pos = 1.0 + double(fl.timestamp) / 600000000.0;
+		fl.pos = float(double(fl.timestamp) / (1000000.0 * config.reclaimSeconds));
 
 		// Convert variables to usable values
 		double diff = double(fl.timestamp - lastTimestamp) / 1000000.0;
@@ -142,7 +107,7 @@ void processReclaimerFile(std::string& filename, ProcessingConfig& config)
 		int thisPosIndex = int(fl.pos * float(config.stockpileLength));
 		if (thisPosIndex != lastPosIndex) {
 			if (lastPosIndex >= 0) {
-				fSlices << (float(lastPosIndex) / float(config.stockpileLength) - config.reclaimPosOffset) << "\t" << int(redSum) - lastRed << "\t" << int(blueSum) - lastBlue << "\t" << int(yellowSum) - lastYellow << "\n";
+				std::cout << lastPosIndex << "\t" << int(redSum) - lastRed << "\t" << int(blueSum) - lastBlue << "\t" << int(yellowSum) - lastYellow << "\n";
 
 				// Save running variables for proper particle count calculation
 				lastRed = int(redSum);
@@ -155,4 +120,6 @@ void processReclaimerFile(std::string& filename, ProcessingConfig& config)
 
 		lastTimestamp = fl.timestamp;
 	}
+
+	std::cout << std::flush;
 }

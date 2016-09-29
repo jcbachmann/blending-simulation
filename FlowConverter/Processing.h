@@ -11,8 +11,8 @@ struct ProcessingConfig {
 		// Slope used when reclaiming the stockpile
 		unsigned int reclaimSlope;
 
-		// Offset subtracted from the reclaiming stockpile position to match stacking positions
-		float reclaimPosOffset;
+		// Duration it took to fully reclaim the stockpile (used for fine position generation)
+		double reclaimSeconds;
 
 		// Factor by which the relative amount is multiplied to get amount of particles for simulator
 		double flowFactor;

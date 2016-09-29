@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv) try
 {
-	if (argc < 2) {
+	if (argc != 2) {
 		std::cout << "Invalid argument count, usage: " << argv[0] << " <stacker/reclaimer results files>" << std::endl;
 		return 1;
 	}
@@ -14,7 +14,6 @@ int main(int argc, char** argv) try
 
 	for (int i = 1; i < argc; i++) {
 		std::string filename = argv[i];
-		std::cout << "Processing " << filename << std::endl;
 
 		if (filename.find("stack.csv") != std::string::npos) {
 			processStackerFile(filename, config);

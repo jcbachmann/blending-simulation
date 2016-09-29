@@ -2,14 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 project(BlendingSimulator)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}-build)
 
-set(
-		SOURCE_FILES
-		ConfigHandler.cpp
-		FlowLine.cpp
-		main.cpp
-		Processing.cpp
-		Simulator.cpp
-)
-add_library(BlendingSimulator STATIC ${SOURCE_FILES})
+add_subdirectory(BlendingSimulatorLib)
+add_subdirectory(BlendingSimulator)
+add_subdirectory(FlowConverter)
