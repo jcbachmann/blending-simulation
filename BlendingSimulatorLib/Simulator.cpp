@@ -2,11 +2,12 @@
 
 #include <limits>
 
-Simulator::Simulator(unsigned int heapLength, unsigned int heapDepth, unsigned reclaimSlope)
+Simulator::Simulator(unsigned int heapLength, unsigned int heapDepth, unsigned int reclaimSlope, bool fourDirectionsOnly)
 	: heapLength(heapLength)
 	, heapDepth(heapDepth)
 	, reclaimSlope(reclaimSlope)
 	, reclaimerPos(0)
+	, fourDirectionsOnly(fourDirectionsOnly)
 {
 	stackedHeights.resize(heapLength + 2);
 	for (unsigned int i = 0; i < heapLength + 2; i++) {
@@ -59,11 +60,12 @@ void Simulator::stack(int position, int red, int blue, int yellow)
 			minHeightJ = -1;
 
 			struct Offset { int i; int j; };
-			constexpr const static Offset offsets[] = {{-1,-1},{-1,0},{-1,+1},{0,-1},{0,+1},{+1,-1},{+1,0},{+1,+1}};
+			constexpr const static Offset offsets[] = {{-1,0},{0,-1},{0,+1},{+1,0},{-1,-1},{-1,+1},{+1,-1},{+1,+1}};
+			const int offsetsCount = fourDirectionsOnly ? 4 : 8;
 
-			for (const Offset& offset : offsets) {
-				const int ti = i1 + offset.i;
-				const int tj = j1 + offset.j;
+			for (int o = 0; o < offsetsCount; o++) {
+				const int ti = i1 + offsets[o].i;
+				const int tj = j1 + offsets[o].j;
 				const int lh = stackedHeights[ti][tj];
 
 				if (lh < minHeight) {

@@ -18,6 +18,7 @@ int main(int argc, char **argv) try
 	bool printHeights = false;
 	bool skipReclaim = false;
 	bool skipPos = false;
+	bool fourDirectionsOnly = false;
 
 	boost::program_options::options_description desc("Options");
 	desc.add_options()
@@ -27,7 +28,8 @@ int main(int argc, char **argv) try
 			("slope,s", boost::program_options::value<unsigned int>()->default_value(1)->notifier(boost::bind(&in_range, _1, 0u, 1000000u)), "set reclaimer slope")
 			("heights,h", boost::program_options::bool_switch(&printHeights), "output vertical height map")
 			("skipreclaim,r", boost::program_options::bool_switch(&skipReclaim), "skip reclaimer output")
-			("skippos,p", boost::program_options::bool_switch(&skipPos), "skip position output");
+			("skippos,p", boost::program_options::bool_switch(&skipPos), "skip position output")
+			("four,4", boost::program_options::bool_switch(&fourDirectionsOnly), "axis aligned fall directions only");
 
 	boost::program_options::variables_map vm;
 	boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -43,7 +45,7 @@ int main(int argc, char **argv) try
 	unsigned int depth = vm["depth"].as<unsigned int>();
 	unsigned int slope = vm["slope"].as<unsigned int>();
 
-	Simulator simulator(length, depth, slope);
+	Simulator simulator(length, depth, slope, fourDirectionsOnly);
 
 	int pos;
 	int red;

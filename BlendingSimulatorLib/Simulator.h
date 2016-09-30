@@ -5,7 +5,7 @@
 
 class Simulator {
 	public:
-		Simulator(unsigned int heapLength, unsigned int heapDepth, unsigned reclaimSlope);
+		Simulator(unsigned int heapLength, unsigned int heapDepth, unsigned int reclaimSlope, bool fourDirectionsOnly = false);
 		void clear();
 		void stack(int position, int red, int blue, int yellow);
 		bool reclaim(int& p, int& r, int& b, int& y, std::vector<int>& heights);
@@ -29,6 +29,9 @@ class Simulator {
 		std::vector<int> reclaimRed;
 		std::vector<int> reclaimBlue;
 		std::vector<int> reclaimYellow;
+
+		// Only allow particles to fall to axis aligned directions
+		const bool fourDirectionsOnly;
 };
 
 
