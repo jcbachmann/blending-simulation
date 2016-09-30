@@ -83,7 +83,7 @@ void Simulator::stack(int position, int red, int blue, int yellow)
 
 		stackedHeights[i1][j1] = minHeight + 1;
 
-		int reclaimIndex = i1 - minHeight / reclaimSlope - 1;
+		int reclaimIndex = i1 - (reclaimSlope > 0 ? minHeight / reclaimSlope : 0) - 1;
 
 		if (reclaimIndex < 0) {
 			reclaimIndex = 0;
