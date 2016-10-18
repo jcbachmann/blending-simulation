@@ -3,13 +3,13 @@
 
 #include <vector>
 
-template<typename Parameter>
+template<typename Parameters>
 class Simulator {
 	public:
 		Simulator(unsigned int heapLength, unsigned int heapDepth, unsigned int reclaimSlope, bool fourDirectionsOnly = false);
 		void clear();
-		void stack(int position, const Parameter& parameter);
-		bool reclaim(int& position, Parameter& parameter, std::vector<int>& heights);
+		void stack(int position, const Parameters& parameters);
+		bool reclaim(int& position, Parameters& parameters, std::vector<int>& heights);
 		void resetReclaimer(void);
 
 	private:
@@ -27,7 +27,7 @@ class Simulator {
 		std::vector<std::vector<int>> stackedHeights;
 
 		// Variables for counting the particles per cross section for each color
-		std::vector<Parameter> reclaimParameters;
+		std::vector<Parameters> reclaimParameters;
 
 		// Only allow particles to fall to axis aligned directions
 		const bool fourDirectionsOnly;

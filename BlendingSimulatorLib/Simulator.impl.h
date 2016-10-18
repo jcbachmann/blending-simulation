@@ -2,8 +2,8 @@
 
 #include "Simulator.h"
 
-template<typename Parameter>
-Simulator<Parameter>::Simulator(unsigned int heapLength, unsigned int heapDepth, unsigned int reclaimSlope, bool fourDirectionsOnly)
+template<typename Parameters>
+Simulator<Parameters>::Simulator(unsigned int heapLength, unsigned int heapDepth, unsigned int reclaimSlope, bool fourDirectionsOnly)
 		: heapLength(heapLength)
 		, heapDepth(heapDepth)
 		, reclaimSlope(reclaimSlope)
@@ -20,8 +20,8 @@ Simulator<Parameter>::Simulator(unsigned int heapLength, unsigned int heapDepth,
 	clear();
 }
 
-template<typename Parameter>
-void Simulator<Parameter>::clear()
+template<typename Parameters>
+void Simulator<Parameters>::clear()
 {
 	std::fill(stackedHeights[0].begin(), stackedHeights[0].end(), std::numeric_limits<int>::max());
 	for (unsigned int i = 1; i < heapLength + 1; i++) {
@@ -38,8 +38,8 @@ void Simulator<Parameter>::clear()
 	}
 }
 
-template<typename Parameter>
-void Simulator<Parameter>::stack(int position, const Parameter& parameter)
+template<typename Parameters>
+void Simulator<Parameters>::stack(int position, const Parameters& parameters)
 {
 	const int depthCenter = heapDepth / 2;
 
@@ -88,11 +88,11 @@ void Simulator<Parameter>::stack(int position, const Parameter& parameter)
 		reclaimIndex = heapLength - 1;
 	}
 
-	reclaimParameters[reclaimIndex].add(parameter);
+	reclaimParameters[reclaimIndex].add(parameters);
 }
 
-template<typename Parameter>
-bool Simulator<Parameter>::reclaim(int& position, Parameter& parameter, std::vector<int>& heights)
+template<typename Parameters>
+bool Simulator<Parameters>::reclaim(int& position, Parameters& parameters, std::vector<int>& heights)
 {
 	if (reclaimerPos >= heapLength) {
 		return false;
@@ -103,14 +103,14 @@ bool Simulator<Parameter>::reclaim(int& position, Parameter& parameter, std::vec
 		heights.resize(heapDepth);
 	}
 	std::copy(stackedHeights[reclaimerPos + 1].begin() + 1, stackedHeights[reclaimerPos + 1].end() - 1, heights.begin());
-	parameter = reclaimParameters[reclaimerPos];
+	parameters = reclaimParameters[reclaimerPos];
 
 	reclaimerPos++;
 	return true;
 }
 
-template<typename Parameter>
-void Simulator<Parameter>::resetReclaimer(void)
+template<typename Parameters>
+void Simulator<Parameters>::resetReclaimer(void)
 {
 	reclaimerPos = 0;
 }

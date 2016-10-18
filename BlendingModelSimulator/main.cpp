@@ -13,19 +13,19 @@ void in_range(unsigned int value, unsigned int min, unsigned int max)
 	}
 }
 
-struct Parameter {
+struct Parameters {
 	unsigned int red;
 	unsigned int blue;
 	unsigned int yellow;
 
-	Parameter(void)
+	Parameters(void)
 			: red(0)
 			, blue(0)
 			, yellow(0)
 	{
 	}
 
-	void add(Parameter p)
+	void add(Parameters p)
 	{
 		red += p.red;
 		blue += p.blue;
@@ -72,7 +72,7 @@ int main(int argc, char **argv) try
 	unsigned int depth = vm["depth"].as<unsigned int>();
 	unsigned int slope = vm["slope"].as<unsigned int>();
 
-	Simulator<Parameter> simulator(length, depth, slope, fourDirectionsOnly);
+	Simulator<Parameters> simulator(length, depth, slope, fourDirectionsOnly);
 
 	int pos;
 	int red;
@@ -92,19 +92,19 @@ int main(int argc, char **argv) try
 
 		if (r && first == last) {
 			for (unsigned int i = 0; i < red; i++) {
-				Parameter p;
+				Parameters p;
 				p.red = 1;
 				simulator.stack(pos, p);
 			}
 
 			for (unsigned int i = 0; i < blue; i++) {
-				Parameter p;
+				Parameters p;
 				p.blue = 1;
 				simulator.stack(pos, p);
 			}
 
 			for (unsigned int i = 0; i < yellow; i++) {
-				Parameter p;
+				Parameters p;
 				p.yellow = 1;
 				simulator.stack(pos, p);
 			}
@@ -115,7 +115,7 @@ int main(int argc, char **argv) try
 
 	std::vector<int> heights;
 	int i = 0;
-	Parameter p;
+	Parameters p;
 
 	while (simulator.reclaim(pos, p, heights)) {
 		if (!skipPos) {
