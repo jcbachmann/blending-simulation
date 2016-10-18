@@ -13,6 +13,33 @@ void in_range(unsigned int value, unsigned int min, unsigned int max)
 	}
 }
 
+struct Parameter {
+	unsigned int red;
+	unsigned int blue;
+	unsigned int yellow;
+
+	Parameter(void)
+			: red(0)
+			, blue(0)
+			, yellow(0)
+	{
+	}
+
+	void add(Parameter p)
+	{
+		red += p.red;
+		blue += p.blue;
+		yellow += p.yellow;
+	}
+
+	void clear(void)
+	{
+		red = 0;
+		blue = 0;
+		yellow = 0;
+	}
+};
+
 int main(int argc, char **argv) try
 {
 	bool printHeights = false;
@@ -45,7 +72,7 @@ int main(int argc, char **argv) try
 	unsigned int depth = vm["depth"].as<unsigned int>();
 	unsigned int slope = vm["slope"].as<unsigned int>();
 
-	Simulator simulator(length, depth, slope, fourDirectionsOnly);
+	Simulator<Parameter> simulator(length, depth, slope, fourDirectionsOnly);
 
 	int pos;
 	int red;
@@ -64,7 +91,23 @@ int main(int argc, char **argv) try
 				boost::spirit::ascii::space);
 
 		if (r && first == last) {
-			simulator.stack(pos, red, blue, yellow);
+			for (unsigned int i = 0; i < red; i++) {
+				Parameter p;
+				p.red = 1;
+				simulator.stack(pos, p);
+			}
+
+			for (unsigned int i = 0; i < blue; i++) {
+				Parameter p;
+				p.blue = 1;
+				simulator.stack(pos, p);
+			}
+
+			for (unsigned int i = 0; i < yellow; i++) {
+				Parameter p;
+				p.yellow = 1;
+				simulator.stack(pos, p);
+			}
 		} else {
 			std::cerr << "could not match line '" << line << "'" << std::endl;
 		}
@@ -72,14 +115,15 @@ int main(int argc, char **argv) try
 
 	std::vector<int> heights;
 	int i = 0;
+	Parameter p;
 
-	while (simulator.reclaim(pos, red, blue, yellow, heights)) {
+	while (simulator.reclaim(pos, p, heights)) {
 		if (!skipPos) {
 			std::cout << pos;
 		}
 
 		if (!skipReclaim) {
-			std::cout << (skipPos ? "" : "\t") << red << "\t" << blue << "\t" << yellow;
+			std::cout << (skipPos ? "" : "\t") << p.red << "\t" << p.blue << "\t" << p.yellow;
 		}
 
 		if (printHeights) {
