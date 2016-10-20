@@ -67,7 +67,7 @@ int main(int argc, char **argv) try
 	}
 
 	if (vm.count("help")) {
-		std::cout << descAll << "\n";
+		std::cout << descAll << std::endl;
 		return 1;
 	}
 
