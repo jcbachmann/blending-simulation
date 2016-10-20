@@ -4,9 +4,9 @@
 #include <string>
 
 struct ProcessingConfig {
-		// Simulator stockpile dimensions (traverse path range)
-		unsigned int stockpileLength;
-		unsigned int stockpileDepth;
+		// Simulator blending bed dimensions
+		unsigned int blendingBedLength;
+		unsigned int blendingBedDepth;
 
 		// Duration it took to fully reclaim the stockpile (used for fine position generation)
 		double reclaimSeconds;
@@ -20,8 +20,8 @@ struct ProcessingConfig {
 		double yellowCorrectionFactor;
 
 		ProcessingConfig(
-			unsigned int stockpileLength,
-			unsigned int stockpileDepth,
+			unsigned int blendingBedLength,
+			unsigned int blendingBedDepth,
 			double reclaimSeconds,
 			double flowFactor,
 			double redCorrectionFactor,

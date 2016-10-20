@@ -5,16 +5,16 @@
 #include "FlowLine.h"
 
 ProcessingConfig::ProcessingConfig(
-		unsigned int stockpileLength,
-		unsigned int stockpileDepth,
+		unsigned int blendingBedLength,
+		unsigned int blendingBedDepth,
 		double reclaimSeconds,
 		double flowFactor,
 		double redCorrectionFactor,
 		double blueCorrectionFactor,
 		double yellowCorrectionFactor
 )
-	: stockpileLength(stockpileLength)
-	, stockpileDepth(stockpileDepth)
+	: blendingBedLength(blendingBedLength)
+	, blendingBedDepth(blendingBedDepth)
 	, reclaimSeconds(reclaimSeconds)
 	, flowFactor(flowFactor)
 	, redCorrectionFactor(redCorrectionFactor)
@@ -34,6 +34,8 @@ void processStackerFile(std::string& filename, const ProcessingConfig& config)
 	int lastRed = 0;
 	int lastBlue = 0;
 	int lastYellow = 0;
+	float traversePathLengthAbs = float(config.blendingBedLength - config.blendingBedDepth);
+	float traversePathOffsetAbs = float(config.blendingBedDepth) / 2.0f;
 
 	std::ifstream inputFile(filename);
 
@@ -48,13 +50,12 @@ void processStackerFile(std::string& filename, const ProcessingConfig& config)
 		redSum = redSum + fl.red * config.flowFactor * config.redCorrectionFactor * diff;
 		blueSum = blueSum + fl.blue * config.flowFactor * config.blueCorrectionFactor * diff;
 		yellowSum = yellowSum + fl.yellow * config.flowFactor * config.yellowCorrectionFactor * diff;
-		int posAbsolute = int(fl.pos * float(config.stockpileLength));
-		if (posAbsolute < 0) posAbsolute = 0;
-		if (posAbsolute >= config.stockpileLength) posAbsolute = config.stockpileLength - 1;
+		fl.pos = std::min(std::max(0.0f, fl.pos), 1.0f);
+		int posAbsolute = int(fl.pos * traversePathLengthAbs + traversePathOffsetAbs);
 
 		// Drop particles
 		std::cout
-				<< posAbsolute + config.stockpileDepth / 2 << "\t"
+				<< posAbsolute << "\t"
 				<< int(redSum) - lastRed << "\t"
 				<< int(blueSum) - lastBlue << "\t"
 				<< int(yellowSum) - lastYellow << "\n";
@@ -94,7 +95,7 @@ void processReclaimerFile(std::string& filename, const ProcessingConfig& config)
 	while (inputFile >> fl) {
 		// Ignore posRelative from file because it is too inconsistent (slowly updating, skipping a lot of positions)
 		// Use time to generate position
-		fl.pos = float(double(fl.timestamp) / (1000000.0 * config.reclaimSeconds));
+		fl.pos = std::min(std::max(0.0f, float(double(fl.timestamp) / (1000000.0 * config.reclaimSeconds))), 1.0f);
 
 		// Convert variables to usable values
 		double diff = double(fl.timestamp - lastTimestamp) / 1000000.0;
@@ -104,7 +105,7 @@ void processReclaimerFile(std::string& filename, const ProcessingConfig& config)
 
 		// Group material in same step width as simulator does (every mm)
 		// Use posRelative for grouping and ignore sub-mm error
-		int thisPosIndex = int(fl.pos * float(config.stockpileLength));
+		int thisPosIndex = int(fl.pos * float(config.blendingBedLength));
 		if (thisPosIndex != lastPosIndex) {
 			if (lastPosIndex >= 0) {
 				std::cout << lastPosIndex << "\t" << int(redSum) - lastRed << "\t" << int(blueSum) - lastBlue << "\t" << int(yellowSum) - lastYellow << "\n";

@@ -24,8 +24,8 @@ int main(int argc, char** argv) try
 
 	po::options_description descSimulation("Simulation Options");
 	descSimulation.add_options()
-			("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range<unsigned int>, _1, 1u, 1000000u)), "stockpile length")
-			("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range<unsigned int>, _1, 1u, 1000000u)), "stockpile depth");
+			("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range<unsigned int>, _1, 1u, 1000000u)), "blending bed length")
+			("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range<unsigned int>, _1, 1u, 1000000u)), "blending bed depth");
 
 	po::options_description descModel("Model Options");
 	descModel.add_options()
