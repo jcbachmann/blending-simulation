@@ -6,10 +6,7 @@
 struct ProcessingConfig {
 		// Simulator stockpile dimensions (traverse path range)
 		unsigned int stockpileLength;
-		unsigned int stockpileWidth;
-
-		// Slope used when reclaiming the stockpile
-		unsigned int reclaimSlope;
+		unsigned int stockpileDepth;
 
 		// Duration it took to fully reclaim the stockpile (used for fine position generation)
 		double reclaimSeconds;
@@ -18,14 +15,22 @@ struct ProcessingConfig {
 		double flowFactor;
 
 		// Correction factors for the different colors to compensate for acquisition errors
-		float redCorrectionFactor;
-		float blueCorrectionFactor;
-		float yellowCorrectionFactor;
+		double redCorrectionFactor;
+		double blueCorrectionFactor;
+		double yellowCorrectionFactor;
 
-		ProcessingConfig(std::string filename);
+		ProcessingConfig(
+			unsigned int stockpileLength,
+			unsigned int stockpileDepth,
+			double reclaimSeconds,
+			double flowFactor,
+			double redCorrectionFactor,
+			double blueCorrectionFactor,
+			double yellowCorrectionFactor
+		);
 };
 
-void processStackerFile(std::string& filename, ProcessingConfig& config);
-void processReclaimerFile(std::string& filename, ProcessingConfig& config);
+void processStackerFile(std::string& filename, const ProcessingConfig& config);
+void processReclaimerFile(std::string& filename, const ProcessingConfig& config);
 
 #endif

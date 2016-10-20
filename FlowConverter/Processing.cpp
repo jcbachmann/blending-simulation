@@ -3,22 +3,27 @@
 #include <fstream>
 
 #include "FlowLine.h"
-#include "ConfigHandler.h"
 
-ProcessingConfig::ProcessingConfig(std::string filename) {
-	ConfigHandler configHandler(filename);
-
-	stockpileLength = configHandler.get("stockpile length", 1000u);
-	stockpileWidth = configHandler.get("stockpile width", 250u);
-	reclaimSlope = configHandler.get("reclaim slope", 1u);
-	reclaimSeconds = configHandler.get("reclaim seconds", 600.0);
-	flowFactor = configHandler.get("flow factor", 100000.0);
-	redCorrectionFactor = configHandler.get("red correction factor", 1.0f);
-	blueCorrectionFactor = configHandler.get("blue correction factor", 1.0f);
-	yellowCorrectionFactor = configHandler.get("yellow correction factor", 1.0f);
+ProcessingConfig::ProcessingConfig(
+		unsigned int stockpileLength,
+		unsigned int stockpileDepth,
+		double reclaimSeconds,
+		double flowFactor,
+		double redCorrectionFactor,
+		double blueCorrectionFactor,
+		double yellowCorrectionFactor
+)
+	: stockpileLength(stockpileLength)
+	, stockpileDepth(stockpileDepth)
+	, reclaimSeconds(reclaimSeconds)
+	, flowFactor(flowFactor)
+	, redCorrectionFactor(redCorrectionFactor)
+	, blueCorrectionFactor(blueCorrectionFactor)
+	, yellowCorrectionFactor(yellowCorrectionFactor)
+{
 }
 
-void processStackerFile(std::string& filename, ProcessingConfig& config)
+void processStackerFile(std::string& filename, const ProcessingConfig& config)
 {
 	// State variables
 	FlowLine fl;
@@ -30,15 +35,10 @@ void processStackerFile(std::string& filename, ProcessingConfig& config)
 	int lastBlue = 0;
 	int lastYellow = 0;
 
-	std::cerr << "Required blending simulator settings:";
-	std::cerr << " --length " << config.stockpileLength + config.stockpileWidth;
-	std::cerr << " --depth " << config.stockpileWidth;
-	std::cerr << " --slope " << config.reclaimSlope << std::endl;
-
 	std::ifstream inputFile(filename);
 
 	if (!inputFile) {
-		throw std::runtime_error("Could not read file");
+		throw std::runtime_error("could not read input file");
 	}
 
 	// Read input from file
@@ -54,7 +54,7 @@ void processStackerFile(std::string& filename, ProcessingConfig& config)
 
 		// Drop particles
 		std::cout
-				<< posAbsolute + config.stockpileWidth / 2 << "\t"
+				<< posAbsolute + config.stockpileDepth / 2 << "\t"
 				<< int(redSum) - lastRed << "\t"
 				<< int(blueSum) - lastBlue << "\t"
 				<< int(yellowSum) - lastYellow << "\n";
@@ -69,7 +69,7 @@ void processStackerFile(std::string& filename, ProcessingConfig& config)
 	std::cout << std::flush;
 }
 
-void processReclaimerFile(std::string& filename, ProcessingConfig& config)
+void processReclaimerFile(std::string& filename, const ProcessingConfig& config)
 {
 	// State variables
 	FlowLine fl;
@@ -84,7 +84,7 @@ void processReclaimerFile(std::string& filename, ProcessingConfig& config)
 	std::ifstream inputFile(filename);
 
 	if (!inputFile) {
-		throw std::runtime_error("Could not read file");
+		throw std::runtime_error("could not read input file");
 	}
 
 	// State variables
