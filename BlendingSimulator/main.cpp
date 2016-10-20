@@ -43,9 +43,9 @@ int main(int argc, char **argv) try
 
 	po::options_description descSimulation("Simulation Options");
 	descSimulation.add_options()
-			("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "set stockpile length")
-			("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "set stockpile depth")
-			("slope,s", po::value<unsigned int>()->default_value(1)->notifier(boost::bind(&in_range, _1, 0u, 1000000u)), "set reclaimer slope")
+			("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "stockpile length")
+			("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "stockpile depth")
+			("slope,s", po::value<unsigned int>()->default_value(1)->notifier(boost::bind(&in_range, _1, 0u, 1000000u)), "reclaimer slope")
 			("four,4", po::bool_switch(&fourDirectionsOnly), "axis aligned fall directions only");
 
 	po::options_description descInputOutput("Input / Output Options");
