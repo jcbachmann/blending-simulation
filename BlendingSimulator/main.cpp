@@ -138,8 +138,10 @@ int main(int argc, char **argv) try
 			}
 
 			if (!skipReclaim) {
+				std::cout << (skipPos ? "" : "\t") << p.getCount();
+
 				for (unsigned int i = 0; i < parameterCount; i++) {
-					std::cout << (i == 0 && skipPos ? "" : "\t") << p.get(i);
+					std::cout << "\t" << p.get(i);
 				}
 			}
 

@@ -42,6 +42,11 @@ public:
 		}
 	}
 
+	int getCount(void)
+	{
+		return count;
+	}
+
 	void clear(void)
 	{
 		count = 0;
@@ -49,7 +54,7 @@ public:
 	}
 
 private:
-	unsigned int count;
+	int count;
 	std::vector<double> values;
 };
 
