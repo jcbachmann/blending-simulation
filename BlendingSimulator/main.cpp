@@ -43,8 +43,8 @@ int main(int argc, char **argv) try
 
 	po::options_description descSimulation("Simulation Options");
 	descSimulation.add_options()
-			("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "stockpile length")
-			("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "stockpile depth")
+			("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "blending bed length")
+			("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "blending bed depth")
 			("slope,s", po::value<unsigned int>()->default_value(1)->notifier(boost::bind(&in_range, _1, 0u, 1000000u)), "reclaimer slope")
 			("four,4", po::bool_switch(&fourDirectionsOnly), "axis aligned fall directions only");
 
@@ -63,7 +63,7 @@ int main(int argc, char **argv) try
 	po::store(po::parse_command_line(argc, argv, descAll), vm);
 
 	if (vm.count("config")) {
-		po::store(po::parse_config_file<char>(vm["config"].as<std::string>().c_str(), descAll), vm);
+		po::store(po::parse_config_file<char>(vm["config"].as<std::string>().c_str(), descAll, true), vm);
 	}
 
 	if (vm.count("help")) {
