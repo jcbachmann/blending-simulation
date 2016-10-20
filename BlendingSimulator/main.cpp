@@ -36,29 +36,38 @@ int main(int argc, char **argv) try
 	bool fourDirectionsOnly = false;
 	bool useCounting = false;
 
-	po::options_description desc("Options");
-	desc.add_options()
+	po::options_description descGeneric("Generic Options");
+	descGeneric.add_options()
 			("help", "produce help message")
-			("parameters,n", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "parameter count")
+			("config", po::value<std::string>(), "config file");
+
+	po::options_description descSimulation("Simulation Options");
+	descSimulation.add_options()
 			("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "set stockpile length")
 			("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "set stockpile depth")
 			("slope,s", po::value<unsigned int>()->default_value(1)->notifier(boost::bind(&in_range, _1, 0u, 1000000u)), "set reclaimer slope")
-			("heights,h", po::bool_switch(&printHeights), "output vertical height map")
+			("four,4", po::bool_switch(&fourDirectionsOnly), "axis aligned fall directions only");
+
+	po::options_description descInputOutput("Input / Output Options");
+	descInputOutput.add_options()
+			("parameters,n", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "particle parameter count")
+			("heights,h", po::bool_switch(&printHeights), "output height map")
 			("skipreclaim,r", po::bool_switch(&skipReclaim), "skip reclaimer output")
 			("skippos,p", po::bool_switch(&skipPos), "skip position output")
-			("four,4", po::bool_switch(&fourDirectionsOnly), "axis aligned fall directions only")
-			("counting,c", po::bool_switch(&useCounting), "count class occurences instead of averaging parameters (blending model)")
-			("config", po::value<std::string>(), "config file");
+			("counting,c", po::bool_switch(&useCounting), "count class occurrences instead of averaging parameters (blending model)");
+
+	po::options_description descAll;
+	descAll.add(descGeneric).add(descSimulation).add(descInputOutput);
 
 	po::variables_map vm;
-	po::store(po::parse_command_line(argc, argv, desc), vm);
+	po::store(po::parse_command_line(argc, argv, descAll), vm);
 
 	if (vm.count("config")) {
-		po::store(po::parse_config_file<char>(vm["config"].as<std::string>().c_str(), desc), vm);
+		po::store(po::parse_config_file<char>(vm["config"].as<std::string>().c_str(), descAll), vm);
 	}
 
 	if (vm.count("help")) {
-		std::cout << desc << "\n";
+		std::cout << descAll << "\n";
 		return 1;
 	}
 
