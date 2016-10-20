@@ -47,10 +47,15 @@ int main(int argc, char **argv) try
 			("skipreclaim,r", po::bool_switch(&skipReclaim), "skip reclaimer output")
 			("skippos,p", po::bool_switch(&skipPos), "skip position output")
 			("four,4", po::bool_switch(&fourDirectionsOnly), "axis aligned fall directions only")
-			("counting,c", po::bool_switch(&useCounting), "count class occurences instead of averaging parameters (blending model)");
+			("counting,c", po::bool_switch(&useCounting), "count class occurences instead of averaging parameters (blending model)")
+			("config", po::value<std::string>(), "config file");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
+
+	if (vm.count("config")) {
+		po::store(po::parse_config_file<char>(vm["config"].as<std::string>().c_str(), desc), vm);
+	}
 
 	if (vm.count("help")) {
 		std::cout << desc << "\n";
