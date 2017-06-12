@@ -1,2 +1,4 @@
 *.user
 /.idea
+/doc
+/cmake-build-debug
