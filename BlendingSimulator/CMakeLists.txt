@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
 set(
-		SOURCE_FILES
-		main.cpp
+	SOURCE_FILES
+	main.cpp
 )
 
 find_package(Boost 1.61 COMPONENTS program_options REQUIRED)
@@ -10,4 +10,8 @@ include_directories(${Boost_INCLUDE_DIR})
 
 add_executable(BlendingSimulator ${SOURCE_FILES})
 
-target_link_libraries(BlendingSimulator BlendingSimulatorLib ${Boost_LIBRARIES})
+target_link_libraries(
+	BlendingSimulator
+	pthread
+	${Boost_LIBRARIES}
+)

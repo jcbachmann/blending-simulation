@@ -28,7 +28,7 @@ void in_range(unsigned int value, unsigned int min, unsigned int max)
 	}
 }
 
-int main(int argc, char **argv) try
+int main(int argc, char** argv) try
 {
 	bool printHeights = false;
 	bool skipReclaim = false;
@@ -38,23 +38,24 @@ int main(int argc, char **argv) try
 
 	po::options_description descGeneric("Generic Options");
 	descGeneric.add_options()
-			("help", "produce help message")
-			("config", po::value<std::string>(), "config file");
+		("help", "produce help message")
+		("config", po::value<std::string>(), "config file");
 
 	po::options_description descSimulation("Simulation Options");
 	descSimulation.add_options()
-			("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "blending bed length")
-			("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "blending bed depth")
-			("slope,s", po::value<unsigned int>()->default_value(1)->notifier(boost::bind(&in_range, _1, 0u, 1000000u)), "reclaimer slope")
-			("four,4", po::bool_switch(&fourDirectionsOnly), "axis aligned fall directions only");
+		("detailed,h", po::bool_switch(&executionParameters.detailed), "detailed simulation")
+		("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "blending bed length")
+		("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "blending bed depth")
+		("slope,s", po::value<unsigned int>()->default_value(1)->notifier(boost::bind(&in_range, _1, 0u, 1000000u)), "reclaimer slope")
+		("four,4", po::bool_switch(&fourDirectionsOnly), "axis aligned fall directions only");
 
 	po::options_description descInputOutput("Input / Output Options");
 	descInputOutput.add_options()
-			("parameters,n", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "particle parameter count")
-			("heights,h", po::bool_switch(&printHeights), "output height map")
-			("skipreclaim,r", po::bool_switch(&skipReclaim), "skip reclaimer output")
-			("skippos,p", po::bool_switch(&skipPos), "skip position output")
-			("counting,c", po::bool_switch(&useCounting), "count class occurrences instead of averaging parameters (blending model)");
+		("parameters,n", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "particle parameter count")
+		("heights,h", po::bool_switch(&printHeights), "output height map")
+		("skipreclaim,r", po::bool_switch(&skipReclaim), "skip reclaimer output")
+		("skippos,p", po::bool_switch(&skipPos), "skip position output")
+		("counting,c", po::bool_switch(&useCounting), "count class occurrences instead of averaging parameters (blending model)");
 
 	po::options_description descAll;
 	descAll.add(descGeneric).add(descSimulation).add(descInputOutput);
@@ -170,7 +171,7 @@ int main(int argc, char **argv) try
 	}
 
 	std::cout << std::flush;
-} catch (std::exception &e) {
+} catch (std::exception& e) {
 	std::cerr << e.what() << std::endl;
 	return 1;
 }

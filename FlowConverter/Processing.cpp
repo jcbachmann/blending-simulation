@@ -5,13 +5,13 @@
 #include "FlowLine.h"
 
 ProcessingConfig::ProcessingConfig(
-		unsigned int blendingBedLength,
-		unsigned int blendingBedDepth,
-		double reclaimSeconds,
-		double flowFactor,
-		double redCorrectionFactor,
-		double blueCorrectionFactor,
-		double yellowCorrectionFactor
+	unsigned int blendingBedLength,
+	unsigned int blendingBedDepth,
+	double reclaimSeconds,
+	double flowFactor,
+	double redCorrectionFactor,
+	double blueCorrectionFactor,
+	double yellowCorrectionFactor
 )
 	: blendingBedLength(blendingBedLength)
 	, blendingBedDepth(blendingBedDepth)
@@ -55,10 +55,10 @@ void processStackerFile(std::string& filename, const ProcessingConfig& config)
 
 		// Drop particles
 		std::cout
-				<< posAbsolute << "\t"
-				<< int(redSum) - lastRed << "\t"
-				<< int(blueSum) - lastBlue << "\t"
-				<< int(yellowSum) - lastYellow << "\n";
+			<< posAbsolute << "\t"
+			<< int(redSum) - lastRed << "\t"
+			<< int(blueSum) - lastBlue << "\t"
+			<< int(yellowSum) - lastYellow << "\n";
 
 		// Save running variables for proper particle count calculation
 		lastRed = int(redSum);

@@ -6,13 +6,13 @@
 
 struct FlowLine
 {
-		uint64_t timestamp;
-		double background;
-		double red;
-		double blue;
-		double yellow;
-		double undefined;
-		float pos; // Relative
+	uint64_t timestamp;
+	double background;
+	double red;
+	double blue;
+	double yellow;
+	double undefined;
+	float pos; // Relative
 };
 
 std::istream& operator>>(std::istream& is, FlowLine& fl);

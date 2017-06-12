@@ -19,25 +19,25 @@ int main(int argc, char** argv) try
 {
 	po::options_description descGeneric("Generic Options");
 	descGeneric.add_options()
-			("help", "produce help message")
-			("config", po::value<std::string>(), "config file");
+		("help", "produce help message")
+		("config", po::value<std::string>(), "config file");
 
 	po::options_description descSimulation("Simulation Options");
 	descSimulation.add_options()
-			("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range<unsigned int>, _1, 1u, 1000000u)), "blending bed length")
-			("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range<unsigned int>, _1, 1u, 1000000u)), "blending bed depth");
+		("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range<unsigned int>, _1, 1u, 1000000u)), "blending bed length")
+		("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range<unsigned int>, _1, 1u, 1000000u)), "blending bed depth");
 
 	po::options_description descModel("Model Options");
 	descModel.add_options()
-			("reclaim-seconds", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "reclaim duration used for fine position generation")
-			("flow-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-20, 1e20)), "particle amount multiplier")
-			("red-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "correction factor for red particles")
-			("blue-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "correction factor for blue particles")
-			("yellow-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "correction factor for yellow particles");
+		("reclaim-seconds", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "reclaim duration used for fine position generation")
+		("flow-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-20, 1e20)), "particle amount multiplier")
+		("red-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "correction factor for red particles")
+		("blue-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "correction factor for blue particles")
+		("yellow-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "correction factor for yellow particles");
 
 	po::options_description descHidden("Hidden Options");
 	descHidden.add_options()
-			("input-file", po::value<std::vector<std::string>>(), "input file");
+		("input-file", po::value<std::vector<std::string>>(), "input file");
 
 	po::positional_options_description positionalOptions;
 	positionalOptions.add("input-file", -1);
@@ -64,13 +64,13 @@ int main(int argc, char** argv) try
 	po::notify(vm);
 
 	ProcessingConfig config(
-			vm["length"].as<unsigned int>(),
-			vm["depth"].as<unsigned int>(),
-			vm["reclaim-seconds"].as<double>(),
-			vm["flow-factor"].as<double>(),
-			vm["red-factor"].as<double>(),
-			vm["blue-factor"].as<double>(),
-			vm["yellow-factor"].as<double>()
+		vm["length"].as<unsigned int>(),
+		vm["depth"].as<unsigned int>(),
+		vm["reclaim-seconds"].as<double>(),
+		vm["flow-factor"].as<double>(),
+		vm["red-factor"].as<double>(),
+		vm["blue-factor"].as<double>(),
+		vm["yellow-factor"].as<double>()
 	);
 
 	if (!vm.count("input-file")) {
