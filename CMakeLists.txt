@@ -5,5 +5,8 @@ project(BlendingSimulator)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}-build)
 
 add_subdirectory(BlendingSimulatorLib)
+add_subdirectory(BlendingSimulatorFastLib)
+add_subdirectory(BlendingSimulatorDetailedLib)
 add_subdirectory(BlendingSimulator)
+add_subdirectory(Visualizer)
 add_subdirectory(FlowConverter)

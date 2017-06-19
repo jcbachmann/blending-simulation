@@ -1,16 +1,30 @@
-#ifndef Simulator_H
-#define Simulator_H
+#ifndef BlendingSimulatorFast_H
+#define BlendingSimulatorFast_H
 
 #include <vector>
 
+#include "BlendingSimulator.h"
+
 template<typename Parameters>
-class Simulator {
+class BlendingSimulatorFast : public BlendingSimulator<Parameters>
+{
 	public:
-		Simulator(unsigned int heapLength, unsigned int heapDepth, unsigned int reclaimSlope, bool fourDirectionsOnly = false);
-		void clear();
-		void stack(int position, const Parameters& parameters);
+		BlendingSimulatorFast(unsigned int heapLength, unsigned int heapDepth, unsigned int reclaimSlope,
+							  bool fourDirectionsOnly = false);
+		virtual void clear(void);
+		virtual void stack(double position, const Parameters& parameters);
+		virtual void finish(void);
+		virtual float* getHeapMap(void);
 		bool reclaim(int& position, Parameters& parameters, std::vector<int>& heights);
 		void resetReclaimer(void);
+
+	protected:
+		virtual std::vector<unsigned char> getRawData(void) override {
+			// TODO implement saving for fast simulation
+		}
+		virtual void setRawData(const std::vector<unsigned char>& data) override {
+			// TODO implement loading for fast simulation
+		}
 
 	private:
 		// Dimensions of the simulated stockpile
@@ -31,8 +45,10 @@ class Simulator {
 
 		// Only allow particles to fall to axis aligned directions
 		const bool fourDirectionsOnly;
+
+		void updateHeapMap(void);
 };
 
-#include "Simulator.impl.h"
+#include "BlendingSimulatorFast.impl.h"
 
 #endif

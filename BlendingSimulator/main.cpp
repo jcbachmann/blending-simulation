@@ -1,25 +1,11 @@
 #include <iostream>
-#include <sstream>
 
 #include <boost/program_options.hpp>
 #include <boost/bind.hpp>
-#include <boost/spirit/include/qi.hpp>
-#include <boost/fusion/include/define_struct.hpp>
 
-#include "Simulator.h"
-#include "Parameters.h"
+#include "Execution.h"
 
 namespace po = boost::program_options;
-namespace qi = boost::spirit::qi;
-namespace phx = boost::phoenix;
-
-BOOST_FUSION_DEFINE_STRUCT(
-		(), ParsedLineCounts, (int, pos)(std::vector<int>, counts)
-)
-
-BOOST_FUSION_DEFINE_STRUCT(
-		(), ParsedLineParameters, (int, pos)(std::vector<double>, parameters)
-)
 
 void in_range(unsigned int value, unsigned int min, unsigned int max)
 {
@@ -30,11 +16,7 @@ void in_range(unsigned int value, unsigned int min, unsigned int max)
 
 int main(int argc, char** argv) try
 {
-	bool printHeights = false;
-	bool skipReclaim = false;
-	bool skipPos = false;
-	bool fourDirectionsOnly = false;
-	bool useCounting = false;
+	ExecutionParameters executionParameters;
 
 	po::options_description descGeneric("Generic Options");
 	descGeneric.add_options()
@@ -47,15 +29,15 @@ int main(int argc, char** argv) try
 		("length,l", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "blending bed length")
 		("depth,d", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "blending bed depth")
 		("slope,s", po::value<unsigned int>()->default_value(1)->notifier(boost::bind(&in_range, _1, 0u, 1000000u)), "reclaimer slope")
-		("four,4", po::bool_switch(&fourDirectionsOnly), "axis aligned fall directions only");
+		("four,4", po::bool_switch(&executionParameters.fourDirectionsOnly), "axis aligned fall directions only");
 
 	po::options_description descInputOutput("Input / Output Options");
 	descInputOutput.add_options()
 		("parameters,n", po::value<unsigned int>()->required()->notifier(boost::bind(&in_range, _1, 1u, 1000000u)), "particle parameter count")
-		("heights,h", po::bool_switch(&printHeights), "output height map")
-		("skipreclaim,r", po::bool_switch(&skipReclaim), "skip reclaimer output")
-		("skippos,p", po::bool_switch(&skipPos), "skip position output")
-		("counting,c", po::bool_switch(&useCounting), "count class occurrences instead of averaging parameters (blending model)");
+		("heights,h", po::bool_switch(&executionParameters.printHeights), "output height map")
+		("skipreclaim,r", po::bool_switch(&executionParameters.skipReclaim), "skip reclaimer output")
+		("skippos,p", po::bool_switch(&executionParameters.skipPos), "skip position output")
+		("counting,c", po::bool_switch(&executionParameters.useCounting), "count class occurrences instead of averaging parameters (blending model)");
 
 	po::options_description descAll;
 	descAll.add(descGeneric).add(descSimulation).add(descInputOutput);
@@ -74,99 +56,22 @@ int main(int argc, char** argv) try
 
 	po::notify(vm);
 
-	unsigned int parameterCount = vm["parameters"].as<unsigned int>();
-	unsigned int length = vm["length"].as<unsigned int>();
-	unsigned int depth = vm["depth"].as<unsigned int>();
-	unsigned int slope = vm["slope"].as<unsigned int>();
+	executionParameters.parameterCount = vm["parameters"].as<unsigned int>();
+	executionParameters.length = vm["length"].as<unsigned int>();
+	executionParameters.depth = vm["depth"].as<unsigned int>();
+	executionParameters.slope = vm["slope"].as<unsigned int>();
 
-	if (useCounting) {
-		Simulator<CountedParameters> simulator(length, depth, slope, fourDirectionsOnly);
-
-		std::string line;
-		while (std::getline(std::cin, line)) {
-			auto first = line.begin();
-			auto last = line.end();
-
-			ParsedLineCounts parsedLine;
-			bool r = qi::phrase_parse(first, last, qi::int_ >> qi::repeat(parameterCount)[qi::int_], qi::ascii::space,
-									  parsedLine);
-
-			if (r && first == last) {
-				for (unsigned int i = 0; i < parameterCount; i++) {
-					for (int c = 0; c < parsedLine.counts[i]; c++) {
-						simulator.stack(parsedLine.pos, CountedParameters(parameterCount, i));
-					}
-				}
-			} else {
-				std::cerr << "could not match line '" << line << "'" << std::endl;
-			}
-		}
-
-		int pos;
-		CountedParameters p;
-		std::vector<int> heights;
-
-		while (simulator.reclaim(pos, p, heights)) {
-			if (!skipPos) {
-				std::cout << pos;
-			}
-
-			if (!skipReclaim) {
-				for (unsigned int i = 0; i < parameterCount; i++) {
-					std::cout << (i == 0 && skipPos ? "" : "\t") << p.get(i);
-				}
-			}
-
-			if (printHeights) {
-				for (auto it = heights.begin(); it != heights.end(); it++) {
-					std::cout << (skipPos && skipReclaim && it == heights.begin() ? "" : "\t") << *it;
-				}
-			}
-
-			std::cout << "\n";
+	if (executionParameters.detailed) {
+		if (executionParameters.useCounting) {
+			executeDetailedSimulationCounted(executionParameters);
+		} else {
+			executeDetailedSimulationAveraged(executionParameters);
 		}
 	} else {
-		Simulator<AveragedParameters> simulator(length, depth, slope, fourDirectionsOnly);
-
-		std::string line;
-		while (std::getline(std::cin, line)) {
-			auto first = line.begin();
-			auto last = line.end();
-
-			ParsedLineParameters parsedLine;
-			bool r = qi::phrase_parse(first, last, qi::int_ >> qi::repeat(parameterCount)[qi::double_], qi::ascii::space, parsedLine);
-
-			if (r && first == last) {
-				simulator.stack(parsedLine.pos, AveragedParameters(std::move(parsedLine.parameters)));
-			} else {
-				std::cerr << "could not match line '" << line << "'" << std::endl;
-			}
-		}
-
-		int pos;
-		AveragedParameters p;
-		std::vector<int> heights;
-
-		while (simulator.reclaim(pos, p, heights)) {
-			if (!skipPos) {
-				std::cout << pos;
-			}
-
-			if (!skipReclaim) {
-				std::cout << (skipPos ? "" : "\t") << p.getCount();
-
-				for (unsigned int i = 0; i < parameterCount; i++) {
-					std::cout << "\t" << p.get(i);
-				}
-			}
-
-			if (printHeights) {
-				for (auto it = heights.begin(); it != heights.end(); it++) {
-					std::cout << (skipPos && skipReclaim && it == heights.begin() ? "" : "\t") << *it;
-				}
-			}
-
-			std::cout << "\n";
+		if (executionParameters.useCounting) {
+			executeFastSimulationCounted(executionParameters);
+		} else {
+			executeFastSimulationAveraged(executionParameters);
 		}
 	}
 
