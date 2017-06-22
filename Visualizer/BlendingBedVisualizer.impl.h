@@ -20,6 +20,7 @@ BlendingBedVisualizer<Parameters>::BlendingBedVisualizer(BlendingSimulator<Param
 	, mTerrainGroup(nullptr)
 	, mTerrainGlobals(nullptr)
 	, showFrozen(false)
+	, showTemperature(false)
 	, showQualityCubes(false)
 {
 }
@@ -40,6 +41,8 @@ void BlendingBedVisualizer<Parameters>::createFrameListener(void)
 	items.push_back("Frozen Particles [K]");
 	items.push_back("Simulation Status [P]");
 	items.push_back("Heap Update");
+	items.push_back("Quality Cubes [C]");
+	items.push_back("Simulation Temperature [T]");
 	mSimulationDetailsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT, "SimulationDetails", 250, items);
 	mSimulationDetailsPanel->show();
 }
@@ -106,6 +109,8 @@ bool BlendingBedVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEven
 		}
 	} else if (key == SDLK_k) {
 		showFrozen = !showFrozen;
+	} else if (key == SDLK_t) {
+		showTemperature = !showTemperature;
 	} else if (key == SDLK_u) {
 		refreshHeightMap();
 	} else if (key == SDLK_c) {
@@ -271,10 +276,17 @@ void BlendingBedVisualizer<Parameters>::refreshParticles(void)
 			cube->node->setOrientation(float(o.w), float(o.x), float(o.y), float(o.z));
 
 			// Set color
-			const Parameters& pp = particle->parameters;
-			std::tuple<float, float, float> c = hsvToRgb(qualityHue(pp.get(0), pp.get(1), pp.get(2)), 1.0, 1.0);
+			std::tuple<float, float, float> c;
+			if (showTemperature) {
+				c = std::make_tuple(particle->temperature, particle->frozen ? 0.0 : (1.0 - particle->temperature),
+					1.0 - particle->temperature);
+			} else {
+				const Parameters& pp = particle->parameters;
+				c = hsvToRgb(qualityHue(pp.get(0), pp.get(1), pp.get(2)), 1.0, 1.0);
+			}
 			cube->material->getTechnique(0)->getPass(0)->setAmbient(std::get<0>(c), std::get<1>(c), std::get<2>(c));
 			cube->material->getTechnique(0)->getPass(0)->setDiffuse(std::get<0>(c), std::get<1>(c), std::get<2>(c), 1.0f);
+			cube->material->compile();
 		}
 
 		// Handle unused cubes in pool

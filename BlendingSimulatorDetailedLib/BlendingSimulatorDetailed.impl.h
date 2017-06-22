@@ -15,7 +15,8 @@ const float stackerDropOffHeight = 28.0f; // In m above ground
 const float stackerDropOffAngle = btRadians(20); // Radians above horizon
 const float stackerBeltSpeed = 3.0f; // In m/s
 const float stackerBeltWidth = 1.5f; // In m
-const int freezeTimeout = 15000;
+const int minFreezeTimeout = 15000;
+const int maxFreezeTimeout = 25000;
 const float qualityCubeSize = 1.8f;
 const float heapMaxHeight = stackerDropOffHeight - 1.0f;
 const unsigned long long simulationInterval = 30;
@@ -194,8 +195,16 @@ void BlendingSimulatorDetailed<Parameters>::freezeParticles(void)
 	for (auto it = activeParticles.begin(); it != activeParticles.end(); it++) {
 		Particle<Parameters>* particle = *it;
 
-		if (!particle->frozen && (simulationTickCount >= particle->creationTickCount && simulationTickCount - particle->creationTickCount >= freezeTimeout ||
-								  particle->rigidBody->getActivationState() == WANTS_DEACTIVATION)) {
+		if (particle->frozen) {
+			continue;
+		}
+
+		if (simulationTickCount >= particle->creationTickCount && simulationTickCount - particle->creationTickCount >= maxFreezeTimeout) {
+			freezeParticle(particle);
+			continue;
+		}
+
+		if (particle->rigidBody->getActivationState() == WANTS_DEACTIVATION && simulationTickCount - particle->creationTickCount >= minFreezeTimeout) {
 			freezeParticle(particle);
 		}
 	}
@@ -398,6 +407,7 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles(void)
 
 		particle->outputParticle->parameters = particle->parameters;
 		particle->outputParticle->frozen = particle->frozen;
+		particle->outputParticle->temperature = std::max(0.0f, std::min(1.0f - float(simulationTickCount - particle->creationTickCount) / float(minFreezeTimeout), 1.0f));
 		particle->outputParticle->position = bs::Vector3(toTuple(trans.getOrigin()));
 		particle->outputParticle->size = bs::Vector3(toTuple(particle->size));
 		particle->outputParticle->orientation = bs::Quaternion(toTuple(trans.getRotation()));

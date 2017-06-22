@@ -58,6 +58,7 @@ class BlendingBedVisualizer : public Visualizer
 		std::list<VisualizationParticle*> cubePool;
 		std::map<int, std::map<int, VisualizationCube*>> qualityCubeMap;
 		bool showFrozen;
+		bool showTemperature;
 		bool showQualityCubes;
 
 		void addTerrain(void);
