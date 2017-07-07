@@ -216,20 +216,20 @@ void BlendingBedVisualizer<Parameters>::refreshParticles(void)
 	{ // Render particles
 		std::list<VisualizationParticle*>::iterator cubePoolIterator = cubePool.begin();
 		std::lock_guard<std::mutex> lock(simulator->outputParticlesMutex);
-		std::list<ParticleLite<Parameters>*>* particles = &simulator->outputParticles;
+		const std::list<ParticleLite<Parameters>*>& particles = simulator->outputParticles;
 		mSimulationDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(
 			simulator->activeOutputParticles.size()));
 		mSimulationDetailsPanel->setParamValue(1, Ogre::StringConverter::toString(
 			simulator->outputParticles.size() - simulator->activeOutputParticles.size()));
 
 		static unsigned long lastParticlesSize = 0;
-		if (particles->size() > lastParticlesSize + 1000) {
-			lastParticlesSize = particles->size();
+		if (particles.size() > lastParticlesSize + 1000) {
+			lastParticlesSize = particles.size();
 			doRefreshHeightMap = true;
 		}
 
-		for (auto it = particles->begin(); it != particles->end(); it++) {
-			ParticleLite<Parameters>*& particle = *it;
+		for (auto it = particles.begin(); it != particles.end(); it++) {
+			ParticleLite<Parameters>* particle = *it;
 
 			// Do not display frozen particles
 			if (!showFrozen && particle->frozen) {
