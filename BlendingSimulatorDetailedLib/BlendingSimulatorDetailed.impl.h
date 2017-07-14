@@ -307,7 +307,7 @@ std::vector<unsigned char> BlendingSimulatorDetailed<Parameters>::getRawData(voi
 //			data.resize(sizeof(Particle) * outputParticles.size());
 //			unsigned long position = 0;
 //
-//			for (std::list<Particle*>::iterator it = outputParticles.begin(); it != outputParticles.end(); it++) {
+//			for (std::deque<Particle*>::iterator it = outputParticles.begin(); it != outputParticles.end(); it++) {
 //				memcpy(&data[position], *it, sizeof(Particle));
 //
 //				position = position + sizeof(Particle);
@@ -415,7 +415,7 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles(void)
 
 		if (particle->frozen) {
 			it = activeParticles.erase(it);
-			this->activeOutputParticles.remove(particle->outputParticle);
+			this->activeOutputParticles.erase(std::find(this->activeOutputParticles.begin(), this->activeOutputParticles.end(), particle->outputParticle));
 		} else {
 			it++;
 		}
@@ -443,7 +443,7 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles(void)
 	{
 		std::lock_guard <std::mutex> lock(simulator->outputParticlesMutex);
 
-		for (std::list<Particle*>::iterator it = simulator->outputParticles.begin();
+		for (std::deque<Particle*>::iterator it = simulator->outputParticles.begin();
 			 it != simulator->outputParticles.end(); it++) {
 			Particle* p = *it;
 

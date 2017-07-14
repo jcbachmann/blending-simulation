@@ -2,7 +2,7 @@
 #define BlendingSimulatorDetailed_H
 
 // STL
-#include <list>
+#include <deque>
 #include <vector>
 #include <map>
 #include <mutex>
@@ -75,9 +75,9 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		float heapLength;
 		float heapDepth;
 		std::mutex simulationMutex;
-		std::list<ParticleDetailed<Parameters>*> activeParticles;
+		std::deque<ParticleDetailed<Parameters>*> activeParticles;
 		std::atomic_bool activeParticlesAvailable;
-		std::list<ParticleDetailed<Parameters>*> allParticles;
+		std::deque<ParticleDetailed<Parameters>*> allParticles;
 
 		unsigned long long simulationTickCount;
 		unsigned long long nextParticleTickCount;

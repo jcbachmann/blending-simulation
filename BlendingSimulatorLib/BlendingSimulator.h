@@ -1,7 +1,7 @@
 #ifndef BlendingSimulator_H
 #define BlendingSimulator_H
 
-#include <list>
+#include <deque>
 #include <vector>
 #include <mutex>
 #include <map>
@@ -13,8 +13,8 @@ template<typename Parameters>
 class BlendingSimulator
 {
 	public:
-		std::list<Particle<Parameters>*> outputParticles;
-		std::list<Particle<Parameters>*> activeOutputParticles;
+		std::deque<Particle<Parameters>*> outputParticles;
+		std::deque<Particle<Parameters>*> activeOutputParticles;
 		std::mutex outputParticlesMutex;
 		int heapMapRes;
 		std::mutex parameterCubesMutex;

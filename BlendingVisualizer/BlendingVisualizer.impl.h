@@ -213,7 +213,7 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 	{ // Render particles
 		std::deque<VisualizationParticle*>::iterator cubePoolIterator = particlePool.begin();
 		std::lock_guard<std::mutex> lock(simulator->outputParticlesMutex);
-		const std::list<Particle<Parameters>*>& particles = simulator->outputParticles;
+		const std::deque<Particle<Parameters>*>& particles = simulator->outputParticles;
 		mSimulationDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(
 			simulator->activeOutputParticles.size()));
 		mSimulationDetailsPanel->setParamValue(1, Ogre::StringConverter::toString(
