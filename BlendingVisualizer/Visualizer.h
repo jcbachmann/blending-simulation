@@ -3,7 +3,6 @@
 
 #include <OgreCamera.h>
 #include <OgreEntity.h>
-#include <OgreLogManager.h>
 #include <OgreRoot.h>
 #include <OgreViewport.h>
 #include <OgreSceneManager.h>

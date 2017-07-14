@@ -2,6 +2,7 @@
 
 #include <SDL_syswm.h>
 #include <Ogre.h>
+#include <OgreLogManager.h>
 #include <Bites/OgreBitesConfigDialog.h>
 
 Visualizer::Visualizer(void)
@@ -17,6 +18,9 @@ Visualizer::Visualizer(void)
 	, mDetailsPanel(nullptr)
 	, grabbed(false)
 {
+	Ogre::LogManager* lm = new Ogre::LogManager();
+	lm->createLog("ogre.log", true, false, false);
+
 	mFSLayer = new Ogre::FileSystemLayer("Visualizer ... again");
 }
 
