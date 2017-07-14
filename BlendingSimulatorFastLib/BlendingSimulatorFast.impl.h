@@ -1,7 +1,5 @@
 #include <limits>
 
-#include "BlendingSimulatorFast.h"
-
 template<typename Parameters>
 BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(unsigned int heapLength, unsigned int heapDepth,
 														 unsigned int reclaimSlope, bool fourDirectionsOnly)

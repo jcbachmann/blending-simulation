@@ -10,7 +10,6 @@
 #include "Particle.h"
 #include "BlendingSimulator.h"
 #include "ParameterCube.h"
-#include "BlendingVisualizer.h"
 #include "QualityColor.h"
 
 template<typename Parameters>

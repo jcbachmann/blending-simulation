@@ -1,7 +1,28 @@
-#ifndef BLENDINGSIMULATOR_BLENDINGSIMULATOR_IMPL_H
-#define BLENDINGSIMULATOR_BLENDINGSIMULATOR_IMPL_H
-
 #include <fstream>
+
+template<typename Parameters>
+BlendingSimulator<Parameters>::BlendingSimulator(void)
+	: paused(false)
+{
+}
+
+template<typename Parameters>
+void BlendingSimulator<Parameters>::pause(void)
+{
+	paused = true;
+}
+
+template<typename Parameters>
+void BlendingSimulator<Parameters>::resume(void)
+{
+	paused = false;
+}
+
+template<typename Parameters>
+bool BlendingSimulator<Parameters>::isPaused(void)
+{
+	return paused.load();
+}
 
 template<typename Parameters>
 void BlendingSimulator<Parameters>::loadFromFile(std::string filename)
@@ -42,5 +63,3 @@ void BlendingSimulator<Parameters>::saveToFile(std::string filename)
 	std::fwrite(data.data(), 1, data.size(), file);
 	std::fclose(file);
 }
-
-#endif

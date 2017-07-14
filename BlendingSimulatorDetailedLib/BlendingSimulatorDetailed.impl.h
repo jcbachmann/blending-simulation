@@ -1,10 +1,9 @@
 #include <random>
-#include "BlendingSimulatorDetailed.h"
+#include <thread>
 
 // Bullet
 #include <bullet/btBulletDynamicsCommon.h>
 #include <bullet/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
-#include <thread>
 
 // Local
 #include "ParticleDetailed.h"

@@ -20,25 +20,11 @@ class BlendingSimulator
 		std::mutex parameterCubesMutex;
 		std::map<std::tuple<int, int, int>, ParameterCube<Parameters>*> parameterCubes;
 
-		BlendingSimulator(void)
-			: paused(false)
-		{
-		}
+		BlendingSimulator(void);
 
-		virtual void pause(void)
-		{
-			paused = true;
-		}
-
-		virtual void resume(void)
-		{
-			paused = false;
-		}
-
-		virtual bool isPaused(void)
-		{
-			return paused.load();
-		}
+		virtual void pause(void);
+		virtual void resume(void);
+		virtual bool isPaused(void);
 
 		virtual void clear(void) = 0;
 		virtual void stack(double position, const Parameters& parameters) = 0;
