@@ -305,13 +305,13 @@ std::vector<unsigned char> BlendingSimulatorDetailed<Parameters>::getRawData(voi
 //		std::lock_guard<std::mutex> lock2(outputParticlesMutex);
 //
 //		if (!outputParticles.empty()) {
-//			data.resize(sizeof(ParticleLite) * outputParticles.size());
+//			data.resize(sizeof(Particle) * outputParticles.size());
 //			unsigned long position = 0;
 //
-//			for (std::list<ParticleLite*>::iterator it = outputParticles.begin(); it != outputParticles.end(); it++) {
-//				memcpy(&data[position], *it, sizeof(ParticleLite));
+//			for (std::list<Particle*>::iterator it = outputParticles.begin(); it != outputParticles.end(); it++) {
+//				memcpy(&data[position], *it, sizeof(Particle));
 //
-//				position = position + sizeof(ParticleLite);
+//				position = position + sizeof(Particle);
 //			}
 //		}
 //	}
@@ -328,14 +328,14 @@ void BlendingSimulatorDetailed<Parameters>::setRawData(const std::vector<unsigne
 //	std::lock_guard<std::mutex> lock(simulationMutex);
 //	simulationTickCount = 0;
 //
-//	if (data.size() % sizeof(ParticleLite) != 0) {
+//	if (data.size() % sizeof(Particle) != 0) {
 //		throw std::runtime_error("invalid data length");
 //	}
 //
-//	for (unsigned long position = 0; position < data.size(); position += sizeof(ParticleLite)) {
-//		ParticleLite* outputParticle = new ParticleLite();
+//	for (unsigned long position = 0; position < data.size(); position += sizeof(Particle)) {
+//		Particle* outputParticle = new Particle();
 //
-//		memcpy(outputParticle, &data[position], sizeof(ParticleLite));
+//		memcpy(outputParticle, &data[position], sizeof(Particle));
 //
 //		ParticleDetailed* particle = createParticle(
 //			outputParticle->position,
@@ -398,7 +398,7 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles(void)
 		ParticleDetailed<Parameters>* particle = *it;
 
 		if (!particle->outputParticle) {
-			particle->outputParticle = new ParticleLite<Parameters>();
+			particle->outputParticle = new Particle<Parameters>();
 
 			this->outputParticles.push_back(particle->outputParticle);
 			this->activeOutputParticles.push_back(particle->outputParticle);
@@ -444,9 +444,9 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles(void)
 	{
 		std::lock_guard <std::mutex> lock(simulator->outputParticlesMutex);
 
-		for (std::list<ParticleLite*>::iterator it = simulator->outputParticles.begin();
+		for (std::list<Particle*>::iterator it = simulator->outputParticles.begin();
 			 it != simulator->outputParticles.end(); it++) {
-			ParticleLite* p = *it;
+			Particle* p = *it;
 
 			int line = std::min(
 				std::max(int(float(lines) * (p->position.x() - p->position.z()) / float(HEAP_LENGTH) + 0.5), 0),

@@ -1,10 +1,10 @@
-#ifndef BLENDINGSIMULATOR_PARTICLELITE_H
-#define BLENDINGSIMULATOR_PARTICLELITE_H
+#ifndef BLENDINGSIMULATOR_PARTICLE_H
+#define BLENDINGSIMULATOR_PARTICLE_H
 
 #include "BasicTypes.h"
 
 template<typename Parameters>
-struct ParticleLite
+struct Particle
 {
 	Parameters parameters;
 	bool frozen;
@@ -14,7 +14,7 @@ struct ParticleLite
 	bs::Vector3 size;
 	bs::Quaternion orientation;
 
-	ParticleLite(void)
+	Particle(void)
 		: frozen(false)
 	{
 	}

@@ -50,7 +50,7 @@ class btDiscreteDynamicsWorld;
 #include "BlendingSimulator.h"
 
 template<typename Parameters>
-class ParticleLite;
+class Particle;
 
 template<typename Parameters>
 struct ParticleDetailed;

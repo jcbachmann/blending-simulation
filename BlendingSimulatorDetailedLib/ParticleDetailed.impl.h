@@ -4,7 +4,7 @@
 #include <bullet/btBulletDynamicsCommon.h>
 
 // Blending Simulator Lib
-#include "ParticleLite.h"
+#include "Particle.h"
 
 template<typename Parameters>
 ParticleDetailed<Parameters>::ParticleDetailed(void)

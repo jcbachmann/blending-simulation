@@ -7,7 +7,7 @@
 #include <OgreMovablePlane.h>
 #include <Terrain/OgreTerrainMaterialGeneratorA.h>
 
-#include "ParticleLite.h"
+#include "Particle.h"
 #include "BlendingSimulator.h"
 #include "ParameterCube.h"
 #include "BlendingVisualizer.h"
@@ -214,7 +214,7 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 	{ // Render particles
 		std::deque<VisualizationParticle*>::iterator cubePoolIterator = particlePool.begin();
 		std::lock_guard<std::mutex> lock(simulator->outputParticlesMutex);
-		const std::list<ParticleLite<Parameters>*>& particles = simulator->outputParticles;
+		const std::list<Particle<Parameters>*>& particles = simulator->outputParticles;
 		mSimulationDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(
 			simulator->activeOutputParticles.size()));
 		mSimulationDetailsPanel->setParamValue(1, Ogre::StringConverter::toString(
@@ -227,7 +227,7 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 		}
 
 		for (auto it = particles.begin(); it != particles.end(); it++) {
-			ParticleLite<Parameters>* particle = *it;
+			Particle<Parameters>* particle = *it;
 
 			// Do not display frozen particles
 			if (!showFrozen && particle->frozen) {

@@ -6,15 +6,15 @@
 #include <mutex>
 #include <map>
 
-#include "ParticleLite.h"
+#include "Particle.h"
 #include "ParameterCube.h"
 
 template<typename Parameters>
 class BlendingSimulator
 {
 	public:
-		std::list<ParticleLite<Parameters>*> outputParticles;
-		std::list<ParticleLite<Parameters>*> activeOutputParticles;
+		std::list<Particle<Parameters>*> outputParticles;
+		std::list<Particle<Parameters>*> activeOutputParticles;
 		std::mutex outputParticlesMutex;
 		int heapMapRes;
 		std::mutex parameterCubesMutex;

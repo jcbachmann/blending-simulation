@@ -13,7 +13,7 @@ class btDefaultMotionState;
 
 // Blending Simulator Lib
 template<typename Parameters>
-struct ParticleLite;
+struct Particle;
 
 template<typename Parameters>
 struct ParticleDetailed
@@ -28,7 +28,7 @@ struct ParticleDetailed
 	btRigidBody* rigidBody;
 	btDefaultMotionState* defaultMotionState;
 
-	ParticleLite<Parameters>* outputParticle;
+	Particle<Parameters>* outputParticle;
 
 	ParticleDetailed(void);
 	~ParticleDetailed(void);
