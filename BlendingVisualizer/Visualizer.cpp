@@ -1,8 +1,9 @@
 #include "Visualizer.h"
 
 #include <SDL_syswm.h>
-#include <Ogre.h>
 #include <OgreLogManager.h>
+#include <OgreMaterialManager.h>
+#include <OgreTextureManager.h>
 #include <Bites/OgreBitesConfigDialog.h>
 
 Visualizer::Visualizer(void)
