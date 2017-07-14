@@ -12,7 +12,7 @@ namespace phx = boost::phoenix;
 #include "BlendingSimulatorFast.h"
 #include "BlendingSimulatorDetailed.h"
 #include "ParticleParameters.h"
-#include "BlendingBedVisualizer.h"
+#include "BlendingVisualizer.h"
 
 BOOST_FUSION_DEFINE_STRUCT(
 	(), ParsedLineCounts, (int, pos)(std::vector<int>, counts)
@@ -31,7 +31,7 @@ void executeFastSimulationCounted(ExecutionParameters parameters)
 
 	std::cout << "Starting visualization" << std::endl;
 	std::thread visualizationThread([&simulator, &cancel]() {
-		BlendingBedVisualizer<CountedParameters> visualizer(&simulator);
+		BlendingVisualizer<CountedParameters> visualizer(&simulator);
 		try {
 			visualizer.run();
 		} catch (std::exception& e) {
@@ -163,7 +163,7 @@ void executeDetailedSimulationCounted(ExecutionParameters parameters)
 
 	std::cout << "Starting visualization" << std::endl;
 	std::thread visualizationThread([&simulator, &cancel]() {
-		BlendingBedVisualizer<CountedParameters> visualizer(&simulator);
+		BlendingVisualizer<CountedParameters> visualizer(&simulator);
 		try {
 			visualizer.run();
 		} catch (std::exception& e) {

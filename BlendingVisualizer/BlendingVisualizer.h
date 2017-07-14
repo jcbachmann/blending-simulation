@@ -1,5 +1,5 @@
-#ifndef COALYARD_BLENDINGBEDVISUALIZER_H
-#define COALYARD_BLENDINGBEDVISUALIZER_H
+#ifndef BLENDINGVISUALIZER_H
+#define BLENDINGVISUALIZER_H
 
 #include <Terrain/OgreTerrain.h>
 #include <Terrain/OgreTerrainGroup.h>
@@ -37,11 +37,11 @@ struct VisualizationCube
 };
 
 template<typename Parameters>
-class BlendingBedVisualizer : public Visualizer
+class BlendingVisualizer : public Visualizer
 {
 	public:
-		BlendingBedVisualizer(BlendingSimulator<Parameters>* simulator);
-		virtual ~BlendingBedVisualizer(void);
+		BlendingVisualizer(BlendingSimulator<Parameters>* simulator);
+		virtual ~BlendingVisualizer(void);
 
 	protected:
 		virtual void createFrameListener(void) override;
@@ -68,6 +68,6 @@ class BlendingBedVisualizer : public Visualizer
 		void refreshQualityCubes(void);
 };
 
-#include "BlendingBedVisualizer.impl.h"
+#include "BlendingVisualizer.impl.h"
 
 #endif

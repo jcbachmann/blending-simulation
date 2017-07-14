@@ -10,11 +10,11 @@
 #include "ParticleLite.h"
 #include "BlendingSimulator.h"
 #include "QualityCube.h"
-#include "BlendingBedVisualizer.h"
+#include "BlendingVisualizer.h"
 #include "QualityColor.h"
 
 template<typename Parameters>
-BlendingBedVisualizer<Parameters>::BlendingBedVisualizer(BlendingSimulator<Parameters>* simulator)
+BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>* simulator)
 	: mSimulationDetailsPanel(nullptr)
 	, simulator(simulator)
 	, mTerrainGroup(nullptr)
@@ -26,12 +26,12 @@ BlendingBedVisualizer<Parameters>::BlendingBedVisualizer(BlendingSimulator<Param
 }
 
 template<typename Parameters>
-BlendingBedVisualizer<Parameters>::~BlendingBedVisualizer(void)
+BlendingVisualizer<Parameters>::~BlendingVisualizer(void)
 {
 }
 
 template<typename Parameters>
-void BlendingBedVisualizer<Parameters>::createFrameListener(void)
+void BlendingVisualizer<Parameters>::createFrameListener(void)
 {
 	Visualizer::createFrameListener();
 
@@ -48,7 +48,7 @@ void BlendingBedVisualizer<Parameters>::createFrameListener(void)
 }
 
 template<typename Parameters>
-void BlendingBedVisualizer<Parameters>::createScene(void)
+void BlendingVisualizer<Parameters>::createScene(void)
 {
 	// Camera position and direction
 	mCameraNode->setPosition(Ogre::Vector3(10, 50, -5));
@@ -75,14 +75,14 @@ void BlendingBedVisualizer<Parameters>::createScene(void)
 }
 
 template<typename Parameters>
-void BlendingBedVisualizer<Parameters>::destroyScene(void)
+void BlendingVisualizer<Parameters>::destroyScene(void)
 {
 	delete mTerrainGroup;
 	delete mTerrainGlobals;
 }
 
 template<typename Parameters>
-void BlendingBedVisualizer<Parameters>::frameRendered(const Ogre::FrameEvent& evt)
+void BlendingVisualizer<Parameters>::frameRendered(const Ogre::FrameEvent& evt)
 {
 	Visualizer::frameRendered(evt);
 
@@ -94,7 +94,7 @@ void BlendingBedVisualizer<Parameters>::frameRendered(const Ogre::FrameEvent& ev
 }
 
 template<typename Parameters>
-bool BlendingBedVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEvent& evt)
+bool BlendingVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEvent& evt)
 {
 	if (mTrayMgr->isDialogVisible()) {
 		return true;
@@ -130,7 +130,7 @@ bool BlendingBedVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEven
 }
 
 template<typename Parameters>
-void BlendingBedVisualizer<Parameters>::addTerrain(void)
+void BlendingVisualizer<Parameters>::addTerrain(void)
 {
 	mTerrainGlobals = new Ogre::TerrainGlobalOptions();
 	mTerrainGlobals->setMaxPixelError(5);
@@ -163,7 +163,7 @@ void BlendingBedVisualizer<Parameters>::addTerrain(void)
 }
 
 template<typename Parameters>
-void BlendingBedVisualizer<Parameters>::addGroundPlane(void)
+void BlendingVisualizer<Parameters>::addGroundPlane(void)
 {
 	Ogre::MaterialManager& materialManager = Ogre::MaterialManager::getSingleton();
 	const Ogre::MaterialPtr& groundMaterial = materialManager.create("Ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -184,7 +184,7 @@ void BlendingBedVisualizer<Parameters>::addGroundPlane(void)
 }
 
 template<typename Parameters>
-void BlendingBedVisualizer<Parameters>::refreshHeightMap(void)
+void BlendingVisualizer<Parameters>::refreshHeightMap(void)
 {
 	Ogre::Terrain* terrain = mTerrainGroup->getTerrain(0, 0);
 	uint16_t size = terrain->getSize();
@@ -207,7 +207,7 @@ void BlendingBedVisualizer<Parameters>::refreshHeightMap(void)
 }
 
 template<typename Parameters>
-void BlendingBedVisualizer<Parameters>::refreshParticles(void)
+void BlendingVisualizer<Parameters>::refreshParticles(void)
 {
 	bool doRefreshHeightMap = false;
 
@@ -304,7 +304,7 @@ void BlendingBedVisualizer<Parameters>::refreshParticles(void)
 }
 
 template<typename Parameters>
-void BlendingBedVisualizer<Parameters>::refreshQualityCubes(void)
+void BlendingVisualizer<Parameters>::refreshQualityCubes(void)
 {
 	BlendingSimulatorDetailed<Parameters>* detailedSimulator = dynamic_cast<BlendingSimulatorDetailed<Parameters>*>(simulator);
 	if (!detailedSimulator) {
