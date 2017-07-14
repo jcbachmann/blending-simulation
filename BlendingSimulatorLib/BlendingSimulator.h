@@ -4,8 +4,10 @@
 #include <list>
 #include <vector>
 #include <mutex>
+#include <map>
 
 #include "ParticleLite.h"
+#include "ParameterCube.h"
 
 template<typename Parameters>
 class BlendingSimulator
@@ -15,6 +17,8 @@ class BlendingSimulator
 		std::list<ParticleLite<Parameters>*> activeOutputParticles;
 		std::mutex outputParticlesMutex;
 		int heapMapRes;
+		std::mutex parameterCubesMutex;
+		std::map<std::tuple<int, int, int>, ParameterCube<Parameters>*> parameterCubes;
 
 		BlendingSimulator(void)
 			: paused(false)

@@ -17,7 +17,7 @@ const float stackerBeltSpeed = 3.0f; // In m/s
 const float stackerBeltWidth = 1.5f; // In m
 const int minFreezeTimeout = 15000;
 const int maxFreezeTimeout = 25000;
-const float qualityCubeSize = 1.8f;
+const float parameterCubeSize = 1.8f;
 const float heapMaxHeight = stackerDropOffHeight - 1.0f;
 const unsigned long long simulationInterval = 30;
 const double averageParticleSize = 0.5; // m
@@ -123,8 +123,8 @@ void BlendingSimulatorDetailed<Parameters>::clear(void)
 	}
 
 	{
-		std::lock_guard<std::mutex> innerLock(qualityGridMutex);
-		qualityGrid.clear();
+		std::lock_guard<std::mutex> innerLock(this->parameterCubesMutex);
+		this->parameterCubes.clear();
 	}
 
 	activeParticles.clear();
@@ -227,26 +227,29 @@ void BlendingSimulatorDetailed<Parameters>::freezeParticle(Particle<Parameters>*
 		this->heapMap[z * this->heapMapRes + x] = std::max(this->heapMap[z * this->heapMapRes + x], origin.getY() - float(averageParticleSize) * 0.1f);
 	}
 
-	short qualityHashHorizontalX = short(origin.getX() / qualityCubeSize);
-	short qualityHashHorizontalZ = short(origin.getZ() / qualityCubeSize);
-	int qualityHashHorizontal = (((int) 0 | (unsigned short) qualityHashHorizontalX) << 16) | (unsigned short)
-		qualityHashHorizontalZ;
-	int qualityHashVertical = int(origin.getY() / qualityCubeSize);
-
 	{
-		std::lock_guard<std::mutex> lock(qualityGridMutex);
+		std::tuple<int, int, int> id = std::make_tuple(
+			int(origin.getX() / parameterCubeSize),
+			int(origin.getY() / parameterCubeSize),
+			int(origin.getZ() / parameterCubeSize)
+		);
 
-		QualityCube<Parameters>& qualityCube = qualityGrid[qualityHashHorizontal][qualityHashVertical];
-
-		if (!qualityCube.initialized) {
-			qualityCube.initialize(btVector3(qualityHashHorizontalX * qualityCubeSize,
-				(float(qualityHashVertical) + 0.5f) * qualityCubeSize,
-				qualityHashHorizontalZ * qualityCubeSize),
-				btVector3(qualityCubeSize, qualityCubeSize, qualityCubeSize)
+		ParameterCube<Parameters>* parameterCube = nullptr;
+		std::lock_guard<std::mutex> lock(this->parameterCubesMutex);
+		auto it = this->parameterCubes.find(id);
+		if (it != this->parameterCubes.end()) {
+			parameterCube = it->second;
+		} else {
+			parameterCube = new ParameterCube<Parameters>(
+				bs::Vector3((float(std::get<0>(id)) + 0.5f) * parameterCubeSize,
+							(float(std::get<1>(id)) + 0.5f) * parameterCubeSize,
+							(float(std::get<2>(id)) + 0.5f) * parameterCubeSize),
+				parameterCubeSize
 			);
+			this->parameterCubes[id] = parameterCube;
 		}
 
-		qualityCube.add(particle);
+		parameterCube->add(particle->parameters);
 	}
 }
 

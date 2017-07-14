@@ -55,17 +55,17 @@ class BlendingVisualizer : public Visualizer
 		Ogre::TerrainGroup* mTerrainGroup;
 		Ogre::TerrainGlobalOptions* mTerrainGlobals;
 		BlendingSimulator<Parameters>* simulator;
-		std::list<VisualizationParticle*> cubePool;
-		std::map<int, std::map<int, VisualizationCube*>> qualityCubeMap;
+		std::deque<VisualizationParticle*> particlePool;
+		std::map<std::tuple<int, int, int>, VisualizationCube*> visualizationCubes;
 		bool showFrozen;
 		bool showTemperature;
-		bool showQualityCubes;
+		bool showParameterCubes;
 
 		void addTerrain(void);
 		void addGroundPlane(void);
 		void refreshHeightMap(void);
 		void refreshParticles(void);
-		void refreshQualityCubes(void);
+		void refreshParameterCubes(void);
 };
 
 #include "BlendingVisualizer.impl.h"

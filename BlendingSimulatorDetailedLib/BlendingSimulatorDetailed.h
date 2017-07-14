@@ -47,19 +47,18 @@ class btRigidBody;
 class btDiscreteDynamicsWorld;
 
 // Local
-#include "QualityCube.h"
 #include "BlendingSimulator.h"
 
 template<typename Parameters>
 class ParticleLite;
 
 template<typename Parameters>
+struct Particle;
+
+template<typename Parameters>
 class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 {
 	public:
-		std::map<int, std::map<int, QualityCube<Parameters>>> qualityGrid;
-		std::mutex qualityGridMutex;
-
 		BlendingSimulatorDetailed(float length, float depth);
 		~BlendingSimulatorDetailed(void);
 

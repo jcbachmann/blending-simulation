@@ -9,7 +9,7 @@
 
 #include "ParticleLite.h"
 #include "BlendingSimulator.h"
-#include "QualityCube.h"
+#include "ParameterCube.h"
 #include "BlendingVisualizer.h"
 #include "QualityColor.h"
 
@@ -21,7 +21,7 @@ BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>
 	, mTerrainGlobals(nullptr)
 	, showFrozen(false)
 	, showTemperature(false)
-	, showQualityCubes(false)
+	, showParameterCubes(false)
 {
 }
 
@@ -41,7 +41,7 @@ void BlendingVisualizer<Parameters>::createFrameListener(void)
 	items.push_back("Frozen Particles [K]");
 	items.push_back("Simulation Status [P]");
 	items.push_back("Heap Update");
-	items.push_back("Quality Cubes [C]");
+	items.push_back("Parameter Cubes [C]");
 	items.push_back("Simulation Temperature [T]");
 	mSimulationDetailsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT, "SimulationDetails", 250, items);
 	mSimulationDetailsPanel->show();
@@ -88,8 +88,8 @@ void BlendingVisualizer<Parameters>::frameRendered(const Ogre::FrameEvent& evt)
 
 	refreshParticles();
 
-	if (showQualityCubes) {
-		refreshQualityCubes();
+	if (showParameterCubes) {
+		refreshParameterCubes();
 	}
 }
 
@@ -114,13 +114,11 @@ bool BlendingVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEvent& 
 	} else if (key == SDLK_u) {
 		refreshHeightMap();
 	} else if (key == SDLK_c) {
-		showQualityCubes = !showQualityCubes;
-		if (!showQualityCubes) {
-			for (auto it : qualityCubeMap) {
-				for (auto it2 : it.second) {
-					mSceneMgr->getRootSceneNode()->removeChild(it2.second->node);
-					it2.second->attached = false;
-				}
+		showParameterCubes = !showParameterCubes;
+		if (!showParameterCubes) {
+			for (auto& it : visualizationCubes) {
+				mSceneMgr->getRootSceneNode()->removeChild(it.second->node);
+				it.second->attached = false;
 			}
 		}
 	}
@@ -214,7 +212,7 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 	mSimulationDetailsPanel->setParamValue(2, simulator->isPaused() ? "Paused" : "Active");
 
 	{ // Render particles
-		std::list<VisualizationParticle*>::iterator cubePoolIterator = cubePool.begin();
+		std::deque<VisualizationParticle*>::iterator cubePoolIterator = particlePool.begin();
 		std::lock_guard<std::mutex> lock(simulator->outputParticlesMutex);
 		const std::list<ParticleLite<Parameters>*>& particles = simulator->outputParticles;
 		mSimulationDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(
@@ -238,23 +236,23 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 
 			// Acquire cube object
 			VisualizationParticle* cube;
-			if (cubePoolIterator == cubePool.end()) {
+			if (cubePoolIterator == particlePool.end()) {
 				// Create cube
 				cube = new VisualizationParticle();
 				cube->entity = mSceneMgr->createEntity(
-					std::string("CubePool") + std::to_string(cubePool.size()),
+					std::string("CubePool") + std::to_string(particlePool.size()),
 					Ogre::SceneManager::PT_CUBE
 				);
 				cube->node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 				cube->attached = true;
 				cube->node->attachObject(cube->entity);
-				cubePool.push_back(cube);
-				cubePoolIterator = cubePool.end();
+				particlePool.push_back(cube);
+				cubePoolIterator = particlePool.end();
 
 				// Create material
 				Ogre::MaterialManager& materialManager = Ogre::MaterialManager::getSingleton();
 				cube->material = materialManager.create(
-					std::string("CubePool") + std::to_string(cubePool.size()),
+					std::string("CubePool") + std::to_string(particlePool.size()),
 					Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 				cube->entity->setMaterial(cube->material);
 			} else {
@@ -279,7 +277,7 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 			std::tuple<float, float, float> c;
 			if (showTemperature) {
 				c = std::make_tuple(particle->temperature, particle->frozen ? 0.0 : (1.0 - particle->temperature),
-					1.0 - particle->temperature);
+									1.0 - particle->temperature);
 			} else {
 				const Parameters& pp = particle->parameters;
 				c = hsvToRgb(qualityHue(pp.get(0), pp.get(1), pp.get(2)), 1.0, 1.0);
@@ -290,7 +288,7 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 		}
 
 		// Handle unused cubes in pool
-		while (cubePoolIterator != cubePool.end()) {
+		while (cubePoolIterator != particlePool.end()) {
 			mSceneMgr->getRootSceneNode()->removeChild((*cubePoolIterator)->node);
 			(*cubePoolIterator)->attached = false;
 			cubePoolIterator++;
@@ -304,65 +302,57 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::refreshQualityCubes(void)
+void BlendingVisualizer<Parameters>::refreshParameterCubes(void)
 {
-	BlendingSimulatorDetailed<Parameters>* detailedSimulator = dynamic_cast<BlendingSimulatorDetailed<Parameters>*>(simulator);
-	if (!detailedSimulator) {
-		// Does not apply for other simulator types
-		return;
-	}
+	std::lock_guard<std::mutex> lock(simulator->parameterCubesMutex);
 
-	std::lock_guard<std::mutex> lock2(detailedSimulator->qualityGridMutex);
-	const std::map<int, std::map<int, QualityCube<Parameters>>>& qualityGrid = detailedSimulator->qualityGrid;
+	for (auto it = simulator->parameterCubes.begin(); it != simulator->parameterCubes.end(); it++) {
+		const ParameterCube<Parameters>* parameterCube = it->second;
 
-	for (auto it = qualityGrid.begin(); it != qualityGrid.end(); it++) {
-		for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
-			const QualityCube<Parameters>& qualityCube = it2->second;
+		VisualizationCube* visualizationCube = nullptr;
 
-			VisualizationCube* visualizationCube = nullptr;
-
-			auto one = qualityCubeMap.find(it->first);
-			if (one != qualityCubeMap.end()) {
-				auto two = one->second.find(it2->first);
-				if (two != one->second.end()) {
-					visualizationCube = two->second;
-				}
-			}
-
-			Ogre::MaterialManager& materialManager = Ogre::MaterialManager::getSingleton();
-			if (!visualizationCube) {
-				visualizationCube = new VisualizationCube();
-				Ogre::Entity* cubeEnt = mSceneMgr->createEntity(
-					std::string("CubeMap") + std::to_string(it->first) + std::to_string(it2->first),
-					Ogre::SceneManager::PT_CUBE
-				);
-				visualizationCube->material = materialManager.create(
-					std::string("CubeMap") + std::to_string(it->first) + std::to_string(it2->first),
-					Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
-				);
-				visualizationCube->material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
-				cubeEnt->setMaterial(visualizationCube->material);
-				visualizationCube->node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-				visualizationCube->attached = true;
-
-				btVector3 p = qualityCube.position;
-				btVector3 s = 0.9 * qualityCube.size / 100.0;
-
-				visualizationCube->node->setPosition(p.x(), p.y(), p.z());
-				visualizationCube->node->setScale(s.x(), s.y(), s.z());
-				visualizationCube->node->attachObject(cubeEnt);
-				qualityCubeMap[it->first][it2->first] = visualizationCube;
-			}
-
-			if (!visualizationCube->attached) {
-				mSceneMgr->getRootSceneNode()->addChild(visualizationCube->node);
-				visualizationCube->attached = true;
-			}
-
-			const Parameters& pp = qualityCube.getAverage();
-			std::tuple<float, float, float> c = hsvToRgb(qualityHue(pp.get(0), pp.get(1), pp.get(2)), 1.0, 1.0);
-			visualizationCube->material->getTechnique(0)->getPass(0)->setAmbient(std::get<0>(c), std::get<1>(c), std::get<2>(c));
-			visualizationCube->material->getTechnique(0)->getPass(0)->setDiffuse(std::get<0>(c), std::get<1>(c), std::get<2>(c), 1.0f);
+		auto visIt = visualizationCubes.find(it->first);
+		if (visIt != visualizationCubes.end()) {
+			visualizationCube = visIt->second;
 		}
+
+		Ogre::MaterialManager& materialManager = Ogre::MaterialManager::getSingleton();
+		if (!visualizationCube) {
+			std::string identifier = "_" + std::to_string(std::get<0>(it->first))
+									 + "_" + std::to_string(std::get<1>(it->first))
+									 + "_" + std::to_string(std::get<2>(it->first));
+
+			visualizationCube = new VisualizationCube();
+			Ogre::Entity* cubeEnt = mSceneMgr->createEntity(
+				std::string("CubeMap") + identifier,
+				Ogre::SceneManager::PT_CUBE
+			);
+			visualizationCube->material = materialManager.create(
+				std::string("CubeMap") + identifier,
+				Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
+			);
+			visualizationCube->material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
+			cubeEnt->setMaterial(visualizationCube->material);
+			visualizationCube->node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+			visualizationCube->attached = true;
+
+			bs::Vector3 p = parameterCube->getPosition();
+			float s = 0.9f * parameterCube->getSize() / 100.0f;
+
+			visualizationCube->node->setPosition(Ogre::Real(p.x), Ogre::Real(p.y), Ogre::Real(p.z));
+			visualizationCube->node->setScale(s, s, s);
+			visualizationCube->node->attachObject(cubeEnt);
+			visualizationCubes[it->first] = visualizationCube;
+		}
+
+		if (!visualizationCube->attached) {
+			mSceneMgr->getRootSceneNode()->addChild(visualizationCube->node);
+			visualizationCube->attached = true;
+		}
+
+		const Parameters& pp = parameterCube->getParameters();
+		std::tuple<float, float, float> c = hsvToRgb(qualityHue(pp.get(0), pp.get(1), pp.get(2)), 1.0, 1.0);
+		visualizationCube->material->getTechnique(0)->getPass(0)->setAmbient(std::get<0>(c), std::get<1>(c), std::get<2>(c));
+		visualizationCube->material->getTechnique(0)->getPass(0)->setDiffuse(std::get<0>(c), std::get<1>(c), std::get<2>(c), 1.0f);
 	}
 }
