@@ -1,4 +1,4 @@
-#include "Particle.h"
+#include "ParticleDetailed.h"
 
 // Bullet
 #include <bullet/btBulletDynamicsCommon.h>
@@ -7,7 +7,7 @@
 #include "ParticleLite.h"
 
 template<typename Parameters>
-Particle<Parameters>::Particle(void)
+ParticleDetailed<Parameters>::ParticleDetailed(void)
 	: frozen(false)
 	, creationTickCount(0)
 	, collisionShape(nullptr)
@@ -18,7 +18,7 @@ Particle<Parameters>::Particle(void)
 }
 
 template<typename Parameters>
-Particle<Parameters>::~Particle(void)
+ParticleDetailed<Parameters>::~ParticleDetailed(void)
 {
 	if (collisionShape) {
 		delete collisionShape;

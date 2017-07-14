@@ -1,5 +1,5 @@
-#ifndef ParticleH
-#define ParticleH
+#ifndef ParticleDetailedH
+#define ParticleDetailedH
 
 // Bullet
 #include <bullet/LinearMath/btVector3.h>
@@ -16,7 +16,7 @@ template<typename Parameters>
 struct ParticleLite;
 
 template<typename Parameters>
-struct Particle
+struct ParticleDetailed
 {
 	btVector3 size;
 
@@ -30,10 +30,10 @@ struct Particle
 
 	ParticleLite<Parameters>* outputParticle;
 
-	Particle(void);
-	~Particle(void);
+	ParticleDetailed(void);
+	~ParticleDetailed(void);
 };
 
-#include "Particle.impl.h"
+#include "ParticleDetailed.impl.h"
 
 #endif

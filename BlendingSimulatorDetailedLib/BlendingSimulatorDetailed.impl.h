@@ -7,7 +7,7 @@
 #include <thread>
 
 // Local
-#include "Particle.h"
+#include "ParticleDetailed.h"
 
 // Simulator constants
 const float gravity = -9.81f; // m/s²
@@ -138,11 +138,10 @@ void BlendingSimulatorDetailed<Parameters>::clear(void)
 }
 
 template<typename Parameters>
-Particle<Parameters>*
-BlendingSimulatorDetailed<Parameters>::createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation, btVector3 velocity,
-													  btVector3 size)
+ParticleDetailed<Parameters>* BlendingSimulatorDetailed<Parameters>::createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation,
+																			btVector3 velocity, btVector3 size)
 {
-	Particle<Parameters>* particle = new Particle<Parameters>();
+	ParticleDetailed<Parameters>* particle = new ParticleDetailed<Parameters>();
 
 	particle->parameters = parameters;
 	particle->frozen = frozen;
@@ -193,7 +192,7 @@ template<typename Parameters>
 void BlendingSimulatorDetailed<Parameters>::freezeParticles(void)
 {
 	for (auto it = activeParticles.begin(); it != activeParticles.end(); it++) {
-		Particle<Parameters>* particle = *it;
+		ParticleDetailed<Parameters>* particle = *it;
 
 		if (particle->frozen) {
 			continue;
@@ -211,7 +210,7 @@ void BlendingSimulatorDetailed<Parameters>::freezeParticles(void)
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::freezeParticle(Particle<Parameters>* particle)
+void BlendingSimulatorDetailed<Parameters>::freezeParticle(ParticleDetailed<Parameters>* particle)
 {
 	dynamicsWorld->removeRigidBody(particle->rigidBody);
 	particle->frozen = true;
@@ -338,7 +337,7 @@ void BlendingSimulatorDetailed<Parameters>::setRawData(const std::vector<unsigne
 //
 //		memcpy(outputParticle, &data[position], sizeof(ParticleLite));
 //
-//		Particle* particle = createParticle(
+//		ParticleDetailed* particle = createParticle(
 //			outputParticle->position,
 //			outputParticle->quality,
 //			outputParticle->frozen,
@@ -396,7 +395,7 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles(void)
 	std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
 
 	for (auto it = activeParticles.begin(); it != activeParticles.end();) {
-		Particle<Parameters>* particle = *it;
+		ParticleDetailed<Parameters>* particle = *it;
 
 		if (!particle->outputParticle) {
 			particle->outputParticle = new ParticleLite<Parameters>();

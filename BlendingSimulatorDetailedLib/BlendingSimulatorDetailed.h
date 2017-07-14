@@ -53,7 +53,7 @@ template<typename Parameters>
 class ParticleLite;
 
 template<typename Parameters>
-struct Particle;
+struct ParticleDetailed;
 
 template<typename Parameters>
 class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
@@ -75,9 +75,9 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		float heapLength;
 		float heapDepth;
 		std::mutex simulationMutex;
-		std::list<Particle<Parameters>*> activeParticles;
+		std::list<ParticleDetailed<Parameters>*> activeParticles;
 		std::atomic_bool activeParticlesAvailable;
-		std::list<Particle<Parameters>*> allParticles;
+		std::list<ParticleDetailed<Parameters>*> allParticles;
 
 		unsigned long long simulationTickCount;
 		unsigned long long nextParticleTickCount;
@@ -96,10 +96,8 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		void step(void);
 		void doOutputParticles(void);
 		void freezeParticles(void);
-		void freezeParticle(Particle<Parameters>* particle);
-		Particle<Parameters>*
-		createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation,
-					   btVector3 velocity, btVector3 size);
+		void freezeParticle(ParticleDetailed<Parameters>* particle);
+		ParticleDetailed<Parameters>* createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation, btVector3 velocity, btVector3 size);
 };
 
 #include "BlendingSimulatorDetailed.impl.h"
