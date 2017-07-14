@@ -39,10 +39,19 @@ void BlendingVisualizer<Parameters>::createFrameListener(void)
 	items.push_back("Active Particles");
 	items.push_back("Frozen Particles [K]");
 	items.push_back("Simulation Status [P]");
-	items.push_back("Heap Update");
+	items.push_back("Heap Updates [U]");
 	items.push_back("Parameter Cubes [C]");
 	items.push_back("Simulation Temperature [T]");
 	mSimulationDetailsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT, "SimulationDetails", 250, items);
+
+	// display values of parameters which are only refreshed on action
+	mSimulationDetailsPanel->setParamValue(0, "0");
+	mSimulationDetailsPanel->setParamValue(1, "0");
+	mSimulationDetailsPanel->setParamValue(2, simulator->isPaused() ? "Paused" : "Active");
+	mSimulationDetailsPanel->setParamValue(3, "0");
+	mSimulationDetailsPanel->setParamValue(4, showParameterCubes ? "yes" : "no");
+	mSimulationDetailsPanel->setParamValue(5, showTemperature ? "yes" : "no");
+
 	mSimulationDetailsPanel->show();
 }
 
@@ -110,6 +119,7 @@ bool BlendingVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEvent& 
 		showFrozen = !showFrozen;
 	} else if (key == SDLK_t) {
 		showTemperature = !showTemperature;
+		mSimulationDetailsPanel->setParamValue(5, showTemperature ? "yes" : "no");
 	} else if (key == SDLK_u) {
 		refreshHeightMap();
 	} else if (key == SDLK_c) {
@@ -120,6 +130,7 @@ bool BlendingVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEvent& 
 				it.second->attached = false;
 			}
 		}
+		mSimulationDetailsPanel->setParamValue(4, showParameterCubes ? "yes" : "no");
 	}
 
 	Visualizer::keyPressed(evt);
