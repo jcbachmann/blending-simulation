@@ -5,7 +5,6 @@ set(
 	main.cpp
 	Execution.cpp
 	Execution.h
-	ExecutionParameters.cpp
 	ExecutionParameters.h
 )
 
