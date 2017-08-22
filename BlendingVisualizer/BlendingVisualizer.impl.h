@@ -77,17 +77,24 @@ void BlendingVisualizer<Parameters>::createScene(void)
 
 	// TODO terrain -> cloth (higher refresh rate / dynamic build)
 	// Terrain
-	addTerrain();
+//	addTerrain();
 
 	// Ground plane
-//	addGroundPlane();
+	addGroundPlane();
 }
 
 template<typename Parameters>
 void BlendingVisualizer<Parameters>::destroyScene(void)
 {
-	delete mTerrainGroup;
-	delete mTerrainGlobals;
+	if (mTerrainGroup) {
+		delete mTerrainGroup;
+		mTerrainGroup = nullptr;
+	}
+
+	if (mTerrainGlobals) {
+		delete mTerrainGlobals;
+		mTerrainGlobals = nullptr;
+	}
 }
 
 template<typename Parameters>
@@ -189,12 +196,16 @@ void BlendingVisualizer<Parameters>::addGroundPlane(void)
 	mPlaneEntity->setMaterialName("Ground");
 	Ogre::SceneNode* mPlaneNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	mPlaneNode->attachObject(mPlaneEntity);
-	mPlaneNode->setPosition(512, 1, 512);
+	mPlaneNode->setPosition(512, 0, 512);
 }
 
 template<typename Parameters>
 void BlendingVisualizer<Parameters>::refreshHeightMap(void)
 {
+	if (!mTerrainGroup) {
+		return;
+	}
+
 	Ogre::Terrain* terrain = mTerrainGroup->getTerrain(0, 0);
 	uint16_t size = terrain->getSize();
 	float* heightMap = terrain->getHeightData();
