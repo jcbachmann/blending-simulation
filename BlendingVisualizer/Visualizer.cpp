@@ -6,7 +6,7 @@
 #include <OgreTextureManager.h>
 #include <Bites/OgreBitesConfigDialog.h>
 
-Visualizer::Visualizer(void)
+Visualizer::Visualizer(bool verbose)
 	: mRoot(nullptr)
 	, mCamera(nullptr)
 	, mSceneMgr(nullptr)
@@ -20,7 +20,7 @@ Visualizer::Visualizer(void)
 	, grabbed(false)
 {
 	Ogre::LogManager* lm = new Ogre::LogManager();
-	lm->createLog("ogre.log", true, false, false);
+	lm->createLog("ogre.log", true, verbose, false);
 
 	mFSLayer = new Ogre::FileSystemLayer("Visualizer ... again");
 }

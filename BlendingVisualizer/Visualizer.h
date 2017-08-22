@@ -21,7 +21,7 @@ class Visualizer
 	  OgreBites::TrayListener
 {
 	public:
-		Visualizer();
+		Visualizer(bool verbose);
 		virtual ~Visualizer();
 
 		virtual void run(void);

@@ -30,8 +30,8 @@ void executeFastSimulationCounted(ExecutionParameters parameters)
 	std::atomic_bool cancel(false);
 
 	std::cout << "Starting visualization" << std::endl;
-	std::thread visualizationThread([&simulator, &cancel]() {
-		BlendingVisualizer<CountedParameters> visualizer(&simulator);
+	std::thread visualizationThread([&simulator, &cancel, parameters]() {
+		BlendingVisualizer<CountedParameters> visualizer(&simulator, parameters.verbose);
 		try {
 			visualizer.run();
 		} catch (std::exception& e) {
@@ -162,8 +162,8 @@ void executeDetailedSimulationCounted(ExecutionParameters parameters)
 	std::atomic_bool cancel(false);
 
 	std::cout << "Starting visualization" << std::endl;
-	std::thread visualizationThread([&simulator, &cancel]() {
-		BlendingVisualizer<CountedParameters> visualizer(&simulator);
+	std::thread visualizationThread([&simulator, &cancel, parameters]() {
+		BlendingVisualizer<CountedParameters> visualizer(&simulator, parameters.verbose);
 		try {
 			visualizer.run();
 		} catch (std::exception& e) {

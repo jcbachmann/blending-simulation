@@ -4,6 +4,7 @@
 class ExecutionParameters
 {
 	public:
+		bool verbose = false;
 		bool detailed = false;
 		bool printHeights = false;
 		bool skipReclaim = false;

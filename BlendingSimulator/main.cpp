@@ -21,7 +21,8 @@ int main(int argc, char** argv) try
 	po::options_description descGeneric("Generic Options");
 	descGeneric.add_options()
 		("help", "produce help message")
-		("config", po::value<std::string>(), "config file");
+		("config", po::value<std::string>(), "config file")
+		("verbose,v", po::bool_switch(&executionParameters.verbose), "verbose debug output");
 
 	po::options_description descSimulation("Simulation Options");
 	descSimulation.add_options()

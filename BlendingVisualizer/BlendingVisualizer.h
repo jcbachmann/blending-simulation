@@ -40,7 +40,7 @@ template<typename Parameters>
 class BlendingVisualizer : public Visualizer
 {
 	public:
-		BlendingVisualizer(BlendingSimulator<Parameters>* simulator);
+		BlendingVisualizer(BlendingSimulator<Parameters>* simulator, bool verbose);
 		virtual ~BlendingVisualizer(void);
 
 	protected:

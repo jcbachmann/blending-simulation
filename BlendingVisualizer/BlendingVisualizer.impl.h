@@ -13,8 +13,9 @@
 #include "QualityColor.h"
 
 template<typename Parameters>
-BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>* simulator)
-	: mSimulationDetailsPanel(nullptr)
+BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>* simulator, bool verbose)
+	: Visualizer(verbose)
+	, mSimulationDetailsPanel(nullptr)
 	, simulator(simulator)
 	, mTerrainGroup(nullptr)
 	, mTerrainGlobals(nullptr)
