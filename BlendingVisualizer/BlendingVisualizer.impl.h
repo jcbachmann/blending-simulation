@@ -64,7 +64,7 @@ void BlendingVisualizer<Parameters>::createScene(void)
 	mCameraNode->lookAt(Ogre::Vector3(100, 30, 50), Ogre::Node::TS_PARENT);
 
 	// Background color
-	mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.0, 0.0, 0.0));
+	mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.1, 0.1, 0.1));
 
 	// Lighting and shadows
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.7, 0.7, 0.7));
