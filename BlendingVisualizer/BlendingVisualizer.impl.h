@@ -355,6 +355,7 @@ void BlendingVisualizer<Parameters>::refreshParameterCubes(void)
 			);
 			visualizationCube->material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
 			cubeEnt->setMaterial(visualizationCube->material);
+			cubeEnt->setCastShadows(false);
 			visualizationCube->node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 			visualizationCube->attached = true;
 
@@ -374,7 +375,8 @@ void BlendingVisualizer<Parameters>::refreshParameterCubes(void)
 
 		const Parameters& pp = parameterCube->getParameters();
 		std::tuple<float, float, float> c = hsvToRgb(qualityHue(pp.get(0), pp.get(1), pp.get(2)), 1.0, 1.0);
-		visualizationCube->material->getTechnique(0)->getPass(0)->setAmbient(std::get<0>(c), std::get<1>(c), std::get<2>(c));
-		visualizationCube->material->getTechnique(0)->getPass(0)->setDiffuse(std::get<0>(c), std::get<1>(c), std::get<2>(c), 1.0f);
+		visualizationCube->material->getTechnique(0)->getPass(0)->setAmbient(0, 0, 0);
+		visualizationCube->material->getTechnique(0)->getPass(0)->setDiffuse(0, 0, 0, 0);
+		visualizationCube->material->getTechnique(0)->getPass(0)->setEmissive(std::get<0>(c), std::get<1>(c), std::get<2>(c));
 	}
 }
