@@ -233,8 +233,9 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 
 	mSimulationDetailsPanel->setParamValue(2, simulator->isPaused() ? "Paused" : "Active");
 
+	std::deque<VisualizationParticle*>::iterator cubePoolIterator = particlePool.begin();
+
 	{ // Render particles
-		std::deque<VisualizationParticle*>::iterator cubePoolIterator = particlePool.begin();
 		std::lock_guard<std::mutex> lock(simulator->outputParticlesMutex);
 		const std::deque<Particle<Parameters>*>& particles = simulator->outputParticles;
 		mSimulationDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(
@@ -310,13 +311,13 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 			cube->material->getTechnique(0)->getPass(0)->setDiffuse(d * std::get<0>(c), d * std::get<1>(c), d * std::get<2>(c), 1.0f);
 			cube->material->compile();
 		}
+	}
 
-		// Handle unused cubes in pool
-		while (cubePoolIterator != particlePool.end()) {
-			mSceneMgr->getRootSceneNode()->removeChild((*cubePoolIterator)->node);
-			(*cubePoolIterator)->attached = false;
-			cubePoolIterator++;
-		}
+	// Handle unused cubes in pool
+	while (cubePoolIterator != particlePool.end()) {
+		mSceneMgr->getRootSceneNode()->removeChild((*cubePoolIterator)->node);
+		(*cubePoolIterator)->attached = false;
+		cubePoolIterator++;
 	}
 
 	// Refresh heap map
