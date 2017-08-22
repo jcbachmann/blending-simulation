@@ -304,8 +304,10 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 				const Parameters& pp = particle->parameters;
 				c = hsvToRgb(qualityHue(pp.get(0), pp.get(1), pp.get(2)), 1.0, 1.0);
 			}
-			cube->material->getTechnique(0)->getPass(0)->setAmbient(std::get<0>(c), std::get<1>(c), std::get<2>(c));
-			cube->material->getTechnique(0)->getPass(0)->setDiffuse(std::get<0>(c), std::get<1>(c), std::get<2>(c), 1.0f);
+			const float a = 0.5f;
+			const float d = 0.5f;
+			cube->material->getTechnique(0)->getPass(0)->setAmbient(a * std::get<0>(c), a * std::get<1>(c), a * std::get<2>(c));
+			cube->material->getTechnique(0)->getPass(0)->setDiffuse(d * std::get<0>(c), d * std::get<1>(c), d * std::get<2>(c), 1.0f);
 			cube->material->compile();
 		}
 
