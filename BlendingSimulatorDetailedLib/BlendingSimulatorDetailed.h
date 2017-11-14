@@ -60,7 +60,7 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 {
 	public:
 		BlendingSimulatorDetailed(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float bulkDensityFactor, float particlesPerCubicMeter,
-			bool visualize);
+			float dropHeight, bool visualize);
 		~BlendingSimulatorDetailed();
 
 		virtual void clear() override;
@@ -77,7 +77,7 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		std::atomic_bool activeParticlesAvailable;
 		std::deque<ParticleDetailed<Parameters>*> allParticles;
 
-		const float stackerDropOffHeight; // In m above ground
+		const float dropHeight; // In m above ground
 		const float parameterCubeSize; // In m cube side length
 		const float bulkDensityFactor;
 		const float particleSize; // In m cube side length

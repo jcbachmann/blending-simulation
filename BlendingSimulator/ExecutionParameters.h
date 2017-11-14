@@ -17,6 +17,7 @@ class ExecutionParameters
 		float eightLikelihood = 0.0f;
 		float bulkDensity = 0.0f;
 		float particlesPerCubicMeter = 0.0f;
+		float dropHeight = 0.0f;
 		float reclaimIncrement = 0.0f;
 
 		// Visualization

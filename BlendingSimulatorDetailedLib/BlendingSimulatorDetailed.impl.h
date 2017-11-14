@@ -20,13 +20,13 @@ const float cubicMetersPerSecond = 1.0; // in m³/s
 
 template<typename Parameters>
 BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float bulkDensityFactor,
-	float particlesPerCubicMeter, bool visualize)
+	float particlesPerCubicMeter, float dropHeight, bool visualize)
 	: BlendingSimulator<Parameters>(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, particlesPerCubicMeter, visualize)
 	, bulkDensityFactor(bulkDensityFactor)
 	, particleSize(std::pow(bulkDensityFactor / particlesPerCubicMeter, 1.0 / 3.0))
 //	, resolutionPerWorldSize(1.0 / particleSize) // TODO is this the problem?
 	, resolutionPerWorldSize(1.0)
-	, stackerDropOffHeight(1.2 * heapWorldSizeZ / 2)
+	, dropHeight(dropHeight)
 	, parameterCubeSize(particleSize * 3)
 	, simulationTicksPerParticle((unsigned long long) double(1000.0 * std::pow(particleSize, 3.0) / cubicMetersPerSecond))
 	, simulationTickCount(0)
@@ -365,7 +365,7 @@ void BlendingSimulatorDetailed<Parameters>::stackSingle(float x, float z, const 
 	createParticle(
 		btVector3(
 			x + posDist(generator),
-			stackerDropOffHeight * minVarDist(generator),
+			dropHeight * minVarDist(generator),
 			z - 5.0f
 		), // Position
 		parameters, // Parameters
