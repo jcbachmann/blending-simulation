@@ -33,7 +33,7 @@ class ParameterCube
 
 		void add(const Parameters& particleParameters)
 		{
-			parameters.add(particleParameters);
+			parameters.push(particleParameters);
 		}
 
 	protected:
