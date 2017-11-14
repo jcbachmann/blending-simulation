@@ -239,8 +239,6 @@ void Visualizer::createCamera()
 void Visualizer::createFrameListener()
 {
 	windowResized(mWindow);
-	// Don't display OGRE cursor for the moment
-	mTrayMgr->hideCursor();
 
 	// create a params panel for displaying sample details
 	Ogre::StringVector items;
@@ -361,6 +359,7 @@ bool Visualizer::keyPressed(const OgreBites::KeyboardEvent& evt)
 	} else if (key == SDLK_ESCAPE) {
 		if (grabbed) {
 			ungrab();
+			mTrayMgr->showCursor();
 		} else {
 			mRoot->queueEndRendering();
 		}
@@ -393,6 +392,7 @@ bool Visualizer::mousePressed(const OgreBites::MouseButtonEvent& evt)
 
 	if (evt.button == OgreBites::BUTTON_LEFT && !grabbed) {
 		grab();
+		mTrayMgr->hideCursor();
 	}
 
 	mCameraMan->mousePressed(evt);
