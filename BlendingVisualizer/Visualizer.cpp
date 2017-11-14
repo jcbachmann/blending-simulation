@@ -247,16 +247,14 @@ void Visualizer::createFrameListener()
 	items.push_back("cam.pX");
 	items.push_back("cam.pY");
 	items.push_back("cam.pZ");
-	items.push_back("");
 	items.push_back("cam.oW");
 	items.push_back("cam.oX");
 	items.push_back("cam.oY");
 	items.push_back("cam.oZ");
-	items.push_back("");
 	items.push_back("Poly Mode");
 
-	mDetailsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_NONE, "DetailsPanel2", 200, items);
-	mDetailsPanel->setParamValue(9, "Solid");
+	mDetailsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_NONE, "CameraParams", 200, items);
+	mDetailsPanel->setParamValue(7, "Solid");
 	mDetailsPanel->hide();
 }
 
@@ -314,10 +312,10 @@ void Visualizer::frameRendered(const Ogre::FrameEvent& evt)
 			mDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(mCamera->getDerivedPosition().x));
 			mDetailsPanel->setParamValue(1, Ogre::StringConverter::toString(mCamera->getDerivedPosition().y));
 			mDetailsPanel->setParamValue(2, Ogre::StringConverter::toString(mCamera->getDerivedPosition().z));
-			mDetailsPanel->setParamValue(4, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().w));
-			mDetailsPanel->setParamValue(5, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().x));
-			mDetailsPanel->setParamValue(6, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().y));
-			mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
+			mDetailsPanel->setParamValue(3, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().w));
+			mDetailsPanel->setParamValue(4, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().x));
+			mDetailsPanel->setParamValue(5, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().y));
+			mDetailsPanel->setParamValue(6, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
 		}
 	}
 }
@@ -337,7 +335,7 @@ bool Visualizer::keyPressed(const OgreBites::KeyboardEvent& evt)
 		}
 	} else if (key == SDLK_g) {
 		if (mDetailsPanel->getTrayLocation() == OgreBites::TL_NONE) {
-			mTrayMgr->moveWidgetToTray(mDetailsPanel, OgreBites::TL_TOPRIGHT, 0);
+			mTrayMgr->moveWidgetToTray(mDetailsPanel, OgreBites::TL_BOTTOMRIGHT, 0);
 			mDetailsPanel->show();
 		} else {
 			mTrayMgr->removeWidgetFromTray(mDetailsPanel);
@@ -359,7 +357,7 @@ bool Visualizer::keyPressed(const OgreBites::KeyboardEvent& evt)
 		}
 
 		mCamera->setPolygonMode(pm);
-		mDetailsPanel->setParamValue(9, newVal);
+		mDetailsPanel->setParamValue(7, newVal);
 	} else if (key == SDLK_ESCAPE) {
 		if (grabbed) {
 			ungrab();
