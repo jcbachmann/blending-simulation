@@ -184,9 +184,9 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		}
 	} while (minHeightX >= 0);
 
-	stackedHeights[x][z] = minHeight + 1;
+	stackedHeights[xi][zi] = minHeight + 1;
 
-	int reclaimIndex = x - 1;
+	int reclaimIndex = xi - 1;
 
 	if (tanReclaimAngle > 1e10) {
 		// Vertical
