@@ -9,38 +9,36 @@ template<typename Parameters>
 class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 {
 	public:
-		BlendingSimulatorFast(unsigned int heapLength, unsigned int heapDepth, unsigned int reclaimSlope,
-							  bool fourDirectionsOnly = false);
-		virtual void clear(void);
-		virtual void stack(double position, const Parameters& parameters);
-		virtual void finish(void);
-		virtual float* getHeapMap(void);
-		bool reclaim(int& position, Parameters& parameters, std::vector<int>& heights);
-		void resetReclaimer(void);
+		BlendingSimulatorFast(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float eightLikelihood, float particlesPerCubicMeter,
+			bool visualize);
+
+		virtual void clear() override;
+		virtual void finishStacking() override;
+		virtual bool reclaimingFinished() override;
+		virtual Parameters reclaim(float position) override;
 
 	protected:
+		virtual void stackSingle(float position, const Parameters& parameters) override;
+		virtual void updateHeapMap() override;
 
 	private:
-		// Dimensions of the simulated stockpile
-		const unsigned int heapLength;
-		const unsigned int heapDepth;
+		// Size factor for calculating real world positions / sized from internal data
+		const float realWorldSizeFactor;
 
-		// Slope used when reclaiming the stockpile
-		const unsigned int reclaimSlope;
+		// Position up to which material has been reclaimed
+		float reclaimerPos;
 
-		// For every call of reclaim() the position is increased by one
-		unsigned int reclaimerPos;
+		// Tangent of reclaim angle
+		float tanReclaimAngle;
 
 		// Variable tracking the height at each position for falling simulation
 		std::vector<std::vector<int>> stackedHeights;
 
-		// Variables for counting the particles per cross section for each color
+		// Variables for grouping the particles per cross section
 		std::vector<Parameters> reclaimParameters;
 
-		// Only allow particles to fall to axis aligned directions
-		const bool fourDirectionsOnly;
-
-		void updateHeapMap(void);
+		// Likelihood of considering 8 instead of 4 fall directions (responsible for round piles)
+		const float eightLikelihood;
 };
 
 #include "BlendingSimulatorFast.impl.h"

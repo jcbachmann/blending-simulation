@@ -21,6 +21,7 @@ struct ParticleDetailed
 	btVector3 size;
 
 	bool frozen;
+	bool inSimulation;
 	unsigned long long creationTickCount;
 
 	Parameters parameters;

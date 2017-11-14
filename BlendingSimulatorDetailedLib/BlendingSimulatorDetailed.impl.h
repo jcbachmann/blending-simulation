@@ -1,5 +1,6 @@
 #include <random>
 #include <thread>
+#include <algorithm>
 
 // Bullet
 #include <bullet/btBulletDynamicsCommon.h>
@@ -9,28 +10,31 @@
 #include "ParticleDetailed.h"
 
 // Simulator constants
-const float stackerDropOffHeight = 28.0f; // In m above ground
 const float stackerDropOffAngle = btRadians(20); // Radians above horizon
 const float stackerBeltSpeed = 3.0f; // In m/s
 const float stackerBeltWidth = 1.5f; // In m
 const int minFreezeTimeout = 15000;
 const int maxFreezeTimeout = 25000;
-const float parameterCubeSize = 1.8f;
-const float heapMaxHeight = stackerDropOffHeight - 1.0f;
 const unsigned long long simulationInterval = 30;
-const double averageParticleSize = 0.5; // m
-const double cubicMetersPerSecond = 0.36; // m³/s
-const unsigned long long simulationTicksPerParticle = (unsigned long long) (1000.0 * pow(averageParticleSize, 3.0) /
-																			cubicMetersPerSecond);
+const float cubicMetersPerSecond = 1.0; // in m³/s
 
 template<typename Parameters>
-BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float length, float depth)
-	: BlendingSimulator<Parameters>()
-	, heapLength(length)
-	, heapDepth(depth)
+BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float bulkDensityFactor,
+	float particlesPerCubicMeter, bool visualize)
+	: BlendingSimulator<Parameters>(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, particlesPerCubicMeter, visualize)
+	, bulkDensityFactor(bulkDensityFactor)
+	, particleSize(std::pow(bulkDensityFactor / particlesPerCubicMeter, 1.0 / 3.0))
+//	, resolutionPerWorldSize(1.0 / particleSize) // TODO is this the problem?
+	, resolutionPerWorldSize(1.0)
+	, stackerDropOffHeight(1.2 * heapWorldSizeZ / 2)
+	, parameterCubeSize(particleSize * 3)
+	, simulationTicksPerParticle((unsigned long long) double(1000.0 * std::pow(particleSize, 3.0) / cubicMetersPerSecond))
 	, simulationTickCount(0)
 	, nextParticleTickCount(0)
+	, activeParticlesAvailable(false)
 {
+	this->initializeHeapMap(int(heapWorldSizeX / particleSize + 0.5) + 1, int(heapWorldSizeZ / particleSize + 0.5) + 1);
+
 	// Initialize physics
 	collisionConfiguration = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(collisionConfiguration);
@@ -46,35 +50,6 @@ BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float length, f
 	groundRigidBodyCI.m_friction = 10;
 	groundRigidBody = new btRigidBody(groundRigidBodyCI);
 	dynamicsWorld->addRigidBody(groundRigidBody);
-
-	// Dynamic heap shape
-	this->heapMapRes = int(std::pow(2, std::ceil(std::log(std::max(heapLength, heapDepth)) / std::log(2))) + 0.5) + 1;
-	this->heapMap = new float[this->heapMapRes * this->heapMapRes];
-	for (int i = 0; i < this->heapMapRes; i++) {
-		for (int j = 0; j < this->heapMapRes; j++) {
-			this->heapMap[i * this->heapMapRes + j] = 0.0f;
-		}
-	}
-
-	heapShape = new btHeightfieldTerrainShape(
-		this->heapMapRes, // int heightStickWidth
-		this->heapMapRes, // int heightStickLength
-		reinterpret_cast<void*>(this->heapMap), // const void* heightfieldData
-		1.0f, // btScalar heightScale
-		0.0, // btScalar minHeight
-		heapMaxHeight, // btScalar maxHeight
-		1, // int upAxis
-		PHY_FLOAT, // PHY_ScalarType heightDataType
-		false // bool flipQuadEdges
-	);
-	heapShape->setLocalScaling(btVector3(1.0, 1.0, 1.0));
-	btTransform tr;
-	tr.setIdentity();
-	tr.setOrigin(btVector3((this->heapMapRes - 1) / 2.0f, heapMaxHeight / 2.0f, (this->heapMapRes - 1) / 2.0f));
-	btRigidBody::btRigidBodyConstructionInfo heapRigidBodyCI(0, new btDefaultMotionState(tr), heapShape, btVector3(0, 0, 0));
-	heapRigidBodyCI.m_friction = 1;
-	heapRigidBody = new btRigidBody(heapRigidBodyCI);
-	dynamicsWorld->addRigidBody(heapRigidBody);
 }
 
 template<typename Parameters>
@@ -90,13 +65,6 @@ BlendingSimulatorDetailed<Parameters>::~BlendingSimulatorDetailed()
 	delete groundRigidBody;
 	delete groundShape;
 
-	// Heap
-	delete[] this->heapMap;
-	dynamicsWorld->removeRigidBody(heapRigidBody);
-	delete heapRigidBody->getMotionState();
-	delete heapRigidBody;
-	delete heapShape;
-
 	// Physics
 	delete dynamicsWorld;
 	delete solver;
@@ -108,16 +76,16 @@ void BlendingSimulatorDetailed<Parameters>::clear()
 	std::lock_guard<std::mutex> lock(simulationMutex);
 	simulationTickCount = 0;
 
-	for (int i = 0; i < this->heapMapRes; i++) {
-		for (int j = 0; j < this->heapMapRes; j++) {
-			this->heapMap[i * this->heapMapRes + j] = 0;
+	for (int z = 0; z < this->heapSizeZ; z++) {
+		for (int x = 0; x < this->heapSizeX; x++) {
+			this->heapMap[z * this->heapSizeX + x] = 0;
 		}
 	}
 
 	{
 		std::lock_guard<std::mutex> innerLock(this->outputParticlesMutex);
-		this->outputParticles.clear();
 		this->activeOutputParticles.clear();
+		this->inactiveOutputParticles.clear();
 	}
 
 	{
@@ -127,6 +95,7 @@ void BlendingSimulatorDetailed<Parameters>::clear()
 
 	activeParticles.clear();
 
+	// TODO: This takes forever!
 	while (!allParticles.empty()) {
 		dynamicsWorld->removeRigidBody(allParticles.back()->rigidBody);
 
@@ -149,7 +118,7 @@ ParticleDetailed<Parameters>* BlendingSimulatorDetailed<Parameters>::createParti
 	particle->collisionShape = new btBoxShape(0.5 * particle->size);
 	particle->defaultMotionState = new btDefaultMotionState(btTransform(rotation, position));
 
-	btScalar mass = 1;
+	btScalar mass = size.x() * size.y() * size.z() / bulkDensityFactor;
 
 	btVector3 fallInertia;
 
@@ -196,12 +165,8 @@ void BlendingSimulatorDetailed<Parameters>::freezeParticles()
 			continue;
 		}
 
-		if (simulationTickCount >= particle->creationTickCount && simulationTickCount - particle->creationTickCount >= maxFreezeTimeout) {
-			freezeParticle(particle);
-			continue;
-		}
-
-		if (particle->rigidBody->getActivationState() == WANTS_DEACTIVATION && simulationTickCount - particle->creationTickCount >= minFreezeTimeout) {
+		if (simulationTickCount >= particle->creationTickCount && simulationTickCount - particle->creationTickCount >= maxFreezeTimeout ||
+			particle->rigidBody->getActivationState() == WANTS_DEACTIVATION && simulationTickCount - particle->creationTickCount >= minFreezeTimeout) {
 			freezeParticle(particle);
 		}
 	}
@@ -210,76 +175,117 @@ void BlendingSimulatorDetailed<Parameters>::freezeParticles()
 template<typename Parameters>
 void BlendingSimulatorDetailed<Parameters>::freezeParticle(ParticleDetailed<Parameters>* particle)
 {
-	dynamicsWorld->removeRigidBody(particle->rigidBody);
+	// Freeze position
+	particle->rigidBody->setMassProps(btScalar(0), btVector3(0, 0, 0));
 	particle->frozen = true;
 
-	// Update heap
+	// Acquire position
 	btTransform trans;
 	particle->defaultMotionState->getWorldTransform(trans);
-	btVector3& origin = trans.getOrigin();
-	int x = int(origin.getX() + 0.5);
-	int z = int(origin.getZ() + 0.5);
+	const btVector3& origin = trans.getOrigin();
 
-	if (x > 0 & x < this->heapMapRes && z > 0 && z < this->heapMapRes) {
-		this->heapMap[z * this->heapMapRes + x] = std::max(this->heapMap[z * this->heapMapRes + x], origin.getY() - float(averageParticleSize) * 0.1f);
-	}
+	// Update heap map
+	addParticleToHeapMap(origin.x(), origin.y(), origin.z());
 
-	{
-		std::tuple<int, int, int> id = std::make_tuple(
-			int(origin.getX() / parameterCubeSize),
-			int(origin.getY() / parameterCubeSize),
-			int(origin.getZ() / parameterCubeSize)
-		);
+	// Looks nicer but totally ruins bulk density
+//	addParticleToHeapMapBilinear(origin.x(), origin.y(), origin.z());
 
-		ParameterCube<Parameters>* parameterCube = nullptr;
-		std::lock_guard<std::mutex> lock(this->parameterCubesMutex);
-		auto it = this->parameterCubes.find(id);
-		if (it != this->parameterCubes.end()) {
-			parameterCube = it->second;
-		} else {
-			parameterCube = new ParameterCube<Parameters>(
-				bs::Vector3((float(std::get<0>(id)) + 0.5f) * parameterCubeSize,
-							(float(std::get<1>(id)) + 0.5f) * parameterCubeSize,
-							(float(std::get<2>(id)) + 0.5f) * parameterCubeSize),
-				parameterCubeSize
-			);
-			this->parameterCubes[id] = parameterCube;
-		}
-
-		parameterCube->add(particle->parameters);
-	}
+	// Add particle to parameter cube
+	getParameterCube(origin.x(), origin.y(), origin.z())->add(particle->parameters);
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::stack(double position, const Parameters& parameters)
+void BlendingSimulatorDetailed<Parameters>::addParticleToHeapMap(float x, float y, float z)
 {
-	while (simulationTickCount < nextParticleTickCount) {
-		step();
+	// Scale position to heap map resolution
+	x *= resolutionPerWorldSize;
+	z *= resolutionPerWorldSize;
+
+	// Calculate valid position indices
+	int xi = std::max(0, std::min(int(x + 0.5f), int(this->heapSizeX) - 1));
+	int zi = std::max(0, std::min(int(z + 0.5f), int(this->heapSizeZ) - 1));
+
+	// Set heap map height to maximum of current value and y
+	float& h = this->heapMap[zi * this->heapSizeX + xi];
+	if (y > h) {
+		h = y;
 	}
+}
 
-	static const float sizeVariation = float(averageParticleSize) * 0.05f;
-	static const float positionVariation = 0.5f * stackerBeltWidth;
-	static const float miscVariation = 0.005f; // 1 +/- variation for speed, height, and angle
-
-	static std::default_random_engine generator;
-	static std::uniform_real_distribution<float> sizeDist(-sizeVariation, sizeVariation);
-	static std::uniform_real_distribution<float> posDist(-positionVariation, positionVariation);
-	static std::uniform_real_distribution<float> minVarDist(1 - miscVariation, 1 + miscVariation);
-
-	createParticle(
-		btVector3(float(position) + posDist(generator), stackerDropOffHeight * minVarDist(generator), heapDepth / 2.0f - 5.0f), // Position
-		parameters, // Parameters
-		false, // Frozen
-		btQuaternion(btVector3(1, 0, 0), 0), // Orientation
-		btVector3(0, 0, 1).rotate(btVector3(-1, 0, 0), stackerDropOffAngle * minVarDist(generator)) * stackerBeltSpeed * minVarDist(generator), // Angle and speed
-		btVector3(float(averageParticleSize) + sizeDist(generator), float(averageParticleSize) + sizeDist(generator), float(averageParticleSize) + sizeDist(generator)) // Size
-	);
-
-	nextParticleTickCount = simulationTickCount + simulationTicksPerParticle;
+void setBilinear(float* heapMap, int sizeX, int sizeZ, float x, float z, int xi, int zi, float vMin, float vMax)
+{
+	if (xi >= 0 & xi < sizeX && zi >= 0 && zi < sizeZ) {
+		float dx = std::abs(float(xi) - x);
+		float dz = std::abs(float(zi) - z);
+		float v = vMin + (1.0f - dx) * (1.0f - dz) * (vMax - vMin);
+		float& h = heapMap[zi * sizeX + xi];
+		if (v > h) {
+			h = v;
+		}
+	}
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::finish(void)
+void BlendingSimulatorDetailed<Parameters>::addParticleToHeapMapBilinear(float x, float y, float z)
+{
+	// Scale position to heap map resolution
+	x *= resolutionPerWorldSize;
+	z *= resolutionPerWorldSize;
+
+	float vMin = y - float(particleSize) * 0.5f;
+	float vMax = y - float(particleSize) * 0.1f;
+	setBilinear(this->heapMap, this->heapSizeX, this->heapSizeZ, x, z, int(x), int(z), vMin, vMax);
+	setBilinear(this->heapMap, this->heapSizeX, this->heapSizeZ, x, z, int(x) + 1, int(z), vMin, vMax);
+	setBilinear(this->heapMap, this->heapSizeX, this->heapSizeZ, x, z, int(x), int(z) + 1, vMin, vMax);
+	setBilinear(this->heapMap, this->heapSizeX, this->heapSizeZ, x, z, int(x) + 1, int(z) + 1, vMin, vMax);
+}
+
+template<typename Parameters>
+ParameterCube<Parameters>* BlendingSimulatorDetailed<Parameters>::getParameterCube(float x, float y, float z)
+{
+	std::tuple<int, int, int> id = std::make_tuple(int(x / parameterCubeSize), int(y / parameterCubeSize), int(z / parameterCubeSize));
+
+	std::lock_guard<std::mutex> lock(this->parameterCubesMutex);
+	auto it = this->parameterCubes.find(id);
+	if (it != this->parameterCubes.end()) {
+		return it->second;
+	}
+
+	// Create new parameter cube
+	auto parameterCube = new ParameterCube<Parameters>(
+		bs::Vector3((float(std::get<0>(id)) + 0.5f) * parameterCubeSize, (float(std::get<1>(id)) + 0.5f) * parameterCubeSize,
+			(float(std::get<2>(id)) + 0.5f) * parameterCubeSize), parameterCubeSize);
+	this->parameterCubes[id] = parameterCube;
+
+	return parameterCube;
+}
+
+template<typename Parameters>
+void BlendingSimulatorDetailed<Parameters>::optimizeFrozenParticles()
+{
+	for (auto it = allParticles.begin(); it != allParticles.end(); it++) {
+		ParticleDetailed<Parameters>* particle = *it;
+
+		if (particle->frozen && particle->inSimulation) {
+			// Check if particle can be removed (below top layer)
+			btTransform trans;
+			particle->defaultMotionState->getWorldTransform(trans);
+			btVector3& origin = trans.getOrigin();
+			int x = int(origin.getX() + 0.5);
+			int z = int(origin.getZ() + 0.5);
+
+			if (x >= 0 & x < this->heapSizeX && z > 0 && z < this->heapSizeZ) {
+				if (origin.getY() < this->heapMap[z * this->heapSizeX + x] - 4.0 * particleSize) {
+					dynamicsWorld->removeRigidBody(particle->rigidBody);
+					particle->inSimulation = false;
+				}
+			}
+		}
+	}
+}
+
+template<typename Parameters>
+void BlendingSimulatorDetailed<Parameters>::finishStacking()
 {
 	while (activeParticlesAvailable.load()) {
 		step();
@@ -287,9 +293,86 @@ void BlendingSimulatorDetailed<Parameters>::finish(void)
 }
 
 template<typename Parameters>
-float* BlendingSimulatorDetailed<Parameters>::getHeapMap(void)
+bool BlendingSimulatorDetailed<Parameters>::reclaimingFinished()
 {
-	return this->heapMap;
+	return allParticles.empty();
+}
+
+template<typename Parameters>
+Parameters BlendingSimulatorDetailed<Parameters>::reclaim(float position)
+{
+	float tanReclaimAngle;
+	if (std::abs(90.0f - this->reclaimAngle) < 0.01) {
+		tanReclaimAngle = 1e100;
+	} else {
+		tanReclaimAngle = std::tan(this->reclaimAngle * std::atan(1.0) * 4.0 / 180.0);
+	}
+
+	Parameters p;
+	for (auto it = allParticles.begin(); it != allParticles.end();) {
+		ParticleDetailed<Parameters>* particle = *it;
+
+		btTransform trans;
+		particle->defaultMotionState->getWorldTransform(trans);
+		btVector3& origin = trans.getOrigin();
+
+		float comparePosition = origin.x();
+		if (tanReclaimAngle > 1e10) {
+			// Vertical
+		} else if (tanReclaimAngle < 1e-10) {
+			// Horizontal
+			if (this->reclaimAngle < 90.0f) {
+				comparePosition = 0;
+			} else {
+				comparePosition = this->heapWorldSizeX;
+			}
+		} else {
+			comparePosition -= origin.y() / tanReclaimAngle;
+		}
+
+		if (comparePosition < position) {
+			p.push(particle->parameters);
+			dynamicsWorld->removeRigidBody(particle->rigidBody);
+			delete particle;
+			it = allParticles.erase(it);
+		} else {
+			it++;
+		}
+	}
+
+	return p;
+}
+
+template<typename Parameters>
+void BlendingSimulatorDetailed<Parameters>::stackSingle(float position, const Parameters& parameters)
+{
+	while (simulationTickCount < nextParticleTickCount) {
+		// TODO wait for particle parameter time
+		step();
+	}
+
+	static const float sizeVariation = float(particleSize) * 0.05f;
+	static const float positionVariation = 0.5f * stackerBeltWidth;
+	static const float miscVariation = 0.005f; // 1 +/- variation for speed, height, and angle
+
+	static std::random_device rd;
+	static std::default_random_engine generator(rd());
+	static std::uniform_real_distribution<float> sizeDist(-sizeVariation, sizeVariation);
+	static std::uniform_real_distribution<float> posDist(-positionVariation, positionVariation);
+	static std::uniform_real_distribution<float> minVarDist(1 - miscVariation, 1 + miscVariation);
+	static std::uniform_real_distribution<float> angle(0.0f, 2.0f * 3.141592653589793238463f);
+
+	createParticle(
+		btVector3(float(position) + posDist(generator), stackerDropOffHeight * minVarDist(generator), this->heapWorldSizeZ / 2.0f - 5.0f), // Position
+		parameters, // Parameters
+		false, // Frozen
+		btQuaternion(btVector3(0, 0, 1), angle(generator)), // Orientation
+		btVector3(0, 0, 1).rotate(btVector3(-1, 0, 0), stackerDropOffAngle * minVarDist(generator)) * stackerBeltSpeed *
+			minVarDist(generator), // Angle and speed
+		btVector3(float(particleSize) + sizeDist(generator), float(particleSize) + sizeDist(generator), float(particleSize) + sizeDist(generator)) // Size
+	);
+
+	nextParticleTickCount = simulationTickCount + simulationTicksPerParticle;
 }
 
 template<typename Parameters>
@@ -307,6 +390,11 @@ void BlendingSimulatorDetailed<Parameters>::step()
 	dynamicsWorld->stepSimulation(timeStep, subSteps, timeStep / float(subSteps));
 	doOutputParticles();
 	freezeParticles();
+	static int optimizeFrozenParticlesCounter = 0;
+	optimizeFrozenParticlesCounter = (optimizeFrozenParticlesCounter + 1) % 100;
+	if (optimizeFrozenParticlesCounter == 0) {
+		optimizeFrozenParticles();
+	}
 	simulationTickCount += simulationInterval;
 }
 
@@ -332,7 +420,6 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles()
 		if (!particle->outputParticle) {
 			particle->outputParticle = new Particle<Parameters>();
 
-			this->outputParticles.push_back(particle->outputParticle);
 			this->activeOutputParticles.push_back(particle->outputParticle);
 		}
 
@@ -341,7 +428,8 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles()
 
 		particle->outputParticle->parameters = particle->parameters;
 		particle->outputParticle->frozen = particle->frozen;
-		particle->outputParticle->temperature = std::max(0.0f, std::min(1.0f - float(simulationTickCount - particle->creationTickCount) / float(minFreezeTimeout), 1.0f));
+		particle->outputParticle->temperature =
+			std::max(0.0f, std::min(1.0f - float(simulationTickCount - particle->creationTickCount) / float(minFreezeTimeout), 1.0f));
 		particle->outputParticle->position = bs::Vector3(toTuple(trans.getOrigin()));
 		particle->outputParticle->size = bs::Vector3(toTuple(particle->size));
 		particle->outputParticle->orientation = bs::Quaternion(toTuple(trans.getRotation()));
@@ -349,6 +437,7 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles()
 		if (particle->frozen) {
 			it = activeParticles.erase(it);
 			this->activeOutputParticles.erase(std::find(this->activeOutputParticles.begin(), this->activeOutputParticles.end(), particle->outputParticle));
+			this->inactiveOutputParticles.push_back(particle->outputParticle);
 		} else {
 			it++;
 		}
@@ -356,57 +445,3 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles()
 
 	activeParticlesAvailable = !activeParticles.empty();
 }
-
-
-// TODO implement reclaiming for detailed simulation
-// Old code for reclaiming
-/*
-	const int lines = HEAP_LENGTH;
-
-	std::array<int, lines> amounts;
-	std::array<float, lines> heights;
-	std::array<float, lines> qualities;
-
-	for (int i = 0; i < lines; i++) {
-		amounts[i] = 0;
-		heights[i] = 0;
-		qualities[i] = 0;
-	}
-
-	{
-		std::lock_guard <std::mutex> lock(simulator->outputParticlesMutex);
-
-		for (std::deque<Particle*>::iterator it = simulator->outputParticles.begin();
-			 it != simulator->outputParticles.end(); it++) {
-			Particle* p = *it;
-
-			int line = std::min(
-				std::max(int(float(lines) * (p->position.x() - p->position.z()) / float(HEAP_LENGTH) + 0.5), 0),
-				lines - 1);
-
-			if (p->position.z() > heights[line]) {
-				heights[line] = p->position.z();
-			}
-
-			amounts[line] = amounts[line] + 1;
-			qualities[line] = qualities[line] + p->quality;
-		}
-	}
-
-	FILE* outputFile = fopen(".\\Output.txt", "w");
-
-	if (outputFile) {
-		for (int i = 0; i < lines; i++) {
-			std::string output = "Amount:\t" + std::to_string(amounts[i]);
-			output += "\tHeight:\t" + std::to_string(heights[i]);
-			output += "\tQuality:\t" + std::to_string(amounts[i] > 0 ? qualities[i] / float(amounts[i]) : 0);
-			output += "\n";
-
-			fwrite(output.c_str(), 1, output.size(), outputFile);
-		}
-
-		fclose(outputFile);
-	} else {
-		Log::e("Ouput file could not be opened.");
-	}
- */

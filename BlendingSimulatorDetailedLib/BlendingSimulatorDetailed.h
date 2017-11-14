@@ -59,24 +59,31 @@ template<typename Parameters>
 class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 {
 	public:
-		BlendingSimulatorDetailed(float length, float depth);
+		BlendingSimulatorDetailed(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float bulkDensityFactor, float particlesPerCubicMeter,
+			bool visualize);
 		~BlendingSimulatorDetailed();
 
-		virtual void stack(double position, const Parameters& parameters) override;
-		virtual void finish(void) override;
-		virtual float* getHeapMap(void) override;
 		virtual void clear() override;
+		virtual void finishStacking() override;
+		virtual bool reclaimingFinished() override;
+		virtual Parameters reclaim(float position) override;
 
 	protected:
+		void stackSingle(float position, const Parameters& parameters) override;
 
 	private:
-		float heapLength;
-		float heapDepth;
 		std::mutex simulationMutex;
 		std::deque<ParticleDetailed<Parameters>*> activeParticles;
 		std::atomic_bool activeParticlesAvailable;
 		std::deque<ParticleDetailed<Parameters>*> allParticles;
 
+		const float stackerDropOffHeight; // In m above ground
+		const float parameterCubeSize; // In m cube side length
+		const float bulkDensityFactor;
+		const float particleSize; // In m cube side length
+		const float resolutionPerWorldSize; // Cells per meter
+
+		const unsigned long long simulationTicksPerParticle;
 		unsigned long long simulationTickCount;
 		unsigned long long nextParticleTickCount;
 
@@ -87,14 +94,16 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		btCollisionShape* groundShape;
 		btDefaultMotionState* groundMotionState;
 		btRigidBody* groundRigidBody;
-		btHeightfieldTerrainShape* heapShape;
-		btRigidBody* heapRigidBody;
 		btDiscreteDynamicsWorld* dynamicsWorld;
 
 		void step();
 		void doOutputParticles();
 		void freezeParticles();
 		void freezeParticle(ParticleDetailed<Parameters>* particle);
+		void addParticleToHeapMap(float x, float y, float z);
+		void addParticleToHeapMapBilinear(float x, float y, float z);
+		ParameterCube<Parameters>* getParameterCube(float x, float y, float z);
+		void optimizeFrozenParticles();
 		ParticleDetailed<Parameters>* createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation, btVector3 velocity,
 			btVector3 size);
 };

@@ -1,77 +1,136 @@
 #include <limits>
+#include <random>
+#include <thread>
 
 template<typename Parameters>
-BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(unsigned int heapLength, unsigned int heapDepth,
-														 unsigned int reclaimSlope, bool fourDirectionsOnly)
-	: BlendingSimulator<Parameters>()
-	, heapLength(heapLength)
-	, heapDepth(heapDepth)
-	, reclaimSlope(reclaimSlope)
-	, reclaimerPos(0)
-	, fourDirectionsOnly(fourDirectionsOnly)
+BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float eightLikelihood,
+	float particlesPerCubicMeter, bool visualize)
+	: BlendingSimulator<Parameters>(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, particlesPerCubicMeter, visualize)
+	, reclaimerPos(0.0f)
+	, eightLikelihood(eightLikelihood)
+	, realWorldSizeFactor(1.0 / std::pow(particlesPerCubicMeter, 1.0 / 3.0))
 {
-	stackedHeights.resize(heapLength + 2);
-	for (unsigned int i = 0; i < heapLength + 2; i++) {
-		stackedHeights[i].resize(heapDepth + 2);
+	if (std::abs(90.0f - reclaimAngle) < 0.01) {
+		tanReclaimAngle = 1e100;
+	} else {
+		tanReclaimAngle = std::tan(reclaimAngle * std::atan(1.0) * 4.0 / 180.0);
 	}
 
-	reclaimParameters.resize(heapLength);
+	this->initializeHeapMap(int(heapWorldSizeX / realWorldSizeFactor + 0.5), int(heapWorldSizeZ / realWorldSizeFactor + 0.5));
+
+	// Warning: stackedHeights organized first x than z while heap map is first z than x!
+	stackedHeights.resize(this->heapSizeX + 2);
+	for (unsigned int x = 0; x < this->heapSizeX + 2; x++) {
+		stackedHeights[x].resize(this->heapSizeZ + 2);
+	}
+
+	reclaimParameters.resize(this->heapSizeX);
 
 	clear();
-
-	this->heapMapRes = int(std::pow(2, std::ceil(std::log(std::max(heapLength, heapDepth)) / std::log(2))) + 0.5) + 1;
-	this->heapMap = new float[this->heapMapRes * this->heapMapRes];
-	for (int i = 0; i < this->heapMapRes; i++) {
-		for (int j = 0; j < this->heapMapRes; j++) {
-			this->heapMap[i * this->heapMapRes + j] = 0.0f;
-		}
-	}
 }
 
 template<typename Parameters>
 void BlendingSimulatorFast<Parameters>::clear()
 {
 	std::fill(stackedHeights[0].begin(), stackedHeights[0].end(), std::numeric_limits<int>::max());
-	for (unsigned int i = 1; i < heapLength + 1; i++) {
-		for (unsigned int j = 1; j < heapDepth + 1; j++) {
-			stackedHeights[i][j] = 0;
+	for (unsigned int x = 1; x < this->heapSizeX + 1; x++) {
+		for (unsigned int z = 1; z < this->heapSizeZ + 1; z++) {
+			stackedHeights[x][z] = 0;
 		}
-		stackedHeights[i][0] = std::numeric_limits<int>::max();
-		stackedHeights[i][heapDepth + 1] = std::numeric_limits<int>::max();
+		stackedHeights[x][0] = std::numeric_limits<int>::max();
+		stackedHeights[x][this->heapSizeZ + 1] = std::numeric_limits<int>::max();
 	}
-	std::fill(stackedHeights[heapLength + 1].begin(), stackedHeights[heapLength + 1].end(),
-			  std::numeric_limits<int>::max());
+	std::fill(stackedHeights[this->heapSizeX + 1].begin(), stackedHeights[this->heapSizeX + 1].end(), std::numeric_limits<int>::max());
 
-	for (unsigned int i = 0; i < heapLength; i++) {
-		reclaimParameters[i].clear();
+	for (unsigned int x = 0; x < this->heapSizeX; x++) {
+		reclaimParameters[x].clear();
+	}
+
+	{
+		std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
+
+		for (auto particle : this->activeOutputParticles) {
+			delete particle;
+		}
+		this->activeOutputParticles.clear();
+
+		for (auto particle : this->inactiveOutputParticles) {
+			delete particle;
+		}
+		this->inactiveOutputParticles.clear();
 	}
 }
 
 template<typename Parameters>
-void BlendingSimulatorFast<Parameters>::updateHeapMap(void)
+void BlendingSimulatorFast<Parameters>::finishStacking()
 {
-	for (int i = 0; i < heapLength; i++) {
-		for (int j = 0; j < heapDepth; j++) {
-			this->heapMap[j * this->heapMapRes + i] = stackedHeights[i + 1][j + 1];
-		}
-	}
+	// Nothing to do
 }
 
 template<typename Parameters>
-void BlendingSimulatorFast<Parameters>::stack(double position, const Parameters& parameters)
+bool BlendingSimulatorFast<Parameters>::reclaimingFinished()
 {
-	const int depthCenter = heapDepth / 2;
+	return int(reclaimerPos / realWorldSizeFactor + 0.5) >= this->heapSizeX;
+}
 
-	int i1 = int(position + 0.5) + 1;
-	int j1 = depthCenter + 1;
+template<typename Parameters>
+Parameters BlendingSimulatorFast<Parameters>::reclaim(float position)
+{
+	int startPos = int(reclaimerPos / realWorldSizeFactor + 0.5);
+	int endPos = int(position / realWorldSizeFactor + 0.5);
+	reclaimerPos = position;
 
-	int minHeightI;
-	int minHeightJ;
-	int minHeight = stackedHeights[i1][j1];
+	if (endPos > this->heapSizeX) {
+		endPos = this->heapSizeX;
+	}
+
+	Parameters p;
+	for (int i = startPos; i < endPos; i++) {
+		p.push(reclaimParameters[i]);
+	}
+	return p;
+}
+
+template<typename Parameters>
+void BlendingSimulatorFast<Parameters>::stackSingle(float position, const Parameters& parameters)
+{
+	const int depthCenter = this->heapSizeZ / 2;
+
+	int x = std::max(0, std::min(int(position / realWorldSizeFactor + 0.5), int(this->heapSizeX - 1))) + 1;
+	int z = depthCenter + 1;
+
+	int minHeightX;
+	int minHeightZ;
+	int minHeight = stackedHeights[x][z];
+
+	static const std::chrono::milliseconds simulationSleep(1);
+	static unsigned int particlesStacked = 0;
+	bool sleepThisTime = ++particlesStacked % std::max(int(this->particlesPerCubicMeter), 1) == 0;
+
+	Particle<Parameters>* particle = nullptr;
+
+	if (this->visualize) {
+		particle = new Particle<Parameters>();
+		particle->parameters = parameters;
+		particle->frozen = false;
+		particle->temperature = 1.0;
+		particle->position = bs::Vector3((float(x) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(z) - 0.5) * realWorldSizeFactor);
+		particle->size = bs::Vector3(0.95 * realWorldSizeFactor, 0.95 * realWorldSizeFactor, 0.95 * realWorldSizeFactor);
+		particle->orientation = bs::Quaternion(0, 0, 1, 0);
+
+		if (sleepThisTime) {
+			std::this_thread::sleep_for(simulationSleep);
+		}
+
+		{
+			std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
+			this->activeOutputParticles.push_back(particle);
+		}
+	}
 
 	do {
-		minHeightI = -1;
-		minHeightJ = -1;
+		minHeightX = -1;
+		minHeightZ = -1;
 
 		struct Offset
 		{
@@ -88,75 +147,88 @@ void BlendingSimulatorFast<Parameters>::stack(double position, const Parameters&
 			{+1, -1},
 			{+1, +1}
 		};
-		const int offsetsCount = fourDirectionsOnly ? 4 : 8;
+
+		static std::random_device rd;
+		static std::default_random_engine generator(rd());
+		static std::uniform_real_distribution<> coneDistribution(0.0, 1.0);
+		const int offsetsCount = coneDistribution(generator) > eightLikelihood ? 4 : 8; // This results in cones instead of pyramids
+
+		static std::uniform_int_distribution<int> randomnessDistribution(0, 8);
+		const int r = randomnessDistribution(generator);
 
 		for (int o = 0; o < offsetsCount; o++) {
-			const int ti = i1 + offsets[o].i;
-			const int tj = j1 + offsets[o].j;
-			const int lh = stackedHeights[ti][tj];
+			const Offset& offset = offsets[(o + r) % offsetsCount];
+			const int tx = x + offset.i;
+			const int tz = z + offset.j;
+			const int lh = stackedHeights[tx][tz];
 
 			if (lh < minHeight) {
-				minHeightI = ti;
-				minHeightJ = tj;
+				minHeightX = tx;
+				minHeightZ = tz;
 				minHeight = lh;
 			}
 		}
 
-		if (minHeightI >= 0) {
-			i1 = minHeightI;
-			j1 = minHeightJ;
+		if (minHeightX >= 0) {
+			x = minHeightX;
+			z = minHeightZ;
+
+			if (this->visualize) {
+				std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
+				particle->position =
+					bs::Vector3((float(x) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(z) - 0.5) * realWorldSizeFactor);
+			}
 		}
-	} while (minHeightI >= 0);
 
-	stackedHeights[i1][j1] = minHeight + 1;
+		if (this->visualize && sleepThisTime) {
+			std::this_thread::sleep_for(simulationSleep);
+		}
+	} while (minHeightX >= 0);
 
-	int reclaimIndex = i1 - (reclaimSlope > 0 ? minHeight / reclaimSlope : 0) - 1;
+	stackedHeights[x][z] = minHeight + 1;
+
+	int reclaimIndex = x - 1;
+
+	if (tanReclaimAngle > 1e10) {
+		// Vertical
+	} else if (tanReclaimAngle < 1e-10) {
+		// Horizontal
+		if (this->reclaimAngle < 90.0f) {
+			reclaimIndex = 0;
+		} else {
+			reclaimIndex = this->heapSizeX - 1;
+		}
+	} else {
+		reclaimIndex -= minHeight / tanReclaimAngle;
+	}
 
 	if (reclaimIndex < 0) {
 		reclaimIndex = 0;
 	}
 
-	if (reclaimIndex >= (int) heapLength) {
-		reclaimIndex = heapLength - 1;
+	if (reclaimIndex >= (int) this->heapSizeX) {
+		reclaimIndex = this->heapSizeX - 1;
 	}
 
-	reclaimParameters[reclaimIndex].add(parameters);
-}
-
-template<typename Parameters>
-void BlendingSimulatorFast<Parameters>::finish(void)
-{
-	// Nothing to do
-}
-
-template<typename Parameters>
-float* BlendingSimulatorFast<Parameters>::getHeapMap(void)
-{
-	updateHeapMap();
-	return this->heapMap;
-}
-
-template<typename Parameters>
-bool BlendingSimulatorFast<Parameters>::reclaim(int& position, Parameters& parameters, std::vector<int>& heights)
-{
-	if (reclaimerPos >= heapLength) {
-		return false;
+	if (this->visualize) {
+		std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
+		this->activeOutputParticles.pop_back();
+		particle->position = bs::Vector3((float(x) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(z) - 0.5) * realWorldSizeFactor);
+		particle->frozen = true;
+		particle->temperature = 0.0;
+		this->inactiveOutputParticles.push_back(particle);
 	}
 
-	position = reclaimerPos;
-	if (heights.size() != heapDepth) {
-		heights.resize(heapDepth);
-	}
-	std::copy(stackedHeights[reclaimerPos + 1].begin() + 1, stackedHeights[reclaimerPos + 1].end() - 1,
-			  heights.begin());
-	parameters = reclaimParameters[reclaimerPos];
-
-	reclaimerPos++;
-	return true;
+	reclaimParameters[reclaimIndex].push(parameters);
 }
 
 template<typename Parameters>
-void BlendingSimulatorFast<Parameters>::resetReclaimer(void)
+void BlendingSimulatorFast<Parameters>::updateHeapMap()
 {
-	reclaimerPos = 0;
+	// Either way this is cache inefficient
+	for (int z = 0; z < this->heapSizeZ; z++) {
+		for (int x = 0; x < this->heapSizeX; x++) {
+			this->heapMap[z * this->heapSizeX + x] = stackedHeights[x + 1][z + 1] > 0 ? float(stackedHeights[x + 1][z + 1]) * realWorldSizeFactor : 0.0f;
+		}
+	}
 }

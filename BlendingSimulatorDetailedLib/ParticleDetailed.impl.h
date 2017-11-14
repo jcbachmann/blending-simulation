@@ -9,6 +9,7 @@
 template<typename Parameters>
 ParticleDetailed<Parameters>::ParticleDetailed()
 	: frozen(false)
+	, inSimulation(true)
 	, creationTickCount(0)
 	, collisionShape(nullptr)
 	, rigidBody(nullptr)

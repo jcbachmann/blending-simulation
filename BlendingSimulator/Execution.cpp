@@ -3,284 +3,143 @@
 #include <iostream>
 #include <sstream>
 
-#include <boost/spirit/include/qi.hpp>
-#include <boost/fusion/include/define_struct.hpp>
-
-namespace qi = boost::spirit::qi;
-namespace phx = boost::phoenix;
-
 #include "BlendingSimulatorFast.h"
 #include "BlendingSimulatorDetailed.h"
-#include "ParticleParameters.h"
 #include "BlendingVisualizer.h"
 
-BOOST_FUSION_DEFINE_STRUCT(
-	(), ParsedLineCounts, (int, pos)(std::vector<int>, counts)
-)
-
-BOOST_FUSION_DEFINE_STRUCT(
-	(), ParsedLineParameters, (int, pos)(std::vector<double>, parameters)
-)
-
-void executeFastSimulationCounted(ExecutionParameters parameters)
+void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, ExecutionParameters parameters)
 {
-	// TODO output stuff to other channel
 	std::cout << "Initializing simulation" << std::endl;
-	BlendingSimulatorFast<CountedParameters> simulator(parameters.length, parameters.depth, parameters.slope, parameters.fourDirectionsOnly);
+	std::thread visualizationThread;
 	std::atomic_bool cancel(false);
 
-	std::cout << "Starting visualization" << std::endl;
-	std::thread visualizationThread([&simulator, &cancel, parameters]() {
-		BlendingVisualizer<CountedParameters> visualizer(&simulator, parameters.verbose);
-		try {
-			visualizer.run();
-		} catch (std::exception& e) {
-			std::cerr << "Error during execution of visualizer.run(): " << e.what() << std::endl;
-		}
+	if (parameters.visualize) {
+		std::cout << "Starting visualization" << std::endl;
+		visualizationThread = std::thread([&simulator, &cancel, parameters]() {
+			BlendingVisualizer<AveragedParameters> visualizer(&simulator, parameters.verbose);
+			try {
+				visualizer.run();
+			} catch (std::exception& e) {
+				std::cerr << "Error during execution of visualizer.run(): " << e.what() << std::endl;
+			}
 
-		bool wasCancelled = cancel.exchange(true);
-		if (!wasCancelled) {
-			std::cout << "Stopping simulation input" << std::endl;
-		}
-	});
+			bool wasCancelled = cancel.exchange(true);
+			if (!wasCancelled) {
+				std::cout << "Stopping simulation input" << std::endl;
+			}
+		});
+	}
 
 	std::cout << "Starting simulation input" << std::endl;
 
 	std::string line;
 	while (std::getline(std::cin, line) && !cancel.load()) {
-		auto first = line.begin();
-		auto last = line.end();
+		std::stringstream lineStream(line);
 
-		ParsedLineCounts parsedLine;
-		bool r = qi::phrase_parse(first, last, qi::int_ >> qi::repeat(parameters.parameterCount)[qi::int_],
-								  qi::ascii::space, parsedLine);
-
-		if (r && first == last) {
-			for (unsigned int i = 0; i < parameters.parameterCount; i++) {
-				for (int c = 0; c < parsedLine.counts[i]; c++) {
-					simulator.stack(parsedLine.pos, CountedParameters(parameters.parameterCount, i));
-				}
-				// Artificially slow down stacking in fast simulation to see buildup process
-				// std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		try {
+			double time;
+			if (!(lineStream >> time)) {
+				throw std::runtime_error("invalid time");
 			}
-		} else {
-			std::cerr << "could not match line '" << line << "'" << std::endl;
+
+			double pos;
+			if (!(lineStream >> pos)) {
+				throw std::runtime_error("invalid position");
+			}
+
+			double volume;
+			if (!(lineStream >> volume)) {
+				throw std::runtime_error("invalid volume");
+			}
+
+			std::vector<double> values(parameters.parameterCount);
+			for (unsigned int i = 0; i < parameters.parameterCount; i++) {
+				if (!(lineStream >> values[i])) {
+					throw std::runtime_error("invalid value at position " + std::to_string(i));
+				}
+			}
+			simulator.stack(float(pos), AveragedParameters(volume, std::move(values)));
+		} catch (std::exception& e) {
+			std::cerr << "could not match line '" << line << "': " << e.what() << std::endl;
 		}
 	}
 
 	std::cout << "Simulation input stopped" << std::endl;
 
 	cancel.store(true);
-	simulator.finish();
+	simulator.finishStacking();
 
-	std::cout << "Simulation finished, waiting for visualization" << std::endl;
-	visualizationThread.join();
-	std::cout << "Visualization finished" << std::endl;
+	std::cout << "Simulation finished" << std::endl;
 
-	int pos;
-	CountedParameters p;
-	std::vector<int> heights;
-
-	while (simulator.reclaim(pos, p, heights)) {
-		if (!parameters.skipPos) {
-			std::cout << pos;
-		}
-
-		if (!parameters.skipReclaim) {
-			for (unsigned int i = 0; i < parameters.parameterCount; i++) {
-				std::cout << (i == 0 && parameters.skipPos ? "" : "\t") << p.get(i);
-			}
-		}
-
-		if (parameters.printHeights) {
-			for (auto it = heights.begin(); it != heights.end(); it++) {
-				std::cout << (parameters.skipPos && parameters.skipReclaim && it == heights.begin() ? "" : "\t") << *it;
-			}
-		}
-
-		std::cout << "\n";
-	}
-}
-
-void executeFastSimulationAveraged(ExecutionParameters parameters)
-{
-	// TODO add visualization for fast averaged simulation
-
-	BlendingSimulatorFast<AveragedParameters> simulator(parameters.length, parameters.depth, parameters.slope,
-														parameters.fourDirectionsOnly);
-
-	std::string line;
-	while (std::getline(std::cin, line)) {
-		auto first = line.begin();
-		auto last = line.end();
-
-		ParsedLineParameters parsedLine;
-		bool r = qi::phrase_parse(first, last, qi::int_ >> qi::repeat(parameters.parameterCount)[qi::double_],
-								  qi::ascii::space, parsedLine);
-
-		if (r && first == last) {
-			simulator.stack(parsedLine.pos, AveragedParameters(std::move(parsedLine.parameters)));
-		} else {
-			std::cerr << "could not match line '" << line << "'" << std::endl;
-		}
+	if (parameters.visualize) {
+		std::cout << "Waiting for visualization" << std::endl;
+		visualizationThread.join();
+		std::cout << "Visualization finished" << std::endl;
 	}
 
-	simulator.finish();
+	if (!parameters.heightsFile.empty()) {
+		std::cout << "Writing height map into '" << parameters.heightsFile << "'" << std::endl;
+		std::ofstream out(parameters.heightsFile);
 
-	int pos;
-	AveragedParameters p;
-	std::vector<int> heights;
-
-	while (simulator.reclaim(pos, p, heights)) {
-		if (!parameters.skipPos) {
-			std::cout << pos;
-		}
-
-		if (!parameters.skipReclaim) {
-			std::cout << (parameters.skipPos ? "" : "\t") << p.getCount();
-
-			for (unsigned int i = 0; i < parameters.parameterCount; i++) {
-				std::cout << "\t" << p.get(i);
-			}
-		}
-
-		if (parameters.printHeights) {
-			for (auto it = heights.begin(); it != heights.end(); it++) {
-				std::cout << (parameters.skipPos && parameters.skipReclaim && it == heights.begin() ? "" : "\t") << *it;
-			}
-		}
-
-		std::cout << "\n";
-	}
-}
-
-void executeDetailedSimulationCounted(ExecutionParameters parameters)
-{
-	// TODO output stuff to other channel
-	std::cout << "Initializing simulation" << std::endl;
-	BlendingSimulatorDetailed<CountedParameters> simulator(parameters.length, parameters.depth);
-	std::atomic_bool cancel(false);
-
-	std::cout << "Starting visualization" << std::endl;
-	std::thread visualizationThread([&simulator, &cancel, parameters]() {
-		BlendingVisualizer<CountedParameters> visualizer(&simulator, parameters.verbose);
-		try {
-			visualizer.run();
-		} catch (std::exception& e) {
-			std::cerr << "Error during execution of visualizer.run(): " << e.what() << std::endl;
-		}
-
-		bool wasCancelled = cancel.exchange(true);
-		if (!wasCancelled) {
-			std::cout << "Stopping simulation input" << std::endl;
-		}
-	});
-
-	std::cout << "Starting simulation input" << std::endl;
-
-	std::string line;
-	while (std::getline(std::cin, line) && !cancel.load()) {
-		auto first = line.begin();
-		auto last = line.end();
-
-		ParsedLineCounts parsedLine;
-		bool r = qi::phrase_parse(first, last, qi::int_ >> qi::repeat(parameters.parameterCount)[qi::int_],
-								  qi::ascii::space, parsedLine);
-
-		if (r && first == last) {
-			for (unsigned int i = 0; i < parameters.parameterCount; i++) {
-				for (int c = 0; c < parsedLine.counts[i]; c++) {
-					simulator.stack(parsedLine.pos, CountedParameters(parameters.parameterCount, i));
+		if (out) {
+			auto heapMapSize = simulator.getHeapMapSize();
+			const float* heapMap = simulator.getHeapMap(); // +1 for Y coordinate
+			for (int z = 0; z < heapMapSize.second; z++) {
+				for (int x = 0; x < heapMapSize.first; x++) {
+					if (x > 0) {
+						out << "\t";
+					}
+					out << heapMap[z * heapMapSize.first + x + 1];
 				}
+				out << "\n";
 			}
+			out.close();
+			std::cout << "Height map written" << std::endl;
 		} else {
-			std::cerr << "could not match line '" << line << "'" << std::endl;
+			std::cerr << "Could not open output file stream for filename '" << parameters.heightsFile << "'" << std::endl;
 		}
 	}
 
-	std::cout << "Simulation input stopped" << std::endl;
+	if (!parameters.reclaimFile.empty()) {
+		std::cout << "Reclaiming into '" << parameters.reclaimFile << "'" << std::endl;
+		std::ofstream out(parameters.reclaimFile);
 
-	cancel.store(true);
-	simulator.finish();
+		if (out) {
+			out << "position\tvolume";
+			for (unsigned int i = 0; i < parameters.parameterCount; i++) {
+				out << "\tp" << (i + 1);
+			}
+			out << "\n";
 
-	std::cout << "Simulation finished, waiting for visualization" << std::endl;
-	visualizationThread.join();
-	std::cout << "Visualization finished" << std::endl;
+			float position = 0.0f;
+			while (!simulator.reclaimingFinished()) {
+				AveragedParameters p = simulator.reclaim(position);
 
-	// TODO implement reclaim for detailed simulation
-//	int pos;
-//	CountedParameters p;
-//	std::vector<int> heights;
-//
-//	while (simulator.reclaim(pos, p, heights)) {
-//		if (!parameters.skipPos) {
-//			std::cout << pos;
-//		}
-//
-//		if (!parameters.skipReclaim) {
-//			for (unsigned int i = 0; i < parameters.parameterCount; i++) {
-//				std::cout << (i == 0 && parameters.skipPos ? "" : "\t") << p.get(i);
-//			}
-//		}
-//
-//		if (parameters.printHeights) {
-//			for (auto it = heights.begin(); it != heights.end(); it++) {
-//				std::cout << (parameters.skipPos && parameters.skipReclaim && it == heights.begin() ? "" : "\t") << *it;
-//			}
-//		}
-//
-//		std::cout << "\n";
-//	}
+				out << position << "\t" << p.getVolume();
+				for (unsigned int i = 0; i < parameters.parameterCount; i++) {
+					out << "\t" << p.getValue(i);
+				}
+				out << "\n";
+
+				position += parameters.reclaimIncrement;
+			}
+			out.close();
+			std::cout << "Reclaiming finished" << std::endl;
+		} else {
+			std::cerr << "Could not open output file stream for filename '" << parameters.reclaimFile << "'" << std::endl;
+		}
+	}
 }
 
-void executeDetailedSimulationAveraged(ExecutionParameters parameters)
+void executeSimulation(ExecutionParameters parameters)
 {
-	// TODO add visualization for detailed averaged simulation
-
-	BlendingSimulatorDetailed<AveragedParameters> simulator(parameters.length, parameters.depth);
-
-	std::string line;
-	while (std::getline(std::cin, line)) {
-		auto first = line.begin();
-		auto last = line.end();
-
-		ParsedLineParameters parsedLine;
-		bool r = qi::phrase_parse(first, last, qi::int_ >> qi::repeat(parameters.parameterCount)[qi::double_],
-								  qi::ascii::space, parsedLine);
-
-		if (r && first == last) {
-			simulator.stack(parsedLine.pos, AveragedParameters(std::move(parsedLine.parameters)));
-		} else {
-			std::cerr << "could not match line '" << line << "'" << std::endl;
-		}
+	if (parameters.detailed) {
+		BlendingSimulatorDetailed<AveragedParameters> simulator
+			(parameters.length, parameters.depth, parameters.reclaimAngle, parameters.bulkDensity, parameters.particlesPerCubicMeter, parameters.visualize);
+		executeSimulation(simulator, parameters);
+	} else {
+		BlendingSimulatorFast<AveragedParameters> simulator
+			(parameters.length, parameters.depth, parameters.reclaimAngle, parameters.eightLikelihood, parameters.particlesPerCubicMeter, parameters.visualize);
+		executeSimulation(simulator, parameters);
 	}
-
-	simulator.finish();
-
-	// TODO implement reclaim for detailed simulation
-//	int pos;
-//	AveragedParameters p;
-//	std::vector<int> heights;
-//
-//	while (simulator.reclaim(pos, p, heights)) {
-//		if (!parameters.skipPos) {
-//			std::cout << pos;
-//		}
-//
-//		if (!parameters.skipReclaim) {
-//			std::cout << (parameters.skipPos ? "" : "\t") << p.getCount();
-//
-//			for (unsigned int i = 0; i < parameters.parameterCount; i++) {
-//				std::cout << "\t" << p.get(i);
-//			}
-//		}
-//
-//		if (parameters.printHeights) {
-//			for (auto it = heights.begin(); it != heights.end(); it++) {
-//				std::cout << (parameters.skipPos && parameters.skipReclaim && it == heights.begin() ? "" : "\t") << *it;
-//			}
-//		}
-//
-//		std::cout << "\n";
-//	}
 }

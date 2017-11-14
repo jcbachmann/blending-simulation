@@ -3,9 +3,6 @@
 
 #include "ExecutionParameters.h"
 
-void executeFastSimulationCounted(ExecutionParameters parameters);
-void executeFastSimulationAveraged(ExecutionParameters parameters);
-void executeDetailedSimulationCounted(ExecutionParameters parameters);
-void executeDetailedSimulationAveraged(ExecutionParameters parameters);
+void executeSimulation(ExecutionParameters parameters);
 
 #endif
