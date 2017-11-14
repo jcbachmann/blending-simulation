@@ -66,14 +66,20 @@ void BlendingVisualizer<Parameters>::createScene()
 	// Background color
 	mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.1, 0.1, 0.1));
 
+	// Fog
+	mSceneMgr->setFog(Ogre::FOG_EXP2, Ogre::ColourValue(0.8, 0.8, 1.0), 0.0005);
+
 	// Lighting and shadows
-	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.7, 0.7, 0.7));
 	mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
-	mLight = mSceneMgr->createLight("TestLight");
+	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
+	mLight = mSceneMgr->createLight("MainLight");
 	mLight->setType(Ogre::Light::LT_DIRECTIONAL);
 	mLight->setDirection(Ogre::Vector3(.55f, -.3f, .75f).normalisedCopy());
-	mLight->setDiffuseColour(Ogre::ColourValue(1.0, 1.0, 1.0));
-	mLight->setSpecularColour(Ogre::ColourValue(1.0, 1.0, 1.0));
+	mLight->setDiffuseColour(Ogre::ColourValue(0.7, 0.7, 0.7));
+	mLight->setSpecularColour(Ogre::ColourValue(0.7, 0.7, 0.7));
+
+	// Skybox
+	mSceneMgr->setSkyBox(true, "CloudyNoonSkyBox");
 
 	// TODO terrain -> cloth (higher refresh rate / dynamic build)
 	// Terrain
@@ -170,8 +176,8 @@ void BlendingVisualizer<Parameters>::addTerrain(void)
 	importData.maxBatchSize = 65;
 	importData.layerList.resize(1);
 	importData.layerList[0].worldSize = 10;
-	importData.layerList[0].textureNames.push_back("dirt_grayrocky_diffusespecular.dds");
-	importData.layerList[0].textureNames.push_back("dirt_grayrocky_normalheight.dds");
+	importData.layerList[0].textureNames.push_back("Ground_diffusespecular.dds");
+	importData.layerList[0].textureNames.push_back("Ground_normalheight.dds");
 
 	mTerrainGroup->defineTerrain(0, 0, 0.0f);
 	mTerrainGroup->loadAllTerrains(true);
