@@ -94,6 +94,10 @@ Parameters BlendingSimulatorFast<Parameters>::reclaim(float position)
 template<typename Parameters>
 void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Parameters& parameters)
 {
+	while (this->paused.load()) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	}
+
 	int xi = std::max(0, std::min(int(x / realWorldSizeFactor + 0.5), int(this->heapSizeX - 1))) + 1;
 	int zi = std::max(0, std::min(int(z / realWorldSizeFactor + 0.5), int(this->heapSizeZ - 1))) + 1;
 
