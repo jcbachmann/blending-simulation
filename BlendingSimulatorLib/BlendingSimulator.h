@@ -22,18 +22,18 @@ class BlendingSimulator
 
 		BlendingSimulator(void);
 
-		virtual void pause(void);
-		virtual void resume(void);
-		virtual bool isPaused(void);
 
-		virtual void clear(void) = 0;
 		virtual void stack(double position, const Parameters& parameters) = 0;
 		virtual void finish(void) = 0;
 		virtual float* getHeapMap(void) = 0;
+		virtual void pause();
+		virtual void resume();
+		virtual bool isPaused();
 
 		void loadFromFile(std::string filename);
 		void saveToFile(std::string filename);
 
+		virtual void clear() = 0;
 	protected:
 		std::atomic<bool> paused;
 		float* heapMap;

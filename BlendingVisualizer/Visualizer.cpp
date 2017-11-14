@@ -25,7 +25,7 @@ Visualizer::Visualizer(bool verbose)
 	mFSLayer = new Ogre::FileSystemLayer("Visualizer ... again");
 }
 
-Visualizer::~Visualizer(void)
+Visualizer::~Visualizer()
 {
 	delete mFSLayer;
 	mFSLayer = nullptr;
@@ -126,7 +126,7 @@ Ogre::RenderWindow* Visualizer::createWindow()
 	}
 
 	mSDLWindow = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, (int) width, (int) height,
-								  SDL_WINDOW_RESIZABLE);
+		SDL_WINDOW_RESIZABLE);
 
 	SDL_SysWMinfo wmInfo;
 	SDL_VERSION(&wmInfo.version);
@@ -144,7 +144,7 @@ void Visualizer::setupInput(bool grab)
 {
 	if (!mSDLWindow) {
 		OGRE_EXCEPT(Ogre::Exception::ERR_INVALID_STATE, "you must create a SDL window first",
-					"SampleContext::setupInput");
+			"SampleContext::setupInput");
 	}
 
 	SDL_ShowCursor(grab ? SDL_FALSE : SDL_TRUE);
@@ -214,7 +214,7 @@ void Visualizer::destroyDummyScene()
 	mRoot->destroySceneManager(dummyScene);
 }
 
-void Visualizer::createCamera(void)
+void Visualizer::createCamera()
 {
 	mCamera = mSceneMgr->createCamera("Camera");
 	mCameraNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
@@ -236,7 +236,7 @@ void Visualizer::createCamera(void)
 	mCameraMan->setStyle(OgreBites::CS_MANUAL);
 }
 
-void Visualizer::createFrameListener(void)
+void Visualizer::createFrameListener()
 {
 	windowResized(mWindow);
 	// Don't display OGRE cursor for the moment
@@ -268,7 +268,7 @@ bool Visualizer::acquireConfiguration()
 	return true;
 }
 
-void Visualizer::run(void)
+void Visualizer::run()
 {
 #ifdef _DEBUG
 	mResourcesCfg = "resources_d.cfg";
@@ -426,7 +426,9 @@ void Visualizer::fireInputEvent(const OgreBites::Event& event)
 	switch (event.type) {
 		case SDL_KEYDOWN:
 			// Ignore repeated signals from key being held down.
-			if (event.key.repeat) break;
+			if (event.key.repeat) {
+				break;
+			}
 			keyPressed(event.key);
 			break;
 		case SDL_KEYUP:

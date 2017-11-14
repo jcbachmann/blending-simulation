@@ -11,7 +11,9 @@ std::tuple<double, double, double> hsvToRgb(double h, double s, double v)
 	}
 
 	double hh = h;
-	if (hh >= 360.0) hh = 0.0;
+	if (hh >= 360.0) {
+		hh = 0.0;
+	}
 	hh /= 60.0;
 
 	long i = (long) hh;

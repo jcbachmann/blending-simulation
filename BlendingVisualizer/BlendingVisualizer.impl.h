@@ -26,12 +26,12 @@ BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>
 }
 
 template<typename Parameters>
-BlendingVisualizer<Parameters>::~BlendingVisualizer(void)
+BlendingVisualizer<Parameters>::~BlendingVisualizer()
 {
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::createFrameListener(void)
+void BlendingVisualizer<Parameters>::createFrameListener()
 {
 	Visualizer::createFrameListener();
 
@@ -57,7 +57,7 @@ void BlendingVisualizer<Parameters>::createFrameListener(void)
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::createScene(void)
+void BlendingVisualizer<Parameters>::createScene()
 {
 	// Camera position and direction
 	mCameraNode->setPosition(Ogre::Vector3(10, 50, -5));
@@ -84,7 +84,7 @@ void BlendingVisualizer<Parameters>::createScene(void)
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::destroyScene(void)
+void BlendingVisualizer<Parameters>::destroyScene()
 {
 	if (mTerrainGroup) {
 		delete mTerrainGroup;
@@ -179,7 +179,7 @@ void BlendingVisualizer<Parameters>::addTerrain(void)
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::addGroundPlane(void)
+void BlendingVisualizer<Parameters>::addGroundPlane()
 {
 	Ogre::MaterialManager& materialManager = Ogre::MaterialManager::getSingleton();
 	const Ogre::MaterialPtr& groundMaterial = materialManager.create("Ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -200,7 +200,7 @@ void BlendingVisualizer<Parameters>::addGroundPlane(void)
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::refreshHeightMap(void)
+void BlendingVisualizer<Parameters>::refreshHeightMap()
 {
 	if (!mTerrainGroup) {
 		return;
@@ -227,7 +227,7 @@ void BlendingVisualizer<Parameters>::refreshHeightMap(void)
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::refreshParticles(void)
+void BlendingVisualizer<Parameters>::refreshParticles()
 {
 	bool doRefreshHeightMap = false;
 
@@ -327,7 +327,7 @@ void BlendingVisualizer<Parameters>::refreshParticles(void)
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::refreshParameterCubes(void)
+void BlendingVisualizer<Parameters>::refreshParameterCubes()
 {
 	std::lock_guard<std::mutex> lock(simulator->parameterCubesMutex);
 
@@ -343,19 +343,12 @@ void BlendingVisualizer<Parameters>::refreshParameterCubes(void)
 
 		Ogre::MaterialManager& materialManager = Ogre::MaterialManager::getSingleton();
 		if (!visualizationCube) {
-			std::string identifier = "_" + std::to_string(std::get<0>(it->first))
-									 + "_" + std::to_string(std::get<1>(it->first))
-									 + "_" + std::to_string(std::get<2>(it->first));
+			std::string identifier =
+				"_" + std::to_string(std::get<0>(it->first)) + "_" + std::to_string(std::get<1>(it->first)) + "_" + std::to_string(std::get<2>(it->first));
 
 			visualizationCube = new VisualizationCube();
-			Ogre::Entity* cubeEnt = mSceneMgr->createEntity(
-				std::string("CubeMap") + identifier,
-				Ogre::SceneManager::PT_CUBE
-			);
-			visualizationCube->material = materialManager.create(
-				std::string("CubeMap") + identifier,
-				Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
-			);
+			Ogre::Entity* cubeEnt = mSceneMgr->createEntity(std::string("CubeMap") + identifier, Ogre::SceneManager::PT_CUBE);
+			visualizationCube->material = materialManager.create(std::string("CubeMap") + identifier, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 			visualizationCube->material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
 			cubeEnt->setMaterial(visualizationCube->material);
 			cubeEnt->setCastShadows(false);
@@ -380,6 +373,6 @@ void BlendingVisualizer<Parameters>::refreshParameterCubes(void)
 		std::tuple<float, float, float> c = hsvToRgb(qualityHue(pp.get(0), pp.get(1), pp.get(2)), 1.0, 1.0);
 		visualizationCube->material->getTechnique(0)->getPass(0)->setAmbient(0, 0, 0);
 		visualizationCube->material->getTechnique(0)->getPass(0)->setDiffuse(0, 0, 0, 0);
-		visualizationCube->material->getTechnique(0)->getPass(0)->setEmissive(std::get<0>(c), std::get<1>(c), std::get<2>(c));
+		visualizationCube->material->getTechnique(0)->getPass(0)->setEmissive((float) std::get<0>(c), (float) std::get<1>(c), (float) std::get<2>(c));
 	}
 }

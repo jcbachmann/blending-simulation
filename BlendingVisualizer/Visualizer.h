@@ -1,5 +1,5 @@
-#ifndef COALYARD_VISUALIZER_H
-#define COALYARD_VISUALIZER_H
+#ifndef BLENDING_VISUALIZER_H
+#define BLENDING_VISUALIZER_H
 
 #include <OgreCamera.h>
 #include <OgreEntity.h>
@@ -14,27 +14,23 @@
 #include <Bites/OgreTrays.h>
 #include <Bites/OgreCameraMan.h>
 
-class Visualizer
-	: public Ogre::FrameListener,
-	  public Ogre::WindowEventListener,
-	  public OgreBites::InputListener,
-	  OgreBites::TrayListener
+class Visualizer : public Ogre::FrameListener, public Ogre::WindowEventListener, public OgreBites::InputListener, OgreBites::TrayListener
 {
 	public:
 		Visualizer(bool verbose);
 		virtual ~Visualizer();
 
-		virtual void run(void);
+		virtual void run();
 
 	protected:
 		void initApp();
 		void closeApp();
 
-		virtual void createCamera(void);
-		virtual void createFrameListener(void);
-		virtual void createScene(void) = 0;
-		virtual void destroyScene(void) = 0;
-		virtual void loadResources(void);
+		virtual void createCamera();
+		virtual void createFrameListener();
+		virtual void createScene() = 0;
+		virtual void destroyScene() = 0;
+		virtual void loadResources();
 
 		// Ogre::FrameListener
 		virtual bool frameStarted(const Ogre::FrameEvent& evt) override;

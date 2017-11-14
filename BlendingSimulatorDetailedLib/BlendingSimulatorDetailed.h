@@ -60,12 +60,12 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 {
 	public:
 		BlendingSimulatorDetailed(float length, float depth);
-		~BlendingSimulatorDetailed(void);
+		~BlendingSimulatorDetailed();
 
-		virtual void clear(void) override;
 		virtual void stack(double position, const Parameters& parameters) override;
 		virtual void finish(void) override;
 		virtual float* getHeapMap(void) override;
+		virtual void clear() override;
 
 	protected:
 		virtual std::vector<unsigned char> getRawData(void) override;
@@ -93,11 +93,12 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		btRigidBody* heapRigidBody;
 		btDiscreteDynamicsWorld* dynamicsWorld;
 
-		void step(void);
-		void doOutputParticles(void);
-		void freezeParticles(void);
+		void step();
+		void doOutputParticles();
+		void freezeParticles();
 		void freezeParticle(ParticleDetailed<Parameters>* particle);
-		ParticleDetailed<Parameters>* createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation, btVector3 velocity, btVector3 size);
+		ParticleDetailed<Parameters>* createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation, btVector3 velocity,
+			btVector3 size);
 };
 
 #include "BlendingSimulatorDetailed.impl.h"

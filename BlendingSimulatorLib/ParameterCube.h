@@ -16,17 +16,17 @@ class ParameterCube
 		{
 		}
 
-		bs::Vector3 getPosition(void) const
+		bs::Vector3 getPosition() const
 		{
 			return position;
 		}
 
-		float getSize(void) const
+		float getSize() const
 		{
 			return size;
 		}
 
-		Parameters getParameters(void) const
+		Parameters getParameters() const
 		{
 			return parameters;
 		}

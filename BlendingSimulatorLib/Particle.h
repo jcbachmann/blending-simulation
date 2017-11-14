@@ -14,7 +14,7 @@ struct Particle
 	bs::Vector3 size;
 	bs::Quaternion orientation;
 
-	Particle(void)
+	Particle()
 		: frozen(false)
 	{
 	}

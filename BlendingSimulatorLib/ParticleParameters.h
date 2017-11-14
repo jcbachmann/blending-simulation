@@ -6,8 +6,8 @@
 class AveragedParameters
 {
 	public:
-		AveragedParameters(void)
 			: count(0)
+		AveragedParameters()
 		{
 		}
 

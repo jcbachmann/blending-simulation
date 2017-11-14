@@ -7,19 +7,19 @@ BlendingSimulator<Parameters>::BlendingSimulator(void)
 }
 
 template<typename Parameters>
-void BlendingSimulator<Parameters>::pause(void)
+void BlendingSimulator<Parameters>::pause()
 {
 	paused = true;
 }
 
 template<typename Parameters>
-void BlendingSimulator<Parameters>::resume(void)
+void BlendingSimulator<Parameters>::resume()
 {
 	paused = false;
 }
 
 template<typename Parameters>
-bool BlendingSimulator<Parameters>::isPaused(void)
+bool BlendingSimulator<Parameters>::isPaused()
 {
 	return paused.load();
 }

@@ -7,7 +7,7 @@
 #include "Particle.h"
 
 template<typename Parameters>
-ParticleDetailed<Parameters>::ParticleDetailed(void)
+ParticleDetailed<Parameters>::ParticleDetailed()
 	: frozen(false)
 	, creationTickCount(0)
 	, collisionShape(nullptr)
@@ -18,7 +18,7 @@ ParticleDetailed<Parameters>::ParticleDetailed(void)
 }
 
 template<typename Parameters>
-ParticleDetailed<Parameters>::~ParticleDetailed(void)
+ParticleDetailed<Parameters>::~ParticleDetailed()
 {
 	if (collisionShape) {
 		delete collisionShape;

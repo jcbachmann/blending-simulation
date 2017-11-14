@@ -30,8 +30,8 @@ struct ParticleDetailed
 
 	Particle<Parameters>* outputParticle;
 
-	ParticleDetailed(void);
-	~ParticleDetailed(void);
+	ParticleDetailed();
+	~ParticleDetailed();
 };
 
 #include "ParticleDetailed.impl.h"

@@ -41,12 +41,12 @@ class BlendingVisualizer : public Visualizer
 {
 	public:
 		BlendingVisualizer(BlendingSimulator<Parameters>* simulator, bool verbose);
-		virtual ~BlendingVisualizer(void);
+		virtual ~BlendingVisualizer();
 
 	protected:
-		virtual void createFrameListener(void) override;
-		virtual void createScene(void) override;
-		virtual void destroyScene(void) override;
+		virtual void createFrameListener() override;
+		virtual void createScene() override;
+		virtual void destroyScene() override;
 		virtual void frameRendered(const Ogre::FrameEvent& evt) override;
 		virtual bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
 
@@ -62,10 +62,10 @@ class BlendingVisualizer : public Visualizer
 		bool showParameterCubes;
 
 		void addTerrain(void);
-		void addGroundPlane(void);
-		void refreshHeightMap(void);
-		void refreshParticles(void);
-		void refreshParameterCubes(void);
+		void addGroundPlane();
+		void refreshHeightMap();
+		void refreshParticles();
+		void refreshParameterCubes();
 };
 
 #include "BlendingVisualizer.impl.h"

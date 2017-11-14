@@ -9,7 +9,6 @@
 #include "ParticleDetailed.h"
 
 // Simulator constants
-const float gravity = -9.81f; // m/s²
 const float stackerDropOffHeight = 28.0f; // In m above ground
 const float stackerDropOffAngle = btRadians(20); // Radians above horizon
 const float stackerBeltSpeed = 3.0f; // In m/s
@@ -38,7 +37,7 @@ BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float length, f
 	broadphase = new btDbvtBroadphase();
 	solver = new btSequentialImpulseConstraintSolver;
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-	dynamicsWorld->setGravity(btVector3(0, gravity, 0));
+	dynamicsWorld->setGravity(btVector3(0, -9.80665, 0));
 
 	// Static ground shape
 	groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
@@ -79,7 +78,7 @@ BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float length, f
 }
 
 template<typename Parameters>
-BlendingSimulatorDetailed<Parameters>::~BlendingSimulatorDetailed(void)
+BlendingSimulatorDetailed<Parameters>::~BlendingSimulatorDetailed()
 {
 	clear();
 
@@ -104,7 +103,7 @@ BlendingSimulatorDetailed<Parameters>::~BlendingSimulatorDetailed(void)
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::clear(void)
+void BlendingSimulatorDetailed<Parameters>::clear()
 {
 	std::lock_guard<std::mutex> lock(simulationMutex);
 	simulationTickCount = 0;
@@ -137,8 +136,8 @@ void BlendingSimulatorDetailed<Parameters>::clear(void)
 }
 
 template<typename Parameters>
-ParticleDetailed<Parameters>* BlendingSimulatorDetailed<Parameters>::createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation,
-																			btVector3 velocity, btVector3 size)
+ParticleDetailed<Parameters>* BlendingSimulatorDetailed<Parameters>::createParticle(btVector3 position, Parameters parameters, bool frozen,
+	btQuaternion rotation, btVector3 velocity, btVector3 size)
 {
 	ParticleDetailed<Parameters>* particle = new ParticleDetailed<Parameters>();
 
@@ -188,7 +187,7 @@ ParticleDetailed<Parameters>* BlendingSimulatorDetailed<Parameters>::createParti
 
 // Freeze old particles
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::freezeParticles(void)
+void BlendingSimulatorDetailed<Parameters>::freezeParticles()
 {
 	for (auto it = activeParticles.begin(); it != activeParticles.end(); it++) {
 		ParticleDetailed<Parameters>* particle = *it;
@@ -360,7 +359,7 @@ void BlendingSimulatorDetailed<Parameters>::setRawData(const std::vector<unsigne
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::step(void)
+void BlendingSimulatorDetailed<Parameters>::step()
 {
 	if (this->paused.load()) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -389,7 +388,7 @@ std::tuple<double, double, double> toTuple(btVector3 v)
 
 // Output particle details to graphics interface
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::doOutputParticles(void)
+void BlendingSimulatorDetailed<Parameters>::doOutputParticles()
 {
 	std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
 

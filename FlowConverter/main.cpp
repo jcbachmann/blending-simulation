@@ -29,7 +29,8 @@ int main(int argc, char** argv) try
 
 	po::options_description descModel("Model Options");
 	descModel.add_options()
-		("reclaim-seconds", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "reclaim duration used for fine position generation")
+		("reclaim-seconds", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)),
+			"reclaim duration used for fine position generation")
 		("flow-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-20, 1e20)), "particle amount multiplier")
 		("red-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "correction factor for red particles")
 		("blue-factor", po::value<double>()->required()->notifier(boost::bind(&in_range<double>, _1, 1e-6, 1e6)), "correction factor for blue particles")
