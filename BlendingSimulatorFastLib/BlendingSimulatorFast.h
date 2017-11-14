@@ -19,12 +19,6 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 		void resetReclaimer(void);
 
 	protected:
-		virtual std::vector<unsigned char> getRawData(void) override {
-			// TODO implement saving for fast simulation
-		}
-		virtual void setRawData(const std::vector<unsigned char>& data) override {
-			// TODO implement loading for fast simulation
-		}
 
 	private:
 		// Dimensions of the simulated stockpile

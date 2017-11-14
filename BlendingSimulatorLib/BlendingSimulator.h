@@ -30,16 +30,12 @@ class BlendingSimulator
 		virtual void resume();
 		virtual bool isPaused();
 
-		void loadFromFile(std::string filename);
-		void saveToFile(std::string filename);
 
 		virtual void clear() = 0;
 	protected:
 		std::atomic<bool> paused;
 		float* heapMap;
 
-		virtual std::vector<unsigned char> getRawData(void) = 0;
-		virtual void setRawData(const std::vector<unsigned char>& data) = 0;
 };
 
 #include "BlendingSimulator.impl.h"

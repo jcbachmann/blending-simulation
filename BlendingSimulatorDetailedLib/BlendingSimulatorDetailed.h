@@ -68,8 +68,6 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		virtual void clear() override;
 
 	protected:
-		virtual std::vector<unsigned char> getRawData(void) override;
-		virtual void setRawData(const std::vector<unsigned char>& data) override;
 
 	private:
 		float heapLength;
