@@ -69,7 +69,7 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		virtual Parameters reclaim(float position) override;
 
 	protected:
-		void stackSingle(float position, const Parameters& parameters) override;
+		void stackSingle(float x, float z, const Parameters& parameters) override;
 
 	private:
 		std::mutex simulationMutex;

@@ -42,9 +42,14 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 				throw std::runtime_error("invalid time");
 			}
 
-			double pos;
-			if (!(lineStream >> pos)) {
-				throw std::runtime_error("invalid position");
+			float xPos;
+			if (!(lineStream >> xPos)) {
+				throw std::runtime_error("invalid x position");
+			}
+
+			float zPos;
+			if (!(lineStream >> zPos)) {
+				throw std::runtime_error("invalid z position");
 			}
 
 			double volume;
@@ -58,7 +63,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 					throw std::runtime_error("invalid value at position " + std::to_string(i));
 				}
 			}
-			simulator.stack(float(pos), AveragedParameters(volume, std::move(values)));
+			simulator.stack(xPos, zPos, AveragedParameters(volume, std::move(values)));
 		} catch (std::exception& e) {
 			std::cerr << "could not match line '" << line << "': " << e.what() << std::endl;
 		}

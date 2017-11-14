@@ -18,7 +18,7 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 		virtual Parameters reclaim(float position) override;
 
 	protected:
-		virtual void stackSingle(float position, const Parameters& parameters) override;
+		virtual void stackSingle(float x, float z, const Parameters& parameters) override;
 		virtual void updateHeapMap() override;
 
 	private:

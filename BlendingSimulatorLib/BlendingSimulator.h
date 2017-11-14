@@ -31,7 +31,7 @@ class BlendingSimulator
 		virtual void resume();
 		virtual bool isPaused();
 
-		virtual void stack(float position, const Parameters& parameters);
+		virtual void stack(float x, float z, const Parameters& parameters);
 
 		virtual void clear() = 0;
 		virtual void finishStacking() = 0;
@@ -56,7 +56,7 @@ class BlendingSimulator
 
 		void initializeHeapMap(unsigned int heapSizeX, unsigned int heapSizeZ);
 
-		virtual void stackSingle(float position, const Parameters& parameters) = 0;
+		virtual void stackSingle(float x, float z, const Parameters& parameters) = 0;
 
 		virtual void updateHeapMap()
 		{

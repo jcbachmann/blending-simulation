@@ -109,19 +109,20 @@ TEST(BlendingSimulatorFast, test_stacking)
 		double volume = 1.0;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 1.0f;
-		simulator.stack(position, p);
+		float x = 1.0f;
+		float z = 1.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		float* heapMap = simulator.getHeapMap();
 		ASSERT_NE(heapMap, nullptr);
-		for (unsigned int z = 0; z < heapMapSize.second; z++) {
-			for (unsigned int x = 0; x < heapMapSize.first; x++) {
-				if (x == 1 && z == 1) {
-					EXPECT_NEAR(heapMap[z * heapMapSize.first + x], 1.0, 1e-10);
+		for (unsigned int zi = 0; zi < heapMapSize.second; zi++) {
+			for (unsigned int xi = 0; xi < heapMapSize.first; xi++) {
+				if (xi == 1 && zi == 1) {
+					EXPECT_NEAR(heapMap[zi * heapMapSize.first + xi], 1.0, 1e-10);
 				} else {
-					EXPECT_NEAR(heapMap[z * heapMapSize.first + x], 0.0, 1e-10);
+					EXPECT_NEAR(heapMap[zi * heapMapSize.first + xi], 0.0, 1e-10);
 				}
 			}
 		}
@@ -142,16 +143,17 @@ TEST(BlendingSimulatorFast, test_clear)
 		double volume = 1.0;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 1.0f;
-		simulator.stack(position, p);
+		float x = 1.0f;
+		float z = 1.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 		simulator.clear();
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		float* heapMap = simulator.getHeapMap();
 		ASSERT_NE(heapMap, nullptr);
-		for (unsigned int z = 0; z < heapMapSize.second; z++) {
-			for (unsigned int x = 0; x < heapMapSize.first; x++) {
-				EXPECT_NEAR(heapMap[z * heapMapSize.first + x], 0.0, 1e-10);
+		for (unsigned int zi = 0; zi < heapMapSize.second; zi++) {
+			for (unsigned int xi = 0; xi < heapMapSize.first; xi++) {
+				EXPECT_NEAR(heapMap[zi * heapMapSize.first + xi], 0.0, 1e-10);
 			}
 		}
 	}
@@ -171,8 +173,9 @@ TEST(BlendingSimulatorFast, test_reclaim)
 		double volume = 1.0;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 1.0f;
-		simulator.stack(position, p);
+		float x = 1.0f;
+		float z = 1.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
@@ -205,8 +208,9 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_90)
 		double volume = 6.0 + 1e-3;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 1.0f;
-		simulator.stack(position, p);
+		float x = 1.0f;
+		float z = 1.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
@@ -239,8 +243,9 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_45)
 		double volume = 6.0;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 1.0f;
-		simulator.stack(position, p);
+		float x = 1.0f;
+		float z = 1.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
@@ -273,8 +278,9 @@ TEST(BlendingSimulatorFast, test_reclaim_eight)
 		double volume = 9.0;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 1.0f;
-		simulator.stack(position, p);
+		float x = 1.0f;
+		float z = 1.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
@@ -307,8 +313,9 @@ TEST(BlendingSimulatorFast, test_reclaim_8ppcm)
 		double volume = 6.0 / 8.0;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 2.0f / 4.0f;
-		simulator.stack(position, p);
+		float x = 2.0f / 4.0f;
+		float z = 2.0f / 4.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
@@ -341,8 +348,9 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_0)
 		double volume = 6.0;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 1.0f;
-		simulator.stack(position, p);
+		float x = 1.0f;
+		float z = 1.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
@@ -375,8 +383,9 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_180)
 		double volume = 6.0;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 1.0f;
-		simulator.stack(position, p);
+		float x = 1.0f;
+		float z = 1.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());

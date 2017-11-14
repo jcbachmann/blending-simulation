@@ -62,7 +62,7 @@ bool BlendingSimulator<Parameters>::isPaused()
 }
 
 template<typename Parameters>
-void BlendingSimulator<Parameters>::stack(float position, const Parameters& parameters)
+void BlendingSimulator<Parameters>::stack(float x, float z, const Parameters& parameters)
 {
 	float volumePerParticle = 1.0f / particlesPerCubicMeter;
 	static Parameters parameterBuffer;
@@ -70,7 +70,7 @@ void BlendingSimulator<Parameters>::stack(float position, const Parameters& para
 
 	while (parameterBuffer.contains(volumePerParticle)) {
 		Parameters p = parameterBuffer.pop(volumePerParticle);
-		this->stackSingle(position, p);
+		this->stackSingle(x, z, p);
 	}
 }
 

@@ -344,7 +344,7 @@ Parameters BlendingSimulatorDetailed<Parameters>::reclaim(float position)
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::stackSingle(float position, const Parameters& parameters)
+void BlendingSimulatorDetailed<Parameters>::stackSingle(float x, float z, const Parameters& parameters)
 {
 	while (simulationTickCount < nextParticleTickCount) {
 		// TODO wait for particle parameter time
@@ -363,7 +363,11 @@ void BlendingSimulatorDetailed<Parameters>::stackSingle(float position, const Pa
 	static std::uniform_real_distribution<float> angle(0.0f, 2.0f * 3.141592653589793238463f);
 
 	createParticle(
-		btVector3(float(position) + posDist(generator), stackerDropOffHeight * minVarDist(generator), this->heapWorldSizeZ / 2.0f - 5.0f), // Position
+		btVector3(
+			x + posDist(generator),
+			stackerDropOffHeight * minVarDist(generator),
+			z - 5.0f
+		), // Position
 		parameters, // Parameters
 		false, // Frozen
 		btQuaternion(btVector3(0, 0, 1), angle(generator)), // Orientation

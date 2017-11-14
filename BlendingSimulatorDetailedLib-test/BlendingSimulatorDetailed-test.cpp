@@ -71,8 +71,9 @@ TEST(BlendingSimulatorDetailed, test_stack_clear)
 		double volume = 1.0;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 1.0f;
-		simulator.stack(position, p);
+		float x = 1.0f;
+		float z = 1.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 		simulator.clear();
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
@@ -100,8 +101,9 @@ TEST(BlendingSimulatorDetailed, test_stack_reclaim)
 		double volume = 10.0;
 		AveragedParameters p(volume, {1.0});
 
-		float position = 1.0f;
-		simulator.stack(position, p);
+		float x = 1.0f;
+		float z = 1.0f;
+		simulator.stack(x, z, p);
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());

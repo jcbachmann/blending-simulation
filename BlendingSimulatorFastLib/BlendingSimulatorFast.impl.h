@@ -92,16 +92,14 @@ Parameters BlendingSimulatorFast<Parameters>::reclaim(float position)
 }
 
 template<typename Parameters>
-void BlendingSimulatorFast<Parameters>::stackSingle(float position, const Parameters& parameters)
+void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Parameters& parameters)
 {
-	const int depthCenter = this->heapSizeZ / 2;
-
-	int x = std::max(0, std::min(int(position / realWorldSizeFactor + 0.5), int(this->heapSizeX - 1))) + 1;
-	int z = depthCenter + 1;
+	int xi = std::max(0, std::min(int(x / realWorldSizeFactor + 0.5), int(this->heapSizeX - 1))) + 1;
+	int zi = std::max(0, std::min(int(z / realWorldSizeFactor + 0.5), int(this->heapSizeZ - 1))) + 1;
 
 	int minHeightX;
 	int minHeightZ;
-	int minHeight = stackedHeights[x][z];
+	int minHeight = stackedHeights[xi][zi];
 
 	static const std::chrono::milliseconds simulationSleep(1);
 	static unsigned int particlesStacked = 0;
@@ -114,7 +112,8 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float position, const Parame
 		particle->parameters = parameters;
 		particle->frozen = false;
 		particle->temperature = 1.0;
-		particle->position = bs::Vector3((float(x) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(z) - 0.5) * realWorldSizeFactor);
+		particle->position =
+			bs::Vector3((float(xi) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(zi) - 0.5) * realWorldSizeFactor);
 		particle->size = bs::Vector3(0.95 * realWorldSizeFactor, 0.95 * realWorldSizeFactor, 0.95 * realWorldSizeFactor);
 		particle->orientation = bs::Quaternion(0, 0, 1, 0);
 
@@ -158,8 +157,8 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float position, const Parame
 
 		for (int o = 0; o < offsetsCount; o++) {
 			const Offset& offset = offsets[(o + r) % offsetsCount];
-			const int tx = x + offset.i;
-			const int tz = z + offset.j;
+			const int tx = xi + offset.i;
+			const int tz = zi + offset.j;
 			const int lh = stackedHeights[tx][tz];
 
 			if (lh < minHeight) {
@@ -170,13 +169,13 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float position, const Parame
 		}
 
 		if (minHeightX >= 0) {
-			x = minHeightX;
-			z = minHeightZ;
+			xi = minHeightX;
+			zi = minHeightZ;
 
 			if (this->visualize) {
 				std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
 				particle->position =
-					bs::Vector3((float(x) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(z) - 0.5) * realWorldSizeFactor);
+					bs::Vector3((float(xi) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(zi) - 0.5) * realWorldSizeFactor);
 			}
 		}
 
@@ -213,7 +212,8 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float position, const Parame
 	if (this->visualize) {
 		std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
 		this->activeOutputParticles.pop_back();
-		particle->position = bs::Vector3((float(x) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(z) - 0.5) * realWorldSizeFactor);
+		particle->position =
+			bs::Vector3((float(xi) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(zi) - 0.5) * realWorldSizeFactor);
 		particle->frozen = true;
 		particle->temperature = 0.0;
 		this->inactiveOutputParticles.push_back(particle);
