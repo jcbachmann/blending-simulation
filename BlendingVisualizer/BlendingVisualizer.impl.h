@@ -16,15 +16,22 @@
 #include "QualityColor.h"
 #include "Noise.h"
 
+const char* SIMULATION_ACTIVE = "SIMULATION_ACTIVE";
+const char* SHOW_PARTICLES = "SHOW_PARTICLES";
+const char* SHOW_HEAP = "SHOW_HEAP";
+const char* SHOW_CUBES = "SHOW_CUBES";
+
 template<typename Parameters>
 BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>* simulator, bool verbose, bool pretty)
 	: Visualizer(verbose)
 	, pretty(pretty)
-	, mSimulationDetailsPanel(nullptr)
+	, mSimulationPanel(nullptr)
 	, simulator(simulator)
 	, mTerrainGroup(nullptr)
 	, mTerrainGlobals(nullptr)
 	, showParameterCubes(false)
+	, showInactiveParticles(false)
+	, showHeapMap(true)
 	, heapMesh(nullptr)
 {
 }
@@ -40,22 +47,25 @@ void BlendingVisualizer<Parameters>::createFrameListener()
 	Visualizer::createFrameListener();
 
 	// create a params panel for displaying simulation details
-	Ogre::StringVector items;
-	items.push_back("Active Particles");
-	items.push_back("Frozen Particles");
-	items.push_back("Simulation Status [P]");
-	items.push_back("Heap Updates [U]");
-	items.push_back("Parameter Cubes [C]");
-	mSimulationDetailsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT, "SimulationDetails", 250, items);
+	mTrayMgr->createLabel(OgreBites::TL_TOPLEFT, "SimulationLabel", "Simulation");
+	mTrayMgr->createCheckBox(OgreBites::TL_TOPLEFT, SIMULATION_ACTIVE, "Active", 250)->setChecked(!simulator->isPaused(), false);
+	Ogre::StringVector simulationItems;
+	simulationItems.push_back("Active Particles");
+	simulationItems.push_back("Frozen Particles");
+	mSimulationPanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT, "SimulationParams", 250, simulationItems);
+	mSimulationPanel->setParamValue(0, "0");
+	mSimulationPanel->setParamValue(1, "0");
+	mSimulationPanel->show();
 
-	// display values of parameters which are only refreshed on action
-	mSimulationDetailsPanel->setParamValue(0, "0");
-	mSimulationDetailsPanel->setParamValue(1, "0");
-	mSimulationDetailsPanel->setParamValue(2, simulator->isPaused() ? "Paused" : "Active");
-	mSimulationDetailsPanel->setParamValue(3, "0");
-	mSimulationDetailsPanel->setParamValue(4, showParameterCubes ? "yes" : "no");
-
-	mSimulationDetailsPanel->show();
+	mTrayMgr->createLabel(OgreBites::TL_TOPRIGHT, "GraphicsLabel", "Graphics");
+	mTrayMgr->createCheckBox(OgreBites::TL_TOPRIGHT, SHOW_PARTICLES, "Show inactive particles", 250)->setChecked(showInactiveParticles, false);
+	mTrayMgr->createCheckBox(OgreBites::TL_TOPRIGHT, SHOW_HEAP, "Show heap", 250)->setChecked(showHeapMap, false);
+	mTrayMgr->createCheckBox(OgreBites::TL_TOPRIGHT, SHOW_CUBES, "Show parameter cubes", 250)->setChecked(showParameterCubes, false);
+	Ogre::StringVector graphicsItems;
+	graphicsItems.push_back("Heap map updates");
+	mGraphicsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPRIGHT, "GraphicsParams", 250, graphicsItems);
+	mGraphicsPanel->setParamValue(0, "0");
+	mGraphicsPanel->show();
 }
 
 template<typename Parameters>
@@ -155,27 +165,65 @@ bool BlendingVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEvent& 
 	}
 
 	int key = evt.keysym.sym;
-	if (key == SDLK_p) {
-		if (simulator->isPaused()) {
+	if (key == SDLK_u) {
+		refreshHeightMap();
+	}
+
+	Visualizer::keyPressed(evt);
+	return true;
+}
+
+template<typename Parameters>
+void BlendingVisualizer<Parameters>::checkBoxToggled(OgreBites::CheckBox* box)
+{
+	if (box->getName() == SIMULATION_ACTIVE) {
+		if (box->isChecked()) {
 			simulator->resume();
 		} else {
 			simulator->pause();
 		}
-	} else if (key == SDLK_u) {
-		refreshHeightMap();
-	} else if (key == SDLK_c) {
-		showParameterCubes = !showParameterCubes;
+	}
+
+	if (box->getName() == SHOW_PARTICLES) {
+		showInactiveParticles = box->isChecked();
+
+		std::lock_guard<std::mutex> lock(simulator->outputParticlesMutex);
+
+		for (auto inactiveParticle : inactiveParticles) {
+			Ogre::SceneNode* sceneNode = inactiveParticle->entity->getParentSceneNode();
+			if (sceneNode) {
+				sceneNode->detachAllObjects();
+				sceneNode->getParentSceneNode()->removeAndDestroyChild(sceneNode->getName());
+			}
+
+			mSceneMgr->destroyInstancedEntity(inactiveParticle->entity);
+			delete inactiveParticle;
+		}
+		inactiveParticles.clear();
+	}
+
+	if (box->getName() == SHOW_HEAP) {
+		showHeapMap = box->isChecked();
+		if (showHeapMap) {
+			mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(heapEntity);
+		} else {
+			Ogre::SceneNode* sceneNode = heapEntity->getParentSceneNode();
+			if (sceneNode) {
+				sceneNode->detachAllObjects();
+				sceneNode->getParentSceneNode()->removeAndDestroyChild(sceneNode->getName());
+			}
+		}
+	}
+
+	if (box->getName() == SHOW_CUBES) {
+		showParameterCubes = box->isChecked();
 		if (!showParameterCubes) {
 			for (auto& it : visualizationCubes) {
 				mSceneMgr->getRootSceneNode()->removeChild(it.second->node);
 				it.second->attached = false;
 			}
 		}
-		mSimulationDetailsPanel->setParamValue(4, showParameterCubes ? "yes" : "no");
 	}
-
-	Visualizer::keyPressed(evt);
-	return true;
 }
 
 template<typename Parameters>
@@ -284,7 +332,9 @@ void BlendingVisualizer<Parameters>::addHeap(float heapWorldSizeX, float heapWor
 	heapEntity = mSceneMgr->createEntity("HeapEntity", "HeapMesh");
 	heapEntity->setCastShadows(true);
 	heapEntity->setMaterial(groundMaterial);
-	mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(heapEntity);
+	if (showHeapMap) {
+		mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(heapEntity);
+	}
 	heapMesh->updateMesh(simulator->getHeapMap());
 }
 
@@ -296,7 +346,7 @@ void BlendingVisualizer<Parameters>::refreshHeightMap()
 	}
 
 	static int heapUpdateCount = 0;
-	mSimulationDetailsPanel->setParamValue(3, Ogre::StringConverter::toString(++heapUpdateCount));
+	mGraphicsPanel->setParamValue(0, Ogre::StringConverter::toString(++heapUpdateCount));
 	heapMesh->updateMesh(simulator->getHeapMap());
 }
 
@@ -305,16 +355,14 @@ void BlendingVisualizer<Parameters>::refreshParticles()
 {
 	bool doRefreshHeightMap = false;
 
-	mSimulationDetailsPanel->setParamValue(2, simulator->isPaused() ? "Paused" : "Active");
-
 	std::deque<VisualizationParticle*>::iterator cubePoolIterator = activeParticlePool.begin();
 
 	{
 		std::lock_guard<std::mutex> lock(simulator->outputParticlesMutex);
 
 		// Display particle information
-		mSimulationDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(simulator->activeOutputParticles.size()));
-		mSimulationDetailsPanel->setParamValue(1, Ogre::StringConverter::toString(simulator->inactiveOutputParticles.size()));
+		mSimulationPanel->setParamValue(0, Ogre::StringConverter::toString(simulator->activeOutputParticles.size()));
+		mSimulationPanel->setParamValue(1, Ogre::StringConverter::toString(simulator->inactiveOutputParticles.size()));
 
 		static unsigned long lastParticlesSize = 0;
 		if (simulator->inactiveOutputParticles.size() > lastParticlesSize + 100) {
@@ -371,7 +419,7 @@ void BlendingVisualizer<Parameters>::refreshParticles()
 		}
 
 		// Refresh inactive particles
-		if (simulator->inactiveOutputParticles.size() > inactiveParticles.size()) {
+		if (showInactiveParticles && simulator->inactiveOutputParticles.size() > inactiveParticles.size()) {
 			static int defragmentBatchesCounter = 0;
 			defragmentBatchesCounter += simulator->inactiveOutputParticles.size() - inactiveParticles.size();
 

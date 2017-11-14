@@ -60,10 +60,12 @@ class BlendingVisualizer : public Visualizer
 		virtual void destroyScene() override;
 		virtual void frameRendered(const Ogre::FrameEvent& evt) override;
 		virtual bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
+		virtual void checkBoxToggled(OgreBites::CheckBox* box) override;
 
 	private:
 		bool pretty;
-		OgreBites::ParamsPanel* mSimulationDetailsPanel;
+		OgreBites::ParamsPanel* mSimulationPanel;
+		OgreBites::ParamsPanel* mGraphicsPanel;
 		Ogre::TerrainGroup* mTerrainGroup;
 		Ogre::TerrainGlobalOptions* mTerrainGlobals;
 		BlendingSimulator<Parameters>* simulator;
@@ -71,6 +73,8 @@ class BlendingVisualizer : public Visualizer
 		std::deque<VisualizationInstancedParticle*> inactiveParticles;
 		std::map<std::tuple<int, int, int>, VisualizationCube*> visualizationCubes;
 		bool showParameterCubes;
+		bool showInactiveParticles;
+		bool showHeapMap;
 		Ogre::InstanceManager* instanceManager = nullptr;
 		HeapMesh* heapMesh;
 		Ogre::Entity* heapEntity;
