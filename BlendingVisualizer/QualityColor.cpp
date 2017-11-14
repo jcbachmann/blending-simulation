@@ -85,3 +85,19 @@ double qualityHue(int amountLow, int amountMid, int amountHigh)
 	}
 	return (double(amountLow) * DRAW_COLOR_MIN + double(amountMid) * DRAW_COLOR_MID + double(amountHigh) * DRAW_COLOR_MAX) / double(total);
 }
+
+std::tuple<double, double, double> qualityColor(float volume1, float volume2, float volume3)
+{
+	if (volume1 > volume2 && volume1 > volume3) {
+		// Red
+		return std::make_tuple(239.0 / 255.0, 115.0 / 255.0, 51.0 / 255.0);
+	} else {
+		if (volume2 > volume3) {
+			// Blue
+			return std::make_tuple(94.0 / 255.0, 149.0 / 255.0, 188.0 / 255.0);
+		} else {
+			// Yellow
+			return std::make_tuple(206.0 / 255.0, 222.0 / 255.0, 27.0 / 255.0);
+		}
+	}
+}

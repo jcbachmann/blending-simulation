@@ -48,6 +48,14 @@ struct Quaternion
 	{
 	}
 
+	Quaternion(double w, double x, double y, double z)
+		: w(w)
+		, x(x)
+		, y(y)
+		, z(z)
+	{
+	}
+
 	Quaternion(std::tuple<double, double, double, double> t)
 	{
 		w = std::get<0>(t);
