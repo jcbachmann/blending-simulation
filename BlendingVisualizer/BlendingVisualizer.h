@@ -5,14 +5,26 @@
 #include <Terrain/OgreTerrainGroup.h>
 
 #include "Visualizer.h"
+#include "HeapMesh.h"
 
 template<typename Parameters>
 class BlendingSimulator;
+
+struct VisualizationInstancedParticle
+{
+	VisualizationInstancedParticle()
+		: entity(nullptr)
+	{
+	}
+
+	Ogre::InstancedEntity* entity;
+};
 
 struct VisualizationParticle
 {
 	VisualizationParticle()
 		: attached(false)
+		, entity(nullptr)
 		, node(nullptr)
 	{
 	}
@@ -20,7 +32,6 @@ struct VisualizationParticle
 	bool attached;
 	Ogre::Entity* entity;
 	Ogre::SceneNode* node;
-	Ogre::MaterialPtr material;
 };
 
 struct VisualizationCube
@@ -40,7 +51,7 @@ template<typename Parameters>
 class BlendingVisualizer : public Visualizer
 {
 	public:
-		BlendingVisualizer(BlendingSimulator<Parameters>* simulator, bool verbose);
+		BlendingVisualizer(BlendingSimulator<Parameters>* simulator, bool verbose, bool pretty);
 		virtual ~BlendingVisualizer();
 
 	protected:
@@ -51,18 +62,22 @@ class BlendingVisualizer : public Visualizer
 		virtual bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
 
 	private:
+		bool pretty;
 		OgreBites::ParamsPanel* mSimulationDetailsPanel;
 		Ogre::TerrainGroup* mTerrainGroup;
 		Ogre::TerrainGlobalOptions* mTerrainGlobals;
 		BlendingSimulator<Parameters>* simulator;
-		std::deque<VisualizationParticle*> particlePool;
+		std::deque<VisualizationParticle*> activeParticlePool;
+		std::deque<VisualizationInstancedParticle*> inactiveParticles;
 		std::map<std::tuple<int, int, int>, VisualizationCube*> visualizationCubes;
-		bool showFrozen;
-		bool showTemperature;
 		bool showParameterCubes;
+		Ogre::InstanceManager* instanceManager = nullptr;
+		HeapMesh* heapMesh;
+		Ogre::Entity* heapEntity;
 
-		void addTerrain(void);
+		void addTerrain(float flatSizeX, float flatSizeZ);
 		void addGroundPlane();
+		void addHeap(float heapWorldSizeX, float heapWorldSizeZ);
 		void refreshHeightMap();
 		void refreshParticles();
 		void refreshParameterCubes();

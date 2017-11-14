@@ -21,6 +21,7 @@ class ExecutionParameters
 
 		// Visualization
 		bool visualize = false;
+		bool pretty = false;
 
 		// Input / Output Options
 		unsigned int parameterCount = 0;

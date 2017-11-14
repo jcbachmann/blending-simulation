@@ -8,6 +8,10 @@ set(
 	QualityColor.h
 	BlendingVisualizer.impl.h
 	BlendingVisualizer.h
+	HeapMesh.cpp
+	HeapMesh.h
+	Noise.cpp
+	Noise.h
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /usr/lib/OGRE/cmake/)

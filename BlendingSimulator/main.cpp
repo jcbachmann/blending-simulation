@@ -37,7 +37,8 @@ int main(int argc, char** argv) try
 
 	po::options_description descVisualization("Visualization Options");
 	descVisualization.add_options()
-		("visualize", po::bool_switch(&executionParameters.visualize), "show visualization");
+		("visualize", po::bool_switch(&executionParameters.visualize), "show visualization")
+		("pretty", po::bool_switch(&executionParameters.pretty), "render nicer landscape and details");
 
 	po::options_description descInputOutput("Input / Output Options");
 	descInputOutput.add_options()

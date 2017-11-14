@@ -16,7 +16,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 	if (parameters.visualize) {
 		std::cout << "Starting visualization" << std::endl;
 		visualizationThread = std::thread([&simulator, &cancel, parameters]() {
-			BlendingVisualizer<AveragedParameters> visualizer(&simulator, parameters.verbose);
+			BlendingVisualizer<AveragedParameters> visualizer(&simulator, parameters.verbose, parameters.pretty);
 			try {
 				visualizer.run();
 			} catch (std::exception& e) {
