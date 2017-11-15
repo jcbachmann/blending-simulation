@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <BlendingSimulatorDetailed.h>
+#include "BlendingSimulatorDetailed.h"
+#include "ParticleParameters.h"
 
 TEST(BlendingSimulatorDetailed, test_constructor_destructor)
 {
