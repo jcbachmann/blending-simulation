@@ -9,14 +9,16 @@
 // Local
 #include "ParticleDetailed.h"
 
-// Simulator constants
+// System constants
 const float stackerDropOffAngle = btRadians(20); // Radians above horizon
 const float stackerBeltSpeed = 3.0f; // In m/s
 const float stackerBeltWidth = 1.5f; // In m
+const float cubicMetersPerSecond = 1.0; // in m³/s
+
+// Simulator constants
 const int minFreezeTimeout = 15000;
 const int maxFreezeTimeout = 25000;
 const unsigned long long simulationInterval = 30;
-const float cubicMetersPerSecond = 1.0; // in m³/s
 
 template<typename Parameters>
 BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float bulkDensityFactor,
