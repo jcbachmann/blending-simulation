@@ -8,7 +8,6 @@ struct Particle
 {
 	Parameters parameters;
 	bool frozen;
-	float temperature;
 
 	bs::Vector3 position;
 	bs::Vector3 size;

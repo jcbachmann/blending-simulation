@@ -407,8 +407,6 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles()
 
 		particle->outputParticle->parameters = particle->parameters;
 		particle->outputParticle->frozen = particle->frozen;
-		particle->outputParticle->temperature =
-			std::max(0.0f, std::min(1.0f - float(simulationTickCount - particle->creationTickCount) / float(minFreezeTimeout), 1.0f));
 		particle->outputParticle->position = bs::Vector3(toTuple(trans.getOrigin()));
 		particle->outputParticle->size = bs::Vector3(toTuple(particle->size));
 		particle->outputParticle->orientation = bs::Quaternion(toTuple(trans.getRotation()));
