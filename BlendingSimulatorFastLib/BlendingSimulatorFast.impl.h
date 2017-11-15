@@ -43,8 +43,8 @@ void BlendingSimulatorFast<Parameters>::clear()
 	}
 	std::fill(stackedHeights[this->heapSizeX + 1].begin(), stackedHeights[this->heapSizeX + 1].end(), std::numeric_limits<int>::max());
 
-	for (unsigned int x = 0; x < this->heapSizeX; x++) {
-		reclaimParameters[x].clear();
+	for (Parameters& reclaimParameter : reclaimParameters) {
+		reclaimParameter.clear();
 	}
 
 	{
@@ -71,7 +71,7 @@ void BlendingSimulatorFast<Parameters>::finishStacking()
 template<typename Parameters>
 bool BlendingSimulatorFast<Parameters>::reclaimingFinished()
 {
-	return int(reclaimerPos / realWorldSizeFactor + 0.5) >= this->heapSizeX;
+	return int(reclaimerPos / realWorldSizeFactor + 0.5) >= reclaimParameters.size();
 }
 
 template<typename Parameters>
@@ -81,8 +81,12 @@ Parameters BlendingSimulatorFast<Parameters>::reclaim(float position)
 	int endPos = int(position / realWorldSizeFactor + 0.5);
 	reclaimerPos = position;
 
-	if (endPos > this->heapSizeX) {
-		endPos = this->heapSizeX;
+	if (startPos < 0) {
+		startPos = 0;
+	}
+
+	if (endPos > reclaimParameters.size()) {
+		endPos = static_cast<int>(reclaimParameters.size());
 	}
 
 	Parameters p;
