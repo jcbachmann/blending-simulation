@@ -8,7 +8,6 @@
 #include <atomic>
 
 #include "Particle.h"
-#include "ParameterCube.h"
 
 template<typename Parameters>
 class BlendingSimulator
@@ -17,8 +16,6 @@ class BlendingSimulator
 		std::deque<Particle<Parameters>*> activeOutputParticles;
 		std::deque<Particle<Parameters>*> inactiveOutputParticles;
 		std::mutex outputParticlesMutex;
-		std::mutex parameterCubesMutex;
-		std::map<std::tuple<int, int, int>, ParameterCube<Parameters>*> parameterCubes;
 
 		BlendingSimulator(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float particlesPerCubicMeter, bool visualize);
 		virtual ~BlendingSimulator();

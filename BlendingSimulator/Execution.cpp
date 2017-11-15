@@ -6,6 +6,7 @@
 #include "BlendingSimulatorFast.h"
 #include "BlendingSimulatorDetailed.h"
 #include "BlendingVisualizer.h"
+#include "ParticleParameters.h"
 
 void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, ExecutionParameters parameters)
 {

@@ -72,7 +72,6 @@ class BlendingVisualizer : public Visualizer
 		std::deque<VisualizationParticle*> activeParticlePool;
 		std::deque<VisualizationInstancedParticle*> inactiveParticles;
 		std::map<std::tuple<int, int, int>, VisualizationCube*> visualizationCubes;
-		bool showParameterCubes;
 		bool showInactiveParticles;
 		bool showHeapMap;
 		Ogre::InstanceManager* instanceManager = nullptr;
@@ -84,7 +83,6 @@ class BlendingVisualizer : public Visualizer
 		void addHeap(float heapWorldSizeX, float heapWorldSizeZ);
 		void refreshHeightMap();
 		void refreshParticles();
-		void refreshParameterCubes();
 };
 
 #include "BlendingVisualizer.impl.h"

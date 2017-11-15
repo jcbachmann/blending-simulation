@@ -26,7 +26,6 @@ BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float heapWorld
 	, particleSize(std::pow(bulkDensityFactor / particlesPerCubicMeter, 1.0 / 3.0))
 	, resolutionPerWorldSize(1.0 / particleSize)
 	, dropHeight(dropHeight)
-	, parameterCubeSize(particleSize * 3)
 	, simulationTicksPerParticle((unsigned long long) double(1000.0 * std::pow(particleSize, 3.0) / cubicMetersPerSecond))
 	, simulationTickCount(0)
 	, nextParticleTickCount(0)
@@ -85,11 +84,6 @@ void BlendingSimulatorDetailed<Parameters>::clear()
 		std::lock_guard<std::mutex> innerLock(this->outputParticlesMutex);
 		this->activeOutputParticles.clear();
 		this->inactiveOutputParticles.clear();
-	}
-
-	{
-		std::lock_guard<std::mutex> innerLock(this->parameterCubesMutex);
-		this->parameterCubes.clear();
 	}
 
 	activeParticles.clear();
@@ -188,9 +182,6 @@ void BlendingSimulatorDetailed<Parameters>::freezeParticle(ParticleDetailed<Para
 
 	// Looks nicer but totally ruins bulk density
 //	addParticleToHeapMapBilinear(origin.x(), origin.y(), origin.z());
-
-	// Add particle to parameter cube
-	getParameterCube(origin.x(), origin.y(), origin.z())->add(particle->parameters);
 }
 
 template<typename Parameters>
@@ -237,26 +228,6 @@ void BlendingSimulatorDetailed<Parameters>::addParticleToHeapMapBilinear(float x
 	setBilinear(this->heapMap, this->heapSizeX, this->heapSizeZ, x, z, int(x) + 1, int(z), vMin, vMax);
 	setBilinear(this->heapMap, this->heapSizeX, this->heapSizeZ, x, z, int(x), int(z) + 1, vMin, vMax);
 	setBilinear(this->heapMap, this->heapSizeX, this->heapSizeZ, x, z, int(x) + 1, int(z) + 1, vMin, vMax);
-}
-
-template<typename Parameters>
-ParameterCube<Parameters>* BlendingSimulatorDetailed<Parameters>::getParameterCube(float x, float y, float z)
-{
-	std::tuple<int, int, int> id = std::make_tuple(int(x / parameterCubeSize), int(y / parameterCubeSize), int(z / parameterCubeSize));
-
-	std::lock_guard<std::mutex> lock(this->parameterCubesMutex);
-	auto it = this->parameterCubes.find(id);
-	if (it != this->parameterCubes.end()) {
-		return it->second;
-	}
-
-	// Create new parameter cube
-	auto parameterCube = new ParameterCube<Parameters>(
-		bs::Vector3((float(std::get<0>(id)) + 0.5f) * parameterCubeSize, (float(std::get<1>(id)) + 0.5f) * parameterCubeSize,
-			(float(std::get<2>(id)) + 0.5f) * parameterCubeSize), parameterCubeSize);
-	this->parameterCubes[id] = parameterCube;
-
-	return parameterCube;
 }
 
 template<typename Parameters>

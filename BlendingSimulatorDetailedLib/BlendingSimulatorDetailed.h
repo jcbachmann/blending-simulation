@@ -78,7 +78,6 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		std::deque<ParticleDetailed<Parameters>*> allParticles;
 
 		const float dropHeight; // In m above ground
-		const float parameterCubeSize; // In m cube side length
 		const float bulkDensityFactor;
 		const float particleSize; // In m cube side length
 		const float resolutionPerWorldSize; // Cells per meter
@@ -102,7 +101,6 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		void freezeParticle(ParticleDetailed<Parameters>* particle);
 		void addParticleToHeapMap(float x, float y, float z);
 		void addParticleToHeapMapBilinear(float x, float y, float z);
-		ParameterCube<Parameters>* getParameterCube(float x, float y, float z);
 		void optimizeFrozenParticles();
 		ParticleDetailed<Parameters>* createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation, btVector3 velocity,
 			btVector3 size);

@@ -12,14 +12,12 @@
 
 #include "Particle.h"
 #include "BlendingSimulator.h"
-#include "ParameterCube.h"
 #include "QualityColor.h"
 #include "Noise.h"
 
 const char* SIMULATION_ACTIVE = "SIMULATION_ACTIVE";
 const char* SHOW_PARTICLES = "SHOW_PARTICLES";
 const char* SHOW_HEAP = "SHOW_HEAP";
-const char* SHOW_CUBES = "SHOW_CUBES";
 
 template<typename Parameters>
 BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>* simulator, bool verbose, bool pretty)
@@ -29,7 +27,6 @@ BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>
 	, simulator(simulator)
 	, mTerrainGroup(nullptr)
 	, mTerrainGlobals(nullptr)
-	, showParameterCubes(false)
 	, showInactiveParticles(false)
 	, showHeapMap(true)
 	, heapMesh(nullptr)
@@ -60,7 +57,6 @@ void BlendingVisualizer<Parameters>::createFrameListener()
 	mTrayMgr->createLabel(OgreBites::TL_TOPRIGHT, "GraphicsLabel", "Graphics");
 	mTrayMgr->createCheckBox(OgreBites::TL_TOPRIGHT, SHOW_PARTICLES, "Show inactive particles", 250)->setChecked(showInactiveParticles, false);
 	mTrayMgr->createCheckBox(OgreBites::TL_TOPRIGHT, SHOW_HEAP, "Show heap", 250)->setChecked(showHeapMap, false);
-	mTrayMgr->createCheckBox(OgreBites::TL_TOPRIGHT, SHOW_CUBES, "Show parameter cubes", 250)->setChecked(showParameterCubes, false);
 	Ogre::StringVector graphicsItems;
 	graphicsItems.push_back("Heap map updates");
 	mGraphicsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPRIGHT, "GraphicsParams", 250, graphicsItems);
@@ -151,10 +147,6 @@ void BlendingVisualizer<Parameters>::frameRendered(const Ogre::FrameEvent& evt)
 	Visualizer::frameRendered(evt);
 
 	refreshParticles();
-
-	if (showParameterCubes) {
-		refreshParameterCubes();
-	}
 }
 
 template<typename Parameters>
@@ -211,16 +203,6 @@ void BlendingVisualizer<Parameters>::checkBoxToggled(OgreBites::CheckBox* box)
 			if (sceneNode) {
 				sceneNode->detachAllObjects();
 				sceneNode->getParentSceneNode()->removeAndDestroyChild(sceneNode->getName());
-			}
-		}
-	}
-
-	if (box->getName() == SHOW_CUBES) {
-		showParameterCubes = box->isChecked();
-		if (!showParameterCubes) {
-			for (auto& it : visualizationCubes) {
-				mSceneMgr->getRootSceneNode()->removeChild(it.second->node);
-				it.second->attached = false;
 			}
 		}
 	}
@@ -474,56 +456,5 @@ void BlendingVisualizer<Parameters>::refreshParticles()
 	// Refresh heap map
 	if (doRefreshHeightMap) {
 		refreshHeightMap();
-	}
-}
-
-template<typename Parameters>
-void BlendingVisualizer<Parameters>::refreshParameterCubes()
-{
-	std::lock_guard<std::mutex> lock(simulator->parameterCubesMutex);
-
-	for (auto it = simulator->parameterCubes.begin(); it != simulator->parameterCubes.end(); it++) {
-		const ParameterCube<Parameters>* parameterCube = it->second;
-
-		VisualizationCube* visualizationCube = nullptr;
-
-		auto visIt = visualizationCubes.find(it->first);
-		if (visIt != visualizationCubes.end()) {
-			visualizationCube = visIt->second;
-		}
-
-		Ogre::MaterialManager& materialManager = Ogre::MaterialManager::getSingleton();
-		if (!visualizationCube) {
-			std::string identifier =
-				"_" + std::to_string(std::get<0>(it->first)) + "_" + std::to_string(std::get<1>(it->first)) + "_" + std::to_string(std::get<2>(it->first));
-
-			visualizationCube = new VisualizationCube();
-			Ogre::Entity* cubeEnt = mSceneMgr->createEntity(std::string("CubeMap") + identifier, Ogre::SceneManager::PT_CUBE);
-			visualizationCube->material = materialManager.create(std::string("CubeMap") + identifier, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-			visualizationCube->material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
-			cubeEnt->setMaterial(visualizationCube->material);
-			cubeEnt->setCastShadows(false);
-			visualizationCube->node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-			visualizationCube->attached = true;
-
-			bs::Vector3 p = parameterCube->getPosition();
-			float s = 0.9f * parameterCube->getSize() / 100.0f;
-
-			visualizationCube->node->setPosition(Ogre::Real(p.x), Ogre::Real(p.y), Ogre::Real(p.z));
-			visualizationCube->node->setScale(s, s, s);
-			visualizationCube->node->attachObject(cubeEnt);
-			visualizationCubes[it->first] = visualizationCube;
-		}
-
-		if (!visualizationCube->attached) {
-			mSceneMgr->getRootSceneNode()->addChild(visualizationCube->node);
-			visualizationCube->attached = true;
-		}
-
-		const Parameters& pp = parameterCube->getParameters();
-		std::tuple<double, double, double> c = qualityColor(pp.getValue(0), pp.getValue(1), pp.getValue(2));
-		visualizationCube->material->getTechnique(0)->getPass(0)->setAmbient(0, 0, 0);
-		visualizationCube->material->getTechnique(0)->getPass(0)->setDiffuse(0, 0, 0, 0);
-		visualizationCube->material->getTechnique(0)->getPass(0)->setEmissive((float) std::get<0>(c), (float) std::get<1>(c), (float) std::get<2>(c));
 	}
 }
