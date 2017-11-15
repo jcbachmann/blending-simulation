@@ -116,8 +116,11 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		particle->parameters = parameters;
 		particle->frozen = false;
 		particle->temperature = 1.0;
-		particle->position =
-			bs::Vector3((float(xi) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(zi) - 0.5) * realWorldSizeFactor);
+		particle->position = bs::Vector3(
+			(float(xi) - 0.5f) * realWorldSizeFactor,
+			(float(minHeight) + 0.5f) * realWorldSizeFactor,
+			(float(zi) - 0.5f) * realWorldSizeFactor
+		);
 		particle->size = bs::Vector3(0.95 * realWorldSizeFactor, 0.95 * realWorldSizeFactor, 0.95 * realWorldSizeFactor);
 		particle->orientation = bs::Quaternion(0, 0, 1, 0);
 
@@ -178,8 +181,11 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 
 			if (this->visualize) {
 				std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
-				particle->position =
-					bs::Vector3((float(xi) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(zi) - 0.5) * realWorldSizeFactor);
+				particle->position = bs::Vector3(
+					(float(xi) - 0.5f) * realWorldSizeFactor,
+					(float(minHeight) + 0.5f) * realWorldSizeFactor,
+					(float(zi) - 0.5f) * realWorldSizeFactor
+				);
 			}
 		}
 
@@ -216,8 +222,11 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 	if (this->visualize) {
 		std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
 		this->activeOutputParticles.pop_back();
-		particle->position =
-			bs::Vector3((float(xi) - 0.5) * realWorldSizeFactor, (minHeight + 1) * realWorldSizeFactor, (float(zi) - 0.5) * realWorldSizeFactor);
+		particle->position = bs::Vector3(
+			(float(xi) - 0.5f) * realWorldSizeFactor,
+			(float(minHeight) + 0.5f) * realWorldSizeFactor,
+			(float(zi) - 0.5f) * realWorldSizeFactor
+		);
 		particle->frozen = true;
 		particle->temperature = 0.0;
 		this->inactiveOutputParticles.push_back(particle);
