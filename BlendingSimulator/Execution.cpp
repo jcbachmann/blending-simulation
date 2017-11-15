@@ -30,7 +30,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 		});
 	}
 
-	std::cout << "Starting simulation input" << std::endl;
+	std::cout << "Starting stacking from stdin" << std::endl;
 
 	std::string line;
 	while (std::getline(std::cin, line) && !cancel.load()) {
@@ -69,12 +69,12 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 		}
 	}
 
-	std::cout << "Simulation input stopped" << std::endl;
+	std::cout << "Stacking input stopped" << std::endl;
 
 	cancel.store(true);
 	simulator.finishStacking();
 
-	std::cout << "Simulation finished" << std::endl;
+	std::cout << "Stacking finished" << std::endl;
 
 	if (parameters.visualize) {
 		std::cout << "Waiting for visualization" << std::endl;
