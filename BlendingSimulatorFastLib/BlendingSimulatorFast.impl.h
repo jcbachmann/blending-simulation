@@ -13,7 +13,7 @@ BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(float heapWorldSizeX, f
 	if (std::abs(90.0f - reclaimAngle) < 0.01) {
 		tanReclaimAngle = 1e100;
 	} else {
-		tanReclaimAngle = std::tan(reclaimAngle * std::atan(1.0) * 4.0 / 180.0);
+		tanReclaimAngle = float(std::tan(reclaimAngle * std::atan(1.0) * 4.0 / 180.0));
 	}
 
 	this->initializeHeapMap(
