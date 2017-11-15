@@ -24,8 +24,7 @@ BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float heapWorld
 	: BlendingSimulator<Parameters>(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, particlesPerCubicMeter, visualize)
 	, bulkDensityFactor(bulkDensityFactor)
 	, particleSize(std::pow(bulkDensityFactor / particlesPerCubicMeter, 1.0 / 3.0))
-//	, resolutionPerWorldSize(1.0 / particleSize) // TODO is this the problem?
-	, resolutionPerWorldSize(1.0)
+	, resolutionPerWorldSize(1.0 / particleSize)
 	, dropHeight(dropHeight)
 	, parameterCubeSize(particleSize * 3)
 	, simulationTicksPerParticle((unsigned long long) double(1000.0 * std::pow(particleSize, 3.0) / cubicMetersPerSecond))
