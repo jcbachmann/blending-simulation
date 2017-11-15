@@ -310,7 +310,7 @@ void BlendingVisualizer<Parameters>::addGroundPlane()
 	Ogre::TextureUnitState* groundTexture = groundMaterial->getTechnique(0)->getPass(0)->createTextureUnitState("Ground_diffusespecular.dds");
 	groundTexture->setTextureScale(0.03, 0.03);
 
-	Ogre::MeshManager::getSingleton().createPlane("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::Plane(Ogre::Vector3::UNIT_Y, -0.5f),
+	Ogre::MeshManager::getSingleton().createPlane("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::Plane(Ogre::Vector3::UNIT_Y, 0),
 		10000, 10000, 20, 20, true, 1, 6, 6, Ogre::Vector3::UNIT_Z);
 	Ogre::Entity* ground = mSceneMgr->createEntity("Ground", "ground");
 	ground->setMaterial(groundMaterial);
