@@ -136,6 +136,7 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		}
 	}
 
+	// Simulate particle falling
 	do {
 		minHeightX = -1;
 		minHeightZ = -1;
@@ -196,30 +197,8 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		}
 	} while (minHeightX >= 0);
 
+	// Update height
 	stackedHeights[xi][zi] = minHeight + 1;
-
-	int reclaimIndex = xi - 1;
-
-	if (tanReclaimAngle > 1e10) {
-		// Vertical
-	} else if (tanReclaimAngle < 1e-10) {
-		// Horizontal
-		if (this->simulationParameters.reclaimAngle < 90.0f) {
-			reclaimIndex = 0;
-		} else {
-			reclaimIndex = this->heapSizeX - 1;
-		}
-	} else {
-		reclaimIndex -= minHeight / tanReclaimAngle;
-	}
-
-	if (reclaimIndex < 0) {
-		reclaimIndex = 0;
-	}
-
-	if (reclaimIndex >= (int) this->heapSizeX) {
-		reclaimIndex = this->heapSizeX - 1;
-	}
 
 	if (this->simulationParameters.visualize) {
 		{
@@ -241,6 +220,30 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		if (slow) {
 			std::this_thread::sleep_for(simulationSleep);
 		}
+	}
+
+	// Prepare reclaiming
+	int reclaimIndex = xi - 1;
+
+	if (tanReclaimAngle > 1e10) {
+		// Vertical
+	} else if (tanReclaimAngle < 1e-10) {
+		// Horizontal
+		if (this->simulationParameters.reclaimAngle < 90.0f) {
+			reclaimIndex = 0;
+		} else {
+			reclaimIndex = this->heapSizeX - 1;
+		}
+	} else {
+		reclaimIndex -= minHeight / tanReclaimAngle;
+	}
+
+	if (reclaimIndex < 0) {
+		reclaimIndex = 0;
+	}
+
+	if (reclaimIndex >= (int) this->heapSizeX) {
+		reclaimIndex = this->heapSizeX - 1;
 	}
 
 	reclaimParameters[reclaimIndex].push(parameters);
