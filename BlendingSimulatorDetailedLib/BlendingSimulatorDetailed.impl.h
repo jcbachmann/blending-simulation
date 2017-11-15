@@ -26,15 +26,18 @@ BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float heapWorld
 	float particlesPerCubicMeter, float dropHeight, bool visualize)
 	: BlendingSimulator<Parameters>(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, particlesPerCubicMeter, visualize)
 	, bulkDensityFactor(bulkDensityFactor)
-	, particleSize(std::pow(bulkDensityFactor / particlesPerCubicMeter, 1.0 / 3.0))
-	, resolutionPerWorldSize(1.0 / particleSize)
+	, particleSize(std::pow(bulkDensityFactor / particlesPerCubicMeter, 1.0f / 3.0f))
+	, resolutionPerWorldSize(1.0f / particleSize)
 	, dropHeight(dropHeight)
-	, simulationTicksPerParticle((unsigned long long) double(1000.0 * std::pow(particleSize, 3.0) / cubicMetersPerSecond))
+	, simulationTicksPerParticle((unsigned long long) (1000.0 * std::pow(particleSize, 3.0) / cubicMetersPerSecond))
 	, simulationTickCount(0)
 	, nextParticleTickCount(0)
 	, activeParticlesAvailable(false)
 {
-	this->initializeHeapMap(int(heapWorldSizeX / particleSize + 0.5) + 1, int(heapWorldSizeZ / particleSize + 0.5) + 1);
+	this->initializeHeapMap(
+		(unsigned int) (heapWorldSizeX / particleSize + 0.5) + 1,
+		(unsigned int) (heapWorldSizeZ / particleSize + 0.5) + 1
+	);
 
 	// Initialize physics
 	collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -42,7 +45,7 @@ BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float heapWorld
 	broadphase = new btDbvtBroadphase();
 	solver = new btSequentialImpulseConstraintSolver;
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-	dynamicsWorld->setGravity(btVector3(0, -9.80665, 0));
+	dynamicsWorld->setGravity(btVector3(0, -9.80665f, 0));
 
 	// Static ground shape
 	groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
@@ -225,8 +228,8 @@ void BlendingSimulatorDetailed<Parameters>::addParticleToHeapMapBilinear(float x
 	x *= resolutionPerWorldSize;
 	z *= resolutionPerWorldSize;
 
-	float vMin = y - float(particleSize) * 0.5f;
-	float vMax = y - float(particleSize) * 0.1f;
+	float vMin = y - particleSize * 0.5f;
+	float vMax = y - particleSize * 0.1f;
 	setBilinear(this->heapMap, this->heapSizeX, this->heapSizeZ, x, z, int(x), int(z), vMin, vMax);
 	setBilinear(this->heapMap, this->heapSizeX, this->heapSizeZ, x, z, int(x) + 1, int(z), vMin, vMax);
 	setBilinear(this->heapMap, this->heapSizeX, this->heapSizeZ, x, z, int(x), int(z) + 1, vMin, vMax);
@@ -274,7 +277,7 @@ bool BlendingSimulatorDetailed<Parameters>::reclaimingFinished()
 template<typename Parameters>
 Parameters BlendingSimulatorDetailed<Parameters>::reclaim(float position)
 {
-	float tanReclaimAngle;
+	double tanReclaimAngle;
 	if (std::abs(90.0f - this->reclaimAngle) < 0.01) {
 		tanReclaimAngle = 1e100;
 	} else {
@@ -289,7 +292,7 @@ Parameters BlendingSimulatorDetailed<Parameters>::reclaim(float position)
 		particle->defaultMotionState->getWorldTransform(trans);
 		btVector3& origin = trans.getOrigin();
 
-		float comparePosition = origin.x();
+		double comparePosition = origin.x();
 		if (tanReclaimAngle > 1e10) {
 			// Vertical
 		} else if (tanReclaimAngle < 1e-10) {
@@ -324,7 +327,7 @@ void BlendingSimulatorDetailed<Parameters>::stackSingle(float x, float z, const 
 		step();
 	}
 
-	static const float sizeVariation = float(particleSize) * 0.05f;
+	static const float sizeVariation = particleSize * 0.05f;
 	static const float positionVariation = 0.5f * stackerBeltWidth;
 	static const float miscVariation = 0.005f; // 1 +/- variation for speed, height, and angle
 
@@ -346,7 +349,7 @@ void BlendingSimulatorDetailed<Parameters>::stackSingle(float x, float z, const 
 		btQuaternion(btVector3(0, 0, 1), angle(generator)), // Orientation
 		btVector3(0, 0, 1).rotate(btVector3(-1, 0, 0), stackerDropOffAngle * minVarDist(generator)) * stackerBeltSpeed *
 			minVarDist(generator), // Angle and speed
-		btVector3(float(particleSize) + sizeDist(generator), float(particleSize) + sizeDist(generator), float(particleSize) + sizeDist(generator)) // Size
+		btVector3(particleSize + sizeDist(generator), particleSize + sizeDist(generator), particleSize + sizeDist(generator)) // Size
 	);
 
 	nextParticleTickCount = simulationTickCount + simulationTicksPerParticle;

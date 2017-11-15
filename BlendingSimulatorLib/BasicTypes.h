@@ -57,11 +57,11 @@ struct Quaternion
 	}
 
 	Quaternion(std::tuple<double, double, double, double> t)
+		: w(std::get<0>(t))
+		, x(std::get<1>(t))
+		, y(std::get<2>(t))
+		, z(std::get<3>(t))
 	{
-		w = std::get<0>(t);
-		x = std::get<1>(t);
-		y = std::get<2>(t);
-		z = std::get<3>(t);
 	}
 };
 }

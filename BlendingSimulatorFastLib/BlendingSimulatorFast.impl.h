@@ -8,7 +8,7 @@ BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(float heapWorldSizeX, f
 	: BlendingSimulator<Parameters>(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, particlesPerCubicMeter, visualize)
 	, reclaimerPos(0.0f)
 	, eightLikelihood(eightLikelihood)
-	, realWorldSizeFactor(1.0 / std::pow(particlesPerCubicMeter, 1.0 / 3.0))
+	, realWorldSizeFactor(1.0f / std::pow(particlesPerCubicMeter, 1.0f / 3.0f))
 {
 	if (std::abs(90.0f - reclaimAngle) < 0.01) {
 		tanReclaimAngle = 1e100;
@@ -16,7 +16,10 @@ BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(float heapWorldSizeX, f
 		tanReclaimAngle = std::tan(reclaimAngle * std::atan(1.0) * 4.0 / 180.0);
 	}
 
-	this->initializeHeapMap(int(heapWorldSizeX / realWorldSizeFactor + 0.5), int(heapWorldSizeZ / realWorldSizeFactor + 0.5));
+	this->initializeHeapMap(
+		(unsigned int) (heapWorldSizeX / realWorldSizeFactor + 0.5),
+		(unsigned int) (heapWorldSizeZ / realWorldSizeFactor + 0.5)
+	);
 
 	// Warning: stackedHeights organized first x than z while heap map is first z than x!
 	stackedHeights.resize(this->heapSizeX + 2);
