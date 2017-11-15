@@ -22,21 +22,18 @@ const unsigned long long simulationIntervalMs = 30;
 const int simulationIntervalSubSteps = 3;
 
 template<typename Parameters>
-BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float bulkDensityFactor,
-	float particlesPerCubicMeter, float dropHeight, bool visualize)
-	: BlendingSimulator<Parameters>(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, particlesPerCubicMeter, visualize)
-	, bulkDensityFactor(bulkDensityFactor)
-	, particleSize(std::pow(bulkDensityFactor / particlesPerCubicMeter, 1.0f / 3.0f))
+BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(SimulationParameters simulationParameters)
+	: BlendingSimulator<Parameters>(simulationParameters)
+	, particleSize(std::pow(simulationParameters.bulkDensityFactor / simulationParameters.particlesPerCubicMeter, 1.0f / 3.0f))
 	, resolutionPerWorldSize(1.0f / particleSize)
-	, dropHeight(dropHeight)
 	, simulationTicksPerParticle((unsigned long long) (1000.0 * std::pow(particleSize, 3.0) / cubicMetersPerSecond))
 	, simulationTickCount(0)
 	, nextParticleTickCount(0)
 	, activeParticlesAvailable(false)
 {
 	this->initializeHeapMap(
-		(unsigned int) (heapWorldSizeX / particleSize + 0.5) + 1,
-		(unsigned int) (heapWorldSizeZ / particleSize + 0.5) + 1
+		(unsigned int) (simulationParameters.heapWorldSizeX / particleSize + 0.5) + 1,
+		(unsigned int) (simulationParameters.heapWorldSizeZ / particleSize + 0.5) + 1
 	);
 
 	// Initialize physics
@@ -117,7 +114,7 @@ ParticleDetailed<Parameters>* BlendingSimulatorDetailed<Parameters>::createParti
 	particle->collisionShape = new btBoxShape(0.5 * particle->size);
 	particle->defaultMotionState = new btDefaultMotionState(btTransform(rotation, position));
 
-	btScalar mass = size.x() * size.y() * size.z() / bulkDensityFactor;
+	btScalar mass = size.x() * size.y() * size.z() / this->simulationParameters.bulkDensityFactor;
 
 	btVector3 fallInertia;
 
@@ -278,10 +275,10 @@ template<typename Parameters>
 Parameters BlendingSimulatorDetailed<Parameters>::reclaim(float position)
 {
 	double tanReclaimAngle;
-	if (std::abs(90.0f - this->reclaimAngle) < 0.01) {
+	if (std::abs(90.0f - this->simulationParameters.reclaimAngle) < 0.01) {
 		tanReclaimAngle = 1e100;
 	} else {
-		tanReclaimAngle = std::tan(this->reclaimAngle * std::atan(1.0) * 4.0 / 180.0);
+		tanReclaimAngle = std::tan(this->simulationParameters.reclaimAngle * std::atan(1.0) * 4.0 / 180.0);
 	}
 
 	Parameters p;
@@ -297,10 +294,10 @@ Parameters BlendingSimulatorDetailed<Parameters>::reclaim(float position)
 			// Vertical
 		} else if (tanReclaimAngle < 1e-10) {
 			// Horizontal
-			if (this->reclaimAngle < 90.0f) {
+			if (this->simulationParameters.reclaimAngle < 90.0f) {
 				comparePosition = 0;
 			} else {
-				comparePosition = this->heapWorldSizeX;
+				comparePosition = this->simulationParameters.heapWorldSizeX;
 			}
 		} else {
 			comparePosition -= origin.y() / tanReclaimAngle;
@@ -341,7 +338,7 @@ void BlendingSimulatorDetailed<Parameters>::stackSingle(float x, float z, const 
 	createParticle(
 		btVector3(
 			x + posDist(generator),
-			dropHeight * minVarDist(generator),
+			this->simulationParameters.dropHeight * minVarDist(generator),
 			z - 5.0f
 		), // Position
 		parameters, // Parameters

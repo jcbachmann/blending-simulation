@@ -8,6 +8,7 @@
 #include <atomic>
 
 #include "Particle.h"
+#include "SimulationParameters.h"
 
 template<typename Parameters>
 class BlendingSimulator
@@ -17,7 +18,7 @@ class BlendingSimulator
 		std::deque<Particle<Parameters>*> inactiveOutputParticles;
 		std::mutex outputParticlesMutex;
 
-		BlendingSimulator(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float particlesPerCubicMeter, bool visualize);
+		explicit BlendingSimulator(SimulationParameters simulationParameters);
 		virtual ~BlendingSimulator();
 
 		float* getHeapMap();
@@ -36,20 +37,13 @@ class BlendingSimulator
 		virtual Parameters reclaim(float position) = 0;
 
 	protected:
-		// Dimensions of the simulated stockpile
-		const float heapWorldSizeX;
-		const float heapWorldSizeZ;
+		SimulationParameters simulationParameters;
 
-		// Reclaimer angle measured in degree from 0 = horizontal to 90 = vertical
-		const float reclaimAngle;
+		std::atomic<bool> paused;
 
 		unsigned int heapSizeX;
 		unsigned int heapSizeZ;
-
-		std::atomic<bool> paused;
 		float* heapMap;
-		const float particlesPerCubicMeter;
-		const bool visualize;
 
 		void initializeHeapMap(unsigned int heapSizeX, unsigned int heapSizeZ);
 

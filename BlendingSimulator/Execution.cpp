@@ -142,15 +142,13 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 	}
 }
 
-void executeSimulation(ExecutionParameters parameters)
+void executeSimulation(ExecutionParameters executionParameters, SimulationParameters simulationParameters)
 {
-	if (parameters.detailed) {
-		BlendingSimulatorDetailed<AveragedParameters> simulator(parameters.length, parameters.depth, parameters.reclaimAngle, parameters.bulkDensity,
-			parameters.particlesPerCubicMeter, parameters.dropHeight, parameters.visualize);
-		executeSimulation(simulator, parameters);
+	if (executionParameters.detailed) {
+		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
+		executeSimulation(simulator, executionParameters);
 	} else {
-		BlendingSimulatorFast<AveragedParameters> simulator(parameters.length, parameters.depth, parameters.reclaimAngle, parameters.eightLikelihood,
-			parameters.particlesPerCubicMeter, parameters.visualize);
-		executeSimulation(simulator, parameters);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		executeSimulation(simulator, executionParameters);
 	}
 }

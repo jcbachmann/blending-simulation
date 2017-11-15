@@ -2,7 +2,8 @@
 #define BLENDINGSIMULATOR_EXECUTION_H
 
 #include "ExecutionParameters.h"
+#include "SimulationParameters.h"
 
-void executeSimulation(ExecutionParameters parameters);
+void executeSimulation(ExecutionParameters parameters, SimulationParameters simulationParameters);
 
 #endif

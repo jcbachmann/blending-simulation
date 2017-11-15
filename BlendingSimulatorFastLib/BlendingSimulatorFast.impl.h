@@ -3,22 +3,20 @@
 #include <thread>
 
 template<typename Parameters>
-BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float eightLikelihood,
-	float particlesPerCubicMeter, bool visualize)
-	: BlendingSimulator<Parameters>(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, particlesPerCubicMeter, visualize)
+BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(SimulationParameters simulationParameters)
+	: BlendingSimulator<Parameters>(simulationParameters)
 	, reclaimerPos(0.0f)
-	, eightLikelihood(eightLikelihood)
-	, realWorldSizeFactor(1.0f / std::pow(particlesPerCubicMeter, 1.0f / 3.0f))
+	, realWorldSizeFactor(1.0f / std::pow(simulationParameters.particlesPerCubicMeter, 1.0f / 3.0f))
 {
-	if (std::abs(90.0f - reclaimAngle) < 0.01) {
+	if (std::abs(90.0f - simulationParameters.reclaimAngle) < 0.01) {
 		tanReclaimAngle = 1e100;
 	} else {
-		tanReclaimAngle = float(std::tan(reclaimAngle * std::atan(1.0) * 4.0 / 180.0));
+		tanReclaimAngle = float(std::tan(simulationParameters.reclaimAngle * std::atan(1.0) * 4.0 / 180.0));
 	}
 
 	this->initializeHeapMap(
-		(unsigned int) (heapWorldSizeX / realWorldSizeFactor + 0.5),
-		(unsigned int) (heapWorldSizeZ / realWorldSizeFactor + 0.5)
+		(unsigned int) (simulationParameters.heapWorldSizeX / realWorldSizeFactor + 0.5),
+		(unsigned int) (simulationParameters.heapWorldSizeZ / realWorldSizeFactor + 0.5)
 	);
 
 	// Warning: stackedHeights organized first x than z while heap map is first z than x!
@@ -115,7 +113,7 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 
 	Particle<Parameters>* particle = nullptr;
 
-	if (this->visualize) {
+	if (this->simulationParameters.visualize) {
 		particle = new Particle<Parameters>();
 		particle->parameters = parameters;
 		particle->frozen = false;
@@ -161,7 +159,7 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		static std::random_device rd;
 		static std::default_random_engine generator(rd());
 		static std::uniform_real_distribution<> coneDistribution(0.0, 1.0);
-		const int offsetsCount = coneDistribution(generator) > eightLikelihood ? 4 : 8; // This results in cones instead of pyramids
+		const int offsetsCount = coneDistribution(generator) > this->simulationParameters.eightLikelihood ? 4 : 8; // This results in cones instead of pyramids
 
 		static std::uniform_int_distribution<int> randomnessDistribution(0, 8);
 		const int r = randomnessDistribution(generator);
@@ -183,7 +181,7 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 			xi = minHeightX;
 			zi = minHeightZ;
 
-			if (this->visualize && slow) {
+			if (this->simulationParameters.visualize && slow) {
 				{
 					std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
 					particle->position = bs::Vector3(
@@ -206,7 +204,7 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		// Vertical
 	} else if (tanReclaimAngle < 1e-10) {
 		// Horizontal
-		if (this->reclaimAngle < 90.0f) {
+		if (this->simulationParameters.reclaimAngle < 90.0f) {
 			reclaimIndex = 0;
 		} else {
 			reclaimIndex = this->heapSizeX - 1;
@@ -223,7 +221,7 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		reclaimIndex = this->heapSizeX - 1;
 	}
 
-	if (this->visualize) {
+	if (this->simulationParameters.visualize) {
 		{
 			std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
 

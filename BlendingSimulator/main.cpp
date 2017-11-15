@@ -65,21 +65,23 @@ int main(int argc, char** argv) try
 	po::notify(vm);
 
 	// Simulation Options
-	executionParameters.length = vm["length"].as<float>();
-	executionParameters.depth = vm["depth"].as<float>();
-	executionParameters.reclaimAngle = vm["reclaimangle"].as<float>();
-	executionParameters.eightLikelihood = vm["eight"].as<float>();
-	executionParameters.bulkDensity = vm["bulkdensity"].as<float>();
-	executionParameters.particlesPerCubicMeter = vm["ppm3"].as<float>();
-	executionParameters.dropHeight = vm["dropheight"].as<float>();
-	executionParameters.reclaimIncrement = vm["reclaimincrement"].as<float>();
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = vm["length"].as<float>();
+	simulationParameters.heapWorldSizeZ = vm["depth"].as<float>();
+	simulationParameters.reclaimAngle = vm["reclaimangle"].as<float>();
+	simulationParameters.eightLikelihood = vm["eight"].as<float>();
+	simulationParameters.bulkDensityFactor = vm["bulkdensity"].as<float>();
+	simulationParameters.particlesPerCubicMeter = vm["ppm3"].as<float>();
+	simulationParameters.dropHeight = vm["dropheight"].as<float>();
+	simulationParameters.visualize = executionParameters.visualize;
 
 	// Input / Output Options
 	executionParameters.parameterCount = vm["parameters"].as<unsigned int>();
 	executionParameters.heightsFile = vm["heights"].as<std::string>();
 	executionParameters.reclaimFile = vm["reclaim"].as<std::string>();
+	executionParameters.reclaimIncrement = vm["reclaimincrement"].as<float>();
 
-	executeSimulation(executionParameters);
+	executeSimulation(executionParameters, simulationParameters);
 } catch (std::exception& e) {
 	std::cerr << e.what() << std::endl;
 	return 1;

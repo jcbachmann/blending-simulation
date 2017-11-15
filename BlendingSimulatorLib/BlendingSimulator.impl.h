@@ -1,12 +1,8 @@
 #include <fstream>
 
 template<typename Parameters>
-BlendingSimulator<Parameters>::BlendingSimulator(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float particlesPerCubicMeter, bool visualize)
-	: heapWorldSizeX(heapWorldSizeX)
-	, heapWorldSizeZ(heapWorldSizeZ)
-	, reclaimAngle(std::max(0.0f, std::min(reclaimAngle, 180.0f)))
-	, particlesPerCubicMeter(particlesPerCubicMeter)
-	, visualize(visualize)
+BlendingSimulator<Parameters>::BlendingSimulator(SimulationParameters simulationParameters)
+	: simulationParameters(simulationParameters)
 	, heapSizeX(0)
 	, heapSizeZ(0)
 	, heapMap(nullptr)
@@ -34,7 +30,7 @@ float* BlendingSimulator<Parameters>::getHeapMap()
 template<typename Parameters>
 std::pair<float, float> BlendingSimulator<Parameters>::getHeapWorldSize()
 {
-	return {heapWorldSizeX, heapWorldSizeZ};
+	return {simulationParameters.heapWorldSizeX, simulationParameters.heapWorldSizeZ};
 }
 
 template<typename Parameters>
@@ -64,7 +60,7 @@ bool BlendingSimulator<Parameters>::isPaused()
 template<typename Parameters>
 void BlendingSimulator<Parameters>::stack(float x, float z, const Parameters& parameters)
 {
-	float volumePerParticle = 1.0f / particlesPerCubicMeter;
+	float volumePerParticle = 1.0f / simulationParameters.particlesPerCubicMeter;
 	static Parameters parameterBuffer;
 	parameterBuffer.push(parameters);
 

@@ -5,34 +5,34 @@
 
 TEST(BlendingSimulatorDetailed, test_constructor_destructor)
 {
-	float heapWorldSizeX = 1.0f;
-	float heapWorldSizeZ = 1.0f;
-	float reclaimAngle = 45.0;
-	float bulkDensityFactor = 1.0f;
-	float particlesPerCubicMeter = 1.0f;
-	float dropHeight = 10.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 1.0f;
+	simulationParameters.heapWorldSizeZ = 1.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.bulkDensityFactor = 1.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	simulationParameters.dropHeight = 10.0f;
 
 	{
-		BlendingSimulatorDetailed<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, bulkDensityFactor, particlesPerCubicMeter,
-			dropHeight, false);
+		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
 		std::pair<float, float> heapWorldSize = simulator.getHeapWorldSize();
-		EXPECT_NEAR(heapWorldSize.first, heapWorldSizeX, 0.1);
-		EXPECT_NEAR(heapWorldSize.second, heapWorldSizeZ, 0.1);
+		EXPECT_NEAR(heapWorldSize.first, simulationParameters.heapWorldSizeX, 0.1);
+		EXPECT_NEAR(heapWorldSize.second, simulationParameters.heapWorldSizeZ, 0.1);
 	}
 }
 
 TEST(BlendingSimulatorDetailed, test_is_paused)
 {
-	float heapWorldSizeX = 1.0f;
-	float heapWorldSizeZ = 1.0f;
-	float reclaimAngle = 45.0;
-	float bulkDensityFactor = 1.0f;
-	float particlesPerCubicMeter = 1.0f;
-	float dropHeight = 10.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 1.0f;
+	simulationParameters.heapWorldSizeZ = 1.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.bulkDensityFactor = 1.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	simulationParameters.dropHeight = 10.0f;
 
 	{
-		BlendingSimulatorDetailed<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, bulkDensityFactor, particlesPerCubicMeter,
-			dropHeight, false);
+		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
 		EXPECT_FALSE(simulator.isPaused());
 		simulator.pause();
 		EXPECT_TRUE(simulator.isPaused());
@@ -43,16 +43,16 @@ TEST(BlendingSimulatorDetailed, test_is_paused)
 
 TEST(BlendingSimulatorDetailed, test_heap_map)
 {
-	float heapWorldSizeX = 10.0f;
-	float heapWorldSizeZ = 20.0f;
-	float reclaimAngle = 45.0;
-	float bulkDensityFactor = 1.0f;
-	float particlesPerCubicMeter = 1.0f;
-	float dropHeight = 10.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 10.0f;
+	simulationParameters.heapWorldSizeZ = 20.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.bulkDensityFactor = 1.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	simulationParameters.dropHeight = 10.0f;
 
 	{
-		BlendingSimulatorDetailed<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, bulkDensityFactor, particlesPerCubicMeter,
-			dropHeight, false);
+		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		float* heapMap = simulator.getHeapMap();
 		ASSERT_NE(heapMap, nullptr);
@@ -66,16 +66,16 @@ TEST(BlendingSimulatorDetailed, test_heap_map)
 
 TEST(BlendingSimulatorDetailed, test_stack_clear)
 {
-	float heapWorldSizeX = 3.0f;
-	float heapWorldSizeZ = 3.0f;
-	float reclaimAngle = 45.0;
-	float bulkDensityFactor = 1.0f;
-	float particlesPerCubicMeter = 1.0f;
-	float dropHeight = 10.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.bulkDensityFactor = 1.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	simulationParameters.dropHeight = 10.0f;
 
 	{
-		BlendingSimulatorDetailed<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, bulkDensityFactor, particlesPerCubicMeter,
-			dropHeight, false);
+		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 1.0;
 		AveragedParameters p(volume, {1.0});
@@ -98,16 +98,16 @@ TEST(BlendingSimulatorDetailed, test_stack_clear)
 
 TEST(BlendingSimulatorDetailed, test_stack_reclaim)
 {
-	float heapWorldSizeX = 3.0f;
-	float heapWorldSizeZ = 3.0f;
-	float reclaimAngle = 45.0;
-	float bulkDensityFactor = 1.0f;
-	float particlesPerCubicMeter = 1.0f;
-	float dropHeight = 10.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.bulkDensityFactor = 1.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	simulationParameters.dropHeight = 10.0f;
 
 	{
-		BlendingSimulatorDetailed<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, bulkDensityFactor, particlesPerCubicMeter,
-			dropHeight, false);
+		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 10.0;
 		AveragedParameters p(volume, {1.0});

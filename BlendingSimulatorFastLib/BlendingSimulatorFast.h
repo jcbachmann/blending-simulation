@@ -9,8 +9,7 @@ template<typename Parameters>
 class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 {
 	public:
-		BlendingSimulatorFast(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float eightLikelihood, float particlesPerCubicMeter,
-			bool visualize);
+		explicit BlendingSimulatorFast(SimulationParameters simulationParameters);
 
 		virtual void clear() override;
 		virtual void finishStacking() override;
@@ -36,9 +35,6 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 
 		// Variables for grouping the particles per cross section
 		std::vector<Parameters> reclaimParameters;
-
-		// Likelihood of considering 8 instead of 4 fall directions (responsible for round piles)
-		const float eightLikelihood;
 };
 
 #include "BlendingSimulatorFast.impl.h"

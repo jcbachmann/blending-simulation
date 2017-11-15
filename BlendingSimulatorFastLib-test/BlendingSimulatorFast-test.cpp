@@ -5,33 +5,35 @@
 
 TEST(BlendingSimulatorFast, test_constructor_destructor)
 {
-	float heapWorldSizeX = 1.0f;
-	float heapWorldSizeZ = 1.0f;
-	float reclaimAngle = 45.0;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 1.0f;
+	simulationParameters.heapWorldSizeZ = 1.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		EXPECT_EQ(heapMapSize.first, 1);
 		EXPECT_EQ(heapMapSize.second, 1);
 		std::pair<float, float> heapWorldSize = simulator.getHeapWorldSize();
-		EXPECT_NEAR(heapWorldSize.first, heapWorldSizeX, 0.1);
-		EXPECT_NEAR(heapWorldSize.second, heapWorldSizeZ, 0.1);
+		EXPECT_NEAR(heapWorldSize.first, simulationParameters.heapWorldSizeX, 0.1);
+		EXPECT_NEAR(heapWorldSize.second, simulationParameters.heapWorldSizeZ, 0.1);
 	}
 }
 
 TEST(BlendingSimulatorFast, test_heap_size_1ppcm)
 {
-	float heapWorldSizeX = 100.0f;
-	float heapWorldSizeZ = 200.0f;
-	float reclaimAngle = 45.0;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 100.0f;
+	simulationParameters.heapWorldSizeZ = 200.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		EXPECT_EQ(heapMapSize.first, 100);
 		EXPECT_EQ(heapMapSize.second, 200);
@@ -40,33 +42,35 @@ TEST(BlendingSimulatorFast, test_heap_size_1ppcm)
 
 TEST(BlendingSimulatorFast, test_heap_size_8ppcm)
 {
-	float heapWorldSizeX = 100.0f;
-	float heapWorldSizeZ = 200.0f;
-	float reclaimAngle = 45.0;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 8.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 100.0f;
+	simulationParameters.heapWorldSizeZ = 200.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 8.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		EXPECT_EQ(heapMapSize.first, 200);
 		EXPECT_EQ(heapMapSize.second, 400);
 		std::pair<float, float> heapWorldSize = simulator.getHeapWorldSize();
-		EXPECT_NEAR(heapWorldSize.first, heapWorldSizeX, 0.1);
-		EXPECT_NEAR(heapWorldSize.second, heapWorldSizeZ, 0.1);
+		EXPECT_NEAR(heapWorldSize.first, simulationParameters.heapWorldSizeX, 0.1);
+		EXPECT_NEAR(heapWorldSize.second, simulationParameters.heapWorldSizeZ, 0.1);
 	}
 }
 
 TEST(BlendingSimulatorFast, test_is_paused)
 {
-	float heapWorldSizeX = 1.0f;
-	float heapWorldSizeZ = 1.0f;
-	float reclaimAngle = 45.0;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 1.0f;
+	simulationParameters.heapWorldSizeZ = 1.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 		EXPECT_FALSE(simulator.isPaused());
 		simulator.pause();
 		EXPECT_TRUE(simulator.isPaused());
@@ -77,14 +81,15 @@ TEST(BlendingSimulatorFast, test_is_paused)
 
 TEST(BlendingSimulatorFast, test_heap_map)
 {
-	float heapWorldSizeX = 10.0f;
-	float heapWorldSizeZ = 20.0f;
-	float reclaimAngle = 45.0;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 10.0f;
+	simulationParameters.heapWorldSizeZ = 20.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		float* heapMap = simulator.getHeapMap();
 		ASSERT_NE(heapMap, nullptr);
@@ -98,14 +103,15 @@ TEST(BlendingSimulatorFast, test_heap_map)
 
 TEST(BlendingSimulatorFast, test_stacking)
 {
-	float heapWorldSizeX = 3.0f;
-	float heapWorldSizeZ = 3.0f;
-	float reclaimAngle = 90;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 90;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 1.0;
 		AveragedParameters p(volume, {1.0});
@@ -132,14 +138,15 @@ TEST(BlendingSimulatorFast, test_stacking)
 
 TEST(BlendingSimulatorFast, test_clear)
 {
-	float heapWorldSizeX = 3.0f;
-	float heapWorldSizeZ = 3.0f;
-	float reclaimAngle = 90;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 90;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 1.0;
 		AveragedParameters p(volume, {1.0});
@@ -162,14 +169,15 @@ TEST(BlendingSimulatorFast, test_clear)
 
 TEST(BlendingSimulatorFast, test_reclaim)
 {
-	float heapWorldSizeX = 3.0f;
-	float heapWorldSizeZ = 3.0f;
-	float reclaimAngle = 90;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 90;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 1.0;
 		AveragedParameters p(volume, {1.0});
@@ -197,14 +205,15 @@ TEST(BlendingSimulatorFast, test_reclaim)
 
 TEST(BlendingSimulatorFast, test_reclaim_angle_90)
 {
-	float heapWorldSizeX = 3.0f;
-	float heapWorldSizeZ = 3.0f;
-	float reclaimAngle = 90;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 90;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 6.0 + 1e-3;
 		AveragedParameters p(volume, {1.0});
@@ -232,14 +241,15 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_90)
 
 TEST(BlendingSimulatorFast, test_reclaim_angle_45)
 {
-	float heapWorldSizeX = 3.0f;
-	float heapWorldSizeZ = 3.0f;
-	float reclaimAngle = 45.0;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 6.0;
 		AveragedParameters p(volume, {1.0});
@@ -267,14 +277,15 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_45)
 
 TEST(BlendingSimulatorFast, test_reclaim_eight)
 {
-	float heapWorldSizeX = 3.0f;
-	float heapWorldSizeZ = 3.0f;
-	float reclaimAngle = 90;
-	float eightLikelihood = 1.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 90;
+	simulationParameters.eightLikelihood = 1.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 9.0;
 		AveragedParameters p(volume, {1.0});
@@ -302,14 +313,15 @@ TEST(BlendingSimulatorFast, test_reclaim_eight)
 
 TEST(BlendingSimulatorFast, test_reclaim_8ppcm)
 {
-	float heapWorldSizeX = 6.0f / 4.0f;
-	float heapWorldSizeZ = 6.0f / 4.0f;
-	float reclaimAngle = 90;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 8.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 6.0f / 4.0f;
+	simulationParameters.heapWorldSizeZ = 6.0f / 4.0f;
+	simulationParameters.reclaimAngle = 90;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 8.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 6.0 / 8.0;
 		AveragedParameters p(volume, {1.0});
@@ -337,14 +349,15 @@ TEST(BlendingSimulatorFast, test_reclaim_8ppcm)
 
 TEST(BlendingSimulatorFast, test_reclaim_angle_0)
 {
-	float heapWorldSizeX = 3.0f;
-	float heapWorldSizeZ = 3.0f;
-	float reclaimAngle = 0.0;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 0.0;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 6.0;
 		AveragedParameters p(volume, {1.0});
@@ -372,14 +385,15 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_0)
 
 TEST(BlendingSimulatorFast, test_reclaim_angle_180)
 {
-	float heapWorldSizeX = 3.0f;
-	float heapWorldSizeZ = 3.0f;
-	float reclaimAngle = 180.0;
-	float eightLikelihood = 0.0f;
-	float particlesPerCubicMeter = 1.0f;
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 180.0;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(heapWorldSizeX, heapWorldSizeZ, reclaimAngle, eightLikelihood, particlesPerCubicMeter, false);
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
 
 		double volume = 6.0;
 		AveragedParameters p(volume, {1.0});
