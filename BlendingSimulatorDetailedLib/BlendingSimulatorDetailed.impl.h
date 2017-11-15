@@ -18,7 +18,8 @@ const float cubicMetersPerSecond = 1.0; // in m³/s
 // Simulator constants
 const int minFreezeTimeout = 15000;
 const int maxFreezeTimeout = 25000;
-const unsigned long long simulationInterval = 30;
+const unsigned long long simulationIntervalMs = 30;
+const int simulationIntervalSubSteps = 3;
 
 template<typename Parameters>
 BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float bulkDensityFactor,
@@ -361,9 +362,8 @@ void BlendingSimulatorDetailed<Parameters>::step()
 
 	std::lock_guard<std::mutex> lock(simulationMutex);
 
-	const int subSteps = 3;
-	const float timeStep = float(simulationInterval) / 1000.0f;
-	dynamicsWorld->stepSimulation(timeStep, subSteps, timeStep / float(subSteps));
+	const float timeStep = float(simulationIntervalMs) / 1000.0f;
+	dynamicsWorld->stepSimulation(timeStep, simulationIntervalSubSteps, timeStep / float(simulationIntervalSubSteps));
 	doOutputParticles();
 	freezeParticles();
 	static int optimizeFrozenParticlesCounter = 0;
@@ -371,7 +371,7 @@ void BlendingSimulatorDetailed<Parameters>::step()
 	if (optimizeFrozenParticlesCounter == 0) {
 		optimizeFrozenParticles();
 	}
-	simulationTickCount += simulationInterval;
+	simulationTickCount += simulationIntervalMs;
 }
 
 std::tuple<double, double, double, double> toTuple(btQuaternion q)
