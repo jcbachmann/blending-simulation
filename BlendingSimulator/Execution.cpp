@@ -63,6 +63,11 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 					throw std::runtime_error("invalid value at position " + std::to_string(i));
 				}
 			}
+
+			std::string trash;
+			if (lineStream >> trash) {
+				throw std::runtime_error("non-empty line after parsing all parameters");
+			}
 			simulator.stack(xPos, zPos, AveragedParameters(volume, std::move(values)));
 		} catch (std::exception& e) {
 			std::cerr << "could not match line '" << line << "': " << e.what() << std::endl;
