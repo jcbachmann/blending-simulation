@@ -17,6 +17,7 @@ void in_range(unsigned int value, unsigned int min, unsigned int max)
 int main(int argc, char** argv) try
 {
 	ExecutionParameters executionParameters;
+	SimulationParameters simulationParameters;
 
 	po::options_description descGeneric("Generic Options");
 	descGeneric.add_options()
@@ -27,6 +28,7 @@ int main(int argc, char** argv) try
 	po::options_description descSimulation("Simulation Options");
 	descSimulation.add_options()
 		("detailed", po::bool_switch(&executionParameters.detailed), "detailed simulation")
+		("circular", po::bool_switch(&simulationParameters.circular), "detailed simulation")
 		("length,l", po::value<float>()->required()->notifier(boost::bind(&in_range, _1, 0.0f, 1000000.0f)), "blending bed length")
 		("depth,d", po::value<float>()->required()->notifier(boost::bind(&in_range, _1, 0.0f, 1000000.0f)), "blending bed depth")
 		("reclaimangle", po::value<float>()->default_value(45.0f)->notifier(boost::bind(&in_range, _1, 0.0f, 180.0f)), "reclaimer angle")
@@ -65,7 +67,6 @@ int main(int argc, char** argv) try
 	po::notify(vm);
 
 	// Simulation Options
-	SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = vm["length"].as<float>();
 	simulationParameters.heapWorldSizeZ = vm["depth"].as<float>();
 	simulationParameters.reclaimAngle = vm["reclaimangle"].as<float>();

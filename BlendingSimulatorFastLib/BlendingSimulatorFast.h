@@ -30,6 +30,9 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 		// Tangent of reclaim angle
 		float tanReclaimAngle;
 
+		// Circumference of circular stockpile ridge
+		double circumference = 0.0;
+
 		// Variable tracking the height at each position for falling simulation
 		std::vector<std::vector<int>> stackedHeights;
 

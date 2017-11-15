@@ -25,7 +25,12 @@ BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(SimulationParameters si
 		stackedHeights[x].resize(this->heapSizeZ + 2);
 	}
 
-	reclaimParameters.resize(this->heapSizeX);
+	if (simulationParameters.circular) {
+		circumference = 2.0 * 3.141592653589793238463 * 0.25 * std::min(simulationParameters.heapWorldSizeX, simulationParameters.heapWorldSizeZ);
+		reclaimParameters.resize(static_cast<unsigned int>(circumference / realWorldSizeFactor + 0.5));
+	} else {
+		reclaimParameters.resize(this->heapSizeX);
+	}
 
 	clear();
 }
@@ -226,28 +231,53 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		}
 	}
 
+	int reclaimIndex = 0;
+
 	// Prepare reclaiming
-	int reclaimIndex = xi - 1;
+	if (this->simulationParameters.circular) {
+		// Position is along the radius
 
-	if (tanReclaimAngle > 1e10) {
-		// Vertical
-	} else if (tanReclaimAngle < 1e-10) {
-		// Horizontal
-		if (this->simulationParameters.reclaimAngle < 90.0f) {
-			reclaimIndex = 0;
+		double dx = double(xi - 0.5f) * realWorldSizeFactor - 0.5 * this->simulationParameters.heapWorldSizeX + 0.5f;
+		double dz = double(zi - 0.5f) * realWorldSizeFactor - 0.5 * this->simulationParameters.heapWorldSizeZ + 0.5f;
+		double posOnCircumference = 0.5 * (1.0 - std::atan2(dz, dx) / 3.141592653589793238463) * this->circumference;
+
+		if (tanReclaimAngle > 1e10) {
+			// Vertical
+		} else if (tanReclaimAngle < 1e-10) {
+			// Horizontal
+			// Ignore horizontal reclaiming for circular stockpiles - it is useless anyway
 		} else {
-			reclaimIndex = this->heapSizeX - 1;
+			posOnCircumference -= float(minHeight) * realWorldSizeFactor / tanReclaimAngle;
 		}
+
+		reclaimIndex = (unsigned int) (posOnCircumference / realWorldSizeFactor + 0.5);
+
+		// Acquire positive modulo
+		int n = static_cast<int>(reclaimParameters.size());
+		reclaimIndex = (reclaimIndex % n + n) % n;
 	} else {
-		reclaimIndex -= minHeight / tanReclaimAngle;
-	}
+		reclaimIndex = xi - 1;
 
-	if (reclaimIndex < 0) {
-		reclaimIndex = 0;
-	}
+		if (tanReclaimAngle > 1e10) {
+			// Vertical
+		} else if (tanReclaimAngle < 1e-10) {
+			// Horizontal
+			if (this->simulationParameters.reclaimAngle < 90.0f) {
+				reclaimIndex = 0;
+			} else {
+				reclaimIndex = static_cast<int>(reclaimParameters.size() - 1);
+			}
+		} else {
+			reclaimIndex -= int(float(minHeight) / tanReclaimAngle + 0.5f);
+		}
 
-	if (reclaimIndex >= (int) this->heapSizeX) {
-		reclaimIndex = this->heapSizeX - 1;
+		if (reclaimIndex < 0) {
+			reclaimIndex = 0;
+		}
+
+		if (reclaimIndex >= reclaimParameters.size()) {
+			reclaimIndex = static_cast<int>(reclaimParameters.size() - 1);
+		}
 	}
 
 	reclaimParameters[reclaimIndex].push(parameters);

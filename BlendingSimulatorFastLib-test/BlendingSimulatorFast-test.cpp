@@ -418,3 +418,50 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_180)
 		EXPECT_TRUE(simulator.reclaimingFinished());
 	}
 }
+
+TEST(BlendingSimulatorFast, test_circular)
+{
+	SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 10.0f;
+	simulationParameters.heapWorldSizeZ = 10.0f;
+	simulationParameters.reclaimAngle = 90;
+	simulationParameters.eightLikelihood = 0.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	simulationParameters.circular = true;
+
+	{
+		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+
+		//        X
+		//     0 1 . 8 9
+		//   0 3 . . . 2
+		// Z 1 . . . . .
+		//   . . . . . .
+		//   8 . . . . .
+		//   9 0 . . . 1
+
+		float total_way = 2.0f * 3.141592653589793238463f * 2.5f;
+		simulator.stack(0.0, 0.0, {3.0, {1.0}});
+		simulator.stack(9.0, 0.0, {2.0, {1.0}});
+		simulator.stack(9.0, 9.0, {1.0, {1.0}});
+		simulator.finishStacking();
+
+		EXPECT_FALSE(simulator.reclaimingFinished());
+		AveragedParameters pOut = simulator.reclaim(0.25f * total_way);
+		EXPECT_NEAR(pOut.getVolume(), 0, 1e-10);
+
+		EXPECT_FALSE(simulator.reclaimingFinished());
+		AveragedParameters pOut2 = simulator.reclaim(0.5f * total_way);
+		EXPECT_NEAR(pOut2.getVolume(), 1, 1e-10);
+
+		EXPECT_FALSE(simulator.reclaimingFinished());
+		AveragedParameters pOut3 = simulator.reclaim(0.75f * total_way);
+		EXPECT_NEAR(pOut3.getVolume(), 2, 1e-10);
+
+		EXPECT_FALSE(simulator.reclaimingFinished());
+		AveragedParameters pOut4 = simulator.reclaim(1.0f * total_way);
+		EXPECT_NEAR(pOut4.getVolume(), 3, 1e-10);
+
+		EXPECT_TRUE(simulator.reclaimingFinished());
+	}
+}

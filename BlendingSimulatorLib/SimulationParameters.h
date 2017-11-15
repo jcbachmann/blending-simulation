@@ -17,6 +17,9 @@ struct SimulationParameters
 	/// Degree of detail measuring the amount of particles one cubic meter of material should be split up into
 	float particlesPerCubicMeter = 0.0f;
 
+	/// Simulate a circular stockpile with the stacker moving from the center of the world
+	bool circular = false;
+
 
 	/* Fast simulation */
 
