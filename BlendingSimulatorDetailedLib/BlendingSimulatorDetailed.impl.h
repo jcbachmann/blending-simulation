@@ -281,6 +281,9 @@ Parameters BlendingSimulatorDetailed<Parameters>::reclaim(float position)
 		tanReclaimAngle = std::tan(this->simulationParameters.reclaimAngle * std::atan(1.0) * 4.0 / 180.0);
 	}
 
+	double radius = 0.25 * std::min(this->simulationParameters.heapWorldSizeX, this->simulationParameters.heapWorldSizeZ);
+	double circumference = 2.0 * 3.141592653589793238463 * radius;
+
 	Parameters p;
 	for (auto it = allParticles.begin(); it != allParticles.end();) {
 		ParticleDetailed<Parameters>* particle = *it;
@@ -289,18 +292,37 @@ Parameters BlendingSimulatorDetailed<Parameters>::reclaim(float position)
 		particle->defaultMotionState->getWorldTransform(trans);
 		btVector3& origin = trans.getOrigin();
 
-		double comparePosition = origin.x();
-		if (tanReclaimAngle > 1e10) {
-			// Vertical
-		} else if (tanReclaimAngle < 1e-10) {
-			// Horizontal
-			if (this->simulationParameters.reclaimAngle < 90.0f) {
-				comparePosition = 0;
+		double comparePosition;
+
+		if (this->simulationParameters.circular) {
+			// Position is along the radius
+			double dx = origin.x() - 0.5 * this->simulationParameters.heapWorldSizeX;
+			double dz = origin.z() - 0.5 * this->simulationParameters.heapWorldSizeZ;
+			comparePosition = 0.5 * (1.0 - std::atan2(dz, dx) / 3.141592653589793238463) * circumference;
+
+			if (tanReclaimAngle > 1e10) {
+				// Vertical
+			} else if (tanReclaimAngle < 1e-10) {
+				// Horizontal
+				// Ignore horizontal reclaiming for circular stockpiles - it is useless anyway
 			} else {
-				comparePosition = this->simulationParameters.heapWorldSizeX;
+				comparePosition -= origin.y() / tanReclaimAngle;
 			}
 		} else {
-			comparePosition -= origin.y() / tanReclaimAngle;
+			comparePosition = origin.x();
+
+			if (tanReclaimAngle > 1e10) {
+				// Vertical
+			} else if (tanReclaimAngle < 1e-10) {
+				// Horizontal
+				if (this->simulationParameters.reclaimAngle < 90.0f) {
+					comparePosition = 0;
+				} else {
+					comparePosition = this->simulationParameters.heapWorldSizeX;
+				}
+			} else {
+				comparePosition -= origin.y() / tanReclaimAngle;
+			}
 		}
 
 		if (comparePosition < position) {
