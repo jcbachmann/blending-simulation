@@ -16,7 +16,6 @@ struct ExecutionParameters
 	bool pretty = false;
 
 	// Input / Output Options
-	unsigned int parameterCount = 0;
 	std::string heightsFile;
 	std::string reclaimFile;
 	float reclaimIncrement = 0.0f;

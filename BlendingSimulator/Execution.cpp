@@ -34,6 +34,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 	std::cout << "Starting stacking from stdin" << std::endl;
 
 	std::string line;
+	int parameterCount = -1;
 	while (std::getline(std::cin, line) && !cancel.load()) {
 		std::stringstream lineStream(line);
 
@@ -58,17 +59,30 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 				throw std::runtime_error("invalid volume");
 			}
 
-			std::vector<double> values(parameters.parameterCount);
-			for (unsigned int i = 0; i < parameters.parameterCount; i++) {
-				if (!(lineStream >> values[i])) {
-					throw std::runtime_error("invalid value at position " + std::to_string(i));
+			std::vector<double> values;
+
+			if (parameterCount >= 0) {
+				values.resize(static_cast<unsigned long>(parameterCount));
+				for (unsigned int i = 0; i < parameterCount; i++) {
+					if (!(lineStream >> values[i])) {
+						throw std::runtime_error("invalid value at position " + std::to_string(i));
+					}
 				}
+
+				std::string trash;
+				if (lineStream >> trash) {
+					throw std::runtime_error("non-empty line after parsing all parameters");
+				}
+			} else {
+				// Determine parameter count
+				double value;
+				while (lineStream >> value) {
+					// Slow but executed only for first row and parameter count is usually very low
+					values.push_back(value);
+				}
+				parameterCount = static_cast<int>(values.size());
 			}
 
-			std::string trash;
-			if (lineStream >> trash) {
-				throw std::runtime_error("non-empty line after parsing all parameters");
-			}
 			simulator.stack(xPos, zPos, AveragedParameters(volume, std::move(values)));
 		} catch (std::exception& e) {
 			std::cerr << "could not match line '" << line << "': " << e.what() << std::endl;
@@ -117,8 +131,8 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 
 		if (out) {
 			out << "position\tvolume";
-			for (unsigned int i = 0; i < parameters.parameterCount; i++) {
-				out << "\tp" << (i + 1);
+			for (unsigned int i = 0; i < parameterCount; i++) {
+				out << "\tp_" << (i + 1);
 			}
 			out << "\n";
 
@@ -127,7 +141,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 				AveragedParameters p = simulator.reclaim(position);
 
 				out << position << "\t" << p.getVolume();
-				for (unsigned int i = 0; i < parameters.parameterCount; i++) {
+				for (unsigned int i = 0; i < parameterCount; i++) {
 					out << "\t" << p.getValue(i);
 				}
 				out << "\n";

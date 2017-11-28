@@ -45,7 +45,6 @@ int main(int argc, char** argv) try
 
 	po::options_description descInputOutput("Input / Output Options");
 	descInputOutput.add_options()
-		("parameters,n", po::value<unsigned int>()->default_value(0)->notifier(boost::bind(&in_range, _1, 0u, 1000000u)), "particle parameter count")
 		("heights", po::value<std::string>()->default_value(""), "height map output file")
 		("reclaim", po::value<std::string>()->default_value(""), "reclaim output file");
 
@@ -77,7 +76,6 @@ int main(int argc, char** argv) try
 	simulationParameters.visualize = executionParameters.visualize;
 
 	// Input / Output Options
-	executionParameters.parameterCount = vm["parameters"].as<unsigned int>();
 	executionParameters.heightsFile = vm["heights"].as<std::string>();
 	executionParameters.reclaimFile = vm["reclaim"].as<std::string>();
 	executionParameters.reclaimIncrement = vm["reclaimincrement"].as<float>();
