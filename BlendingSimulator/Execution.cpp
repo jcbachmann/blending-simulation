@@ -10,12 +10,12 @@
 
 void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, ExecutionParameters parameters)
 {
-	std::cout << "Initializing simulation" << std::endl;
+	std::cerr << "Initializing simulation" << std::endl;
 	std::thread visualizationThread;
 	std::atomic_bool cancel(false);
 
 	if (parameters.visualize) {
-		std::cout << "Starting visualization" << std::endl;
+		std::cerr << "Starting visualization" << std::endl;
 		visualizationThread = std::thread([&simulator, &cancel, parameters]() {
 			BlendingVisualizer<AveragedParameters> visualizer(&simulator, parameters.verbose, parameters.pretty);
 			try {
@@ -26,12 +26,12 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 
 			bool wasCancelled = cancel.exchange(true);
 			if (!wasCancelled) {
-				std::cout << "Stopping simulation input" << std::endl;
+				std::cerr << "Stopping simulation input" << std::endl;
 			}
 		});
 	}
 
-	std::cout << "Starting stacking from stdin" << std::endl;
+	std::cerr << "Starting stacking from stdin" << std::endl;
 
 	std::string line;
 	int parameterCount = -1;
@@ -89,21 +89,21 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 		}
 	}
 
-	std::cout << "Stacking input stopped" << std::endl;
+	std::cerr << "Stacking input stopped" << std::endl;
 
 	cancel.store(true);
 	simulator.finishStacking();
 
-	std::cout << "Stacking finished" << std::endl;
+	std::cerr << "Stacking finished" << std::endl;
 
 	if (parameters.visualize) {
-		std::cout << "Waiting for visualization" << std::endl;
+		std::cerr << "Waiting for visualization" << std::endl;
 		visualizationThread.join();
-		std::cout << "Visualization finished" << std::endl;
+		std::cerr << "Visualization finished" << std::endl;
 	}
 
 	if (!parameters.heightsFile.empty()) {
-		std::cout << "Writing height map into '" << parameters.heightsFile << "'" << std::endl;
+		std::cerr << "Writing height map into '" << parameters.heightsFile << "'" << std::endl;
 		std::ofstream out(parameters.heightsFile);
 
 		if (out) {
@@ -119,15 +119,15 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 				out << "\n";
 			}
 			out.close();
-			std::cout << "Height map written" << std::endl;
+			std::cerr << "Height map written" << std::endl;
 		} else {
 			std::cerr << "Could not open output file stream for filename '" << parameters.heightsFile << "'" << std::endl;
 		}
 	}
 
 	if (!parameters.reclaimFile.empty()) {
-		std::cout << "Reclaiming into '" << parameters.reclaimFile << "'" << std::endl;
 		std::ofstream out(parameters.reclaimFile);
+		std::cerr << "Reclaiming into '" << parameters.reclaimFile << "'" << std::endl;
 
 		if (out) {
 			out << "position\tvolume";
@@ -149,7 +149,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 				position += parameters.reclaimIncrement;
 			}
 			out.close();
-			std::cout << "Reclaiming finished" << std::endl;
+			std::cerr << "Reclaiming finished" << std::endl;
 		} else {
 			std::cerr << "Could not open output file stream for filename '" << parameters.reclaimFile << "'" << std::endl;
 		}
