@@ -126,8 +126,17 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 	}
 
 	if (!parameters.reclaimFile.empty()) {
-		std::ofstream out(parameters.reclaimFile);
 		std::cerr << "Reclaiming into '" << parameters.reclaimFile << "'" << std::endl;
+
+		std::streambuf* buf;
+		std::ofstream of;
+		if (parameters.reclaimFile == "stdout") {
+			buf = std::cout.rdbuf();
+		} else {
+			of.open(parameters.reclaimFile);
+			buf = of.rdbuf();
+		}
+		std::ostream out(buf);
 
 		if (out) {
 			out << "position\tvolume";
@@ -148,7 +157,10 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 
 				position += parameters.reclaimIncrement;
 			}
-			out.close();
+			out.flush();
+			if (of) {
+				of.close();
+			}
 			std::cerr << "Reclaiming finished" << std::endl;
 		} else {
 			std::cerr << "Could not open output file stream for filename '" << parameters.reclaimFile << "'" << std::endl;
