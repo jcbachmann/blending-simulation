@@ -14,7 +14,7 @@ void in_range(float value,float min, float max)
 	}
 }
 
-int main(int argc, char** argv) try
+int main(int argc, char* argv[]) try
 {
 	ExecutionParameters executionParameters;
 	SimulationParameters simulationParameters;
