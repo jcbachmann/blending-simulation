@@ -7,7 +7,7 @@
 
 namespace po = boost::program_options;
 
-void in_range(unsigned int value, unsigned int min, unsigned int max)
+void in_range(float value,float min, float max)
 {
 	if (value < min || value > max) {
 		throw std::runtime_error("value " + std::to_string(value) + " out of range [" + std::to_string(min) + ", " + std::to_string(max) + "]");
