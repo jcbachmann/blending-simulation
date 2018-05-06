@@ -9,6 +9,7 @@
 #include <OgreMovablePlane.h>
 #include <Terrain/OgreTerrainMaterialGeneratorA.h>
 #include <Ogre.h>
+#include <SDL2/SDL_keyboard.h>
 
 #include "Particle.h"
 #include "BlendingSimulator.h"

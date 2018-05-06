@@ -46,7 +46,6 @@ include_directories(${Boost_INCLUDE_DIR})
 add_definitions(-DBOOST_ALL_NO_LIB)
 
 include_directories(
-	${SDL2_INCLUDE_DIRS}
 	${OGRE_INCLUDE_DIRS}
 	${OGRE_Overlay_INCLUDE_DIRS}
 	${OGRE_Bites_INCLUDE_DIRS}
@@ -59,7 +58,7 @@ target_link_libraries(
 	Visualizer
 	BlendingSimulatorLib
 	${Boost_LIBRARIES}
-	${SDL2_LIBRARIES}
+	SDL2::SDL2
 	${OGRE_LIBRARIES}
 	${OGRE_Overlay_LIBRARIES}
 	${OGRE_Terrain_LIBRARIES}
@@ -68,7 +67,6 @@ target_link_libraries(
 
 target_include_directories(
 	Visualizer PUBLIC
-	${SDL2_INCLUDE_DIRS}
 	${OGRE_INCLUDE_DIRS}
 	${OGRE_Overlay_INCLUDE_DIRS}
 	${OGRE_Bites_INCLUDE_DIRS}

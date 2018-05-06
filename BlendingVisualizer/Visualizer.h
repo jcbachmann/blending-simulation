@@ -13,6 +13,7 @@
 #include <Bites/OgreInput.h>
 #include <Bites/OgreTrays.h>
 #include <Bites/OgreCameraMan.h>
+#include <SDL2/SDL.h>
 
 class Visualizer : public Ogre::FrameListener, public Ogre::WindowEventListener, public OgreBites::InputListener, OgreBites::TrayListener
 {
@@ -71,7 +72,7 @@ class Visualizer : public Ogre::FrameListener, public Ogre::WindowEventListener,
 		void setupInput(bool grab);
 		void createDummyScene();
 		void destroyDummyScene();
-		void fireInputEvent(const OgreBites::Event& event);
+		void fireInputEvent(const SDL_Event& event);
 		void pollEvents();
 		void grab();
 		void ungrab();

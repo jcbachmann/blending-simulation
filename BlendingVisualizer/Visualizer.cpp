@@ -1,6 +1,6 @@
 #include "Visualizer.h"
 
-#include <SDL_syswm.h>
+#include <SDL2/SDL_syswm.h>
 #include <OgreLogManager.h>
 #include <OgreMaterialManager.h>
 #include <OgreTextureManager.h>
@@ -419,8 +419,11 @@ void Visualizer::windowResized(Ogre::RenderWindow* rw)
 	mCamera->setAspectRatio((Ogre::Real) mViewport->getActualWidth() / (Ogre::Real) mViewport->getActualHeight());
 }
 
-void Visualizer::fireInputEvent(const OgreBites::Event& event)
+void Visualizer::fireInputEvent(const SDL_Event& sdlEvent)
 {
+	// TODO how is this done correctly with the new API?
+	OgreBites::Event event = *reinterpret_cast<const OgreBites::Event*>(&sdlEvent);
+
 	switch (event.type) {
 		case SDL_KEYDOWN:
 			// Ignore repeated signals from key being held down.
