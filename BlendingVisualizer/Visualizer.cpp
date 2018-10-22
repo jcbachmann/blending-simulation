@@ -51,7 +51,7 @@ void Visualizer::initApp()
 	locateResources();
 	loadResources();
 
-	mSceneMgr = mRoot->createSceneManager(Ogre::ST_GENERIC);
+	mSceneMgr = mRoot->createSceneManager();
 	mSceneMgr->addRenderQueueListener(mOverlaySystem);
 
 	Ogre::MaterialManager& materialManager = Ogre::MaterialManager::getSingleton();
@@ -196,7 +196,7 @@ void Visualizer::loadResources()
 void Visualizer::createDummyScene()
 {
 	mWindow->removeAllViewports();
-	Ogre::SceneManager* sm = mRoot->createSceneManager(Ogre::ST_GENERIC, "DummyScene");
+	Ogre::SceneManager* sm = mRoot->createSceneManager(Ogre::DefaultSceneManagerFactory::FACTORY_TYPE_NAME, "DummyScene");
 	sm->addRenderQueueListener(mOverlaySystem);
 	Ogre::Camera* cam = sm->createCamera("DummyCamera");
 	mWindow->addViewport(cam);
