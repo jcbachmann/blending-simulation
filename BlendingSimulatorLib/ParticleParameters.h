@@ -1,7 +1,8 @@
 #ifndef Parameters_H
 #define Parameters_H
 
-// Default parameter definitions
+#include <vector>
+#include <stdexcept>
 
 class AveragedParameters
 {
@@ -67,8 +68,8 @@ class AveragedParameters
 			AveragedParameters result(otherVolume, getValues());
 
 			double newVolume = volume - otherVolume;
-			for (int i = 0; i < values.size(); i++) {
-				values[i] *= newVolume / volume;
+			for (double& value : values) {
+				value *= newVolume / volume;
 			}
 			volume = newVolume;
 
