@@ -82,9 +82,10 @@ bool BlendingSimulatorFast<Parameters>::reclaimingFinished()
 template<typename Parameters>
 Parameters BlendingSimulatorFast<Parameters>::reclaim(float position)
 {
-	int startPos = int(reclaimerPos / realWorldSizeFactor + 0.5);
-	int endPos = int(position / realWorldSizeFactor + 0.5);
-	reclaimerPos = position;
+	double oldPos = reclaimerPos / realWorldSizeFactor;
+	double newPos = position / realWorldSizeFactor;
+	int startPos = static_cast<int>(oldPos);
+	int endPos = static_cast<int>(newPos);
 
 	if (startPos < 0) {
 		startPos = 0;
@@ -97,7 +98,28 @@ Parameters BlendingSimulatorFast<Parameters>::reclaim(float position)
 	Parameters p;
 	for (int i = startPos; i < endPos; i++) {
 		p.push(reclaimParameters[i]);
+		reclaimParameters[i].clear();
 	}
+
+	if (endPos < reclaimParameters.size()) {
+		auto& r = reclaimParameters[endPos];
+		double popVolume = 0.0f;
+		if (startPos == endPos) {
+			double missingPart = oldPos - double(endPos);
+			double div = 1.0f - missingPart;
+			if (div > 1e-20) {
+				double originalVolume = r.getVolume() / div;
+				popVolume = std::min((newPos - oldPos) * originalVolume, r.getVolume());
+			} else {
+				r.clear();
+			}
+		} else {
+			popVolume = r.getVolume() * (newPos - double(endPos));
+		}
+		p.push(r.pop(popVolume));
+	}
+
+	reclaimerPos = position;
 	return p;
 }
 
