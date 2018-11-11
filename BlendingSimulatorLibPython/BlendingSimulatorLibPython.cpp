@@ -1,4 +1,5 @@
 #include <sstream>
+#include <iostream>
 
 #include <boost/python.hpp>
 
@@ -90,7 +91,9 @@ class BlendingSimulatorLibPython
 
 		boost::python::dict reclaim()
 		{
-			simulator->finishStacking();
+			finishStacking();
+
+			std::cerr << "Reclaiming" << std::endl;
 
 			boost::python::list x;
 			boost::python::list volume;
@@ -121,6 +124,12 @@ class BlendingSimulatorLibPython
 		BlendingSimulator<AveragedParameters>* simulator;
 		float reclaimIncrement;
 		std::vector<std::string> parameterColumns;
+
+		void finishStacking()
+		{
+			simulator->finishStacking();
+			std::cerr << "Stacking finished" << std::endl;
+		}
 };
 
 BOOST_PYTHON_MODULE (blending_simulator_lib)
