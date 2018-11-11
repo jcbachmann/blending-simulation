@@ -120,6 +120,26 @@ class BlendingSimulatorLibPython
 			return ret;
 		}
 
+		boost::python::list getHeights()
+		{
+			finishStacking();
+
+			std::cerr << "Acquiring heights" << std::endl;
+			boost::python::list heights;
+
+			auto heapMapSize = simulator->getHeapMapSize();
+			const float* heapMap = simulator->getHeapMap(); // +1 for Y coordinate
+			for (int z = 0; z < heapMapSize.second; z++) {
+				boost::python::list l;
+				for (int x = 0; x < heapMapSize.first; x++) {
+					l.append(heapMap[z * heapMapSize.first + x + 1]);
+				}
+				heights.append(l);
+			}
+
+			return heights;
+		}
+
 	private:
 		BlendingSimulator<AveragedParameters>* simulator;
 		float reclaimIncrement;
@@ -138,5 +158,6 @@ BOOST_PYTHON_MODULE (blending_simulator_lib)
 		boost::python::init<float, float, float, float, bool, float, float, float, bool, float>())
 		.def("stack", &BlendingSimulatorLibPython::stack)
 		.def("stack_list", &BlendingSimulatorLibPython::stackList)
-		.def("reclaim", &BlendingSimulatorLibPython::reclaim);
+		.def("reclaim", &BlendingSimulatorLibPython::reclaim)
+		.def("get_heights", &BlendingSimulatorLibPython::getHeights);
 }
