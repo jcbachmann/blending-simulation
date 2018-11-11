@@ -51,11 +51,11 @@ include_directories(
 	${OGRE_Bites_INCLUDE_DIRS}
 )
 
-add_library(Visualizer STATIC ${SOURCE_FILES})
+add_library(BlendingVisualizer STATIC ${SOURCE_FILES})
 
-set_target_properties(Visualizer PROPERTIES DEBUG_POSTFIX _d)
+set_target_properties(BlendingVisualizer PROPERTIES DEBUG_POSTFIX _d)
 target_link_libraries(
-	Visualizer
+	BlendingVisualizer
 	BlendingSimulatorLib
 	${Boost_LIBRARIES}
 	SDL2::SDL2
@@ -66,7 +66,7 @@ target_link_libraries(
 )
 
 target_include_directories(
-	Visualizer PUBLIC
+	BlendingVisualizer PUBLIC
 	${OGRE_INCLUDE_DIRS}
 	${OGRE_Overlay_INCLUDE_DIRS}
 	${OGRE_Bites_INCLUDE_DIRS}

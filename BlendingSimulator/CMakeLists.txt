@@ -18,7 +18,7 @@ target_link_libraries(
 	BlendingSimulatorLib
 	BlendingSimulatorFastLib
 	BlendingSimulatorDetailedLib
-	Visualizer
+	BlendingVisualizer
 	pthread
 	${Boost_LIBRARIES}
 )
