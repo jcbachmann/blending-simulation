@@ -13,8 +13,11 @@ class VisualizationWrapper
 	public:
 		VisualizationWrapper(BlendingSimulator<AveragedParameters>* simulator, bool verbose, bool pretty)
 			: cancel(false)
+			, verbose(verbose)
 		{
-			std::cerr << "Starting visualization" << std::endl;
+			if (verbose) {
+				std::cerr << "Starting visualization" << std::endl;
+			}
 			visualizationThread = std::thread([this, simulator, verbose, pretty]() {
 				BlendingVisualizer<AveragedParameters> visualizer(simulator, verbose, pretty);
 				try {
@@ -35,15 +38,20 @@ class VisualizationWrapper
 			cancel.store(true);
 
 			if (visualizationThread.joinable()) {
-				std::cerr << "Waiting for visualization" << std::endl;
+				if (verbose) {
+					std::cerr << "Waiting for visualization" << std::endl;
+				}
 				visualizationThread.join();
-				std::cerr << "Visualization finished" << std::endl;
+				if (verbose) {
+					std::cerr << "Visualization finished" << std::endl;
+				}
 			}
 		}
 
 	private:
 		std::thread visualizationThread;
 		std::atomic_bool cancel;
+		bool verbose;
 };
 
 class BlendingSimulatorLibPython
@@ -53,6 +61,7 @@ class BlendingSimulatorLibPython
 			float eightLikelihood, bool visualize, float bulkDensityFactor, float dropHeight, bool detailed, float reclaimIncrement, bool pretty)
 			: reclaimIncrement(reclaimIncrement)
 			, visualizationWrapper(nullptr)
+			, verbose(false)
 		{
 			SimulationParameters simulationParameters
 			{
@@ -74,7 +83,6 @@ class BlendingSimulatorLibPython
 			}
 
 			if (visualize) {
-				bool verbose = false;
 				visualizationWrapper = new VisualizationWrapper(simulator, verbose, pretty);
 			}
 		}
@@ -139,7 +147,9 @@ class BlendingSimulatorLibPython
 		{
 			finishStacking();
 
-			std::cerr << "Reclaiming" << std::endl;
+			if (verbose) {
+				std::cerr << "Reclaiming" << std::endl;
+			}
 
 			boost::python::list x;
 			boost::python::list volume;
@@ -170,7 +180,9 @@ class BlendingSimulatorLibPython
 		{
 			finishStacking();
 
-			std::cerr << "Acquiring heights" << std::endl;
+			if (verbose) {
+				std::cerr << "Acquiring heights" << std::endl;
+			}
 			boost::python::list heights;
 
 			auto heapMapSize = simulator->getHeapMapSize();
@@ -191,11 +203,15 @@ class BlendingSimulatorLibPython
 		float reclaimIncrement;
 		std::vector<std::string> parameterColumns;
 		VisualizationWrapper* visualizationWrapper;
+		bool verbose;
 
 		void finishStacking()
 		{
 			simulator->finishStacking();
-			std::cerr << "Stacking finished" << std::endl;
+
+			if (verbose) {
+				std::cerr << "Stacking finished" << std::endl;
+			}
 		}
 };
 
