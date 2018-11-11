@@ -23,5 +23,6 @@ target_link_libraries(
 	BlendingSimulatorLib
 	BlendingSimulatorFastLib
 	BlendingSimulatorDetailedLib
+	BlendingVisualizer
 	pthread
 )

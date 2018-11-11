@@ -6,13 +6,53 @@
 #include "BlendingSimulatorFast.h"
 #include "BlendingSimulatorDetailed.h"
 #include "ParticleParameters.h"
+#include "BlendingVisualizer.h"
+
+class VisualizationWrapper
+{
+	public:
+		VisualizationWrapper(BlendingSimulator<AveragedParameters>* simulator, bool verbose, bool pretty)
+			: cancel(false)
+		{
+			std::cerr << "Starting visualization" << std::endl;
+			visualizationThread = std::thread([this, simulator, verbose, pretty]() {
+				BlendingVisualizer<AveragedParameters> visualizer(simulator, verbose, pretty);
+				try {
+					visualizer.run();
+				} catch (std::exception& e) {
+					std::cerr << "Error during execution of visualizer.run(): " << e.what() << std::endl;
+				}
+
+				bool wasCancelled = cancel.exchange(true);
+				if (!wasCancelled) {
+					std::cerr << "Stopping simulation input" << std::endl;
+				}
+			});
+		}
+
+		~VisualizationWrapper()
+		{
+			cancel.store(true);
+
+			if (visualizationThread.joinable()) {
+				std::cerr << "Waiting for visualization" << std::endl;
+				visualizationThread.join();
+				std::cerr << "Visualization finished" << std::endl;
+			}
+		}
+
+	private:
+		std::thread visualizationThread;
+		std::atomic_bool cancel;
+};
 
 class BlendingSimulatorLibPython
 {
 	public:
 		BlendingSimulatorLibPython(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float particlesPerCubicMeter, bool circular,
-			float eightLikelihood, float bulkDensityFactor, float dropHeight, bool detailed, float reclaimIncrement)
+			float eightLikelihood, bool visualize, float bulkDensityFactor, float dropHeight, bool detailed, float reclaimIncrement, bool pretty)
 			: reclaimIncrement(reclaimIncrement)
+			, visualizationWrapper(nullptr)
 		{
 			SimulationParameters simulationParameters
 			{
@@ -22,7 +62,7 @@ class BlendingSimulatorLibPython
 				particlesPerCubicMeter,
 				circular,
 				eightLikelihood,
-				false, // visualize
+				visualize,
 				bulkDensityFactor,
 				dropHeight
 			};
@@ -32,11 +72,17 @@ class BlendingSimulatorLibPython
 			} else {
 				simulator = new BlendingSimulatorFast<AveragedParameters>(simulationParameters);
 			}
+
+			if (visualize) {
+				bool verbose = false;
+				visualizationWrapper = new VisualizationWrapper(simulator, verbose, pretty);
+			}
 		}
 
 		~BlendingSimulatorLibPython()
 		{
 			delete simulator;
+			delete visualizationWrapper;
 		}
 
 		void stack(double timestamp, float x, float z, double volume, const boost::python::list& parameter)
@@ -144,6 +190,7 @@ class BlendingSimulatorLibPython
 		BlendingSimulator<AveragedParameters>* simulator;
 		float reclaimIncrement;
 		std::vector<std::string> parameterColumns;
+		VisualizationWrapper* visualizationWrapper;
 
 		void finishStacking()
 		{
@@ -155,7 +202,7 @@ class BlendingSimulatorLibPython
 BOOST_PYTHON_MODULE (blending_simulator_lib)
 {
 	boost::python::class_<BlendingSimulatorLibPython>("BlendingSimulatorLib",
-		boost::python::init<float, float, float, float, bool, float, float, float, bool, float>())
+		boost::python::init<float, float, float, float, bool, float, bool, float, float, bool, float, bool>())
 		.def("stack", &BlendingSimulatorLibPython::stack)
 		.def("stack_list", &BlendingSimulatorLibPython::stackList)
 		.def("reclaim", &BlendingSimulatorLibPython::reclaim)

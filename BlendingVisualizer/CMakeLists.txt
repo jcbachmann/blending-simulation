@@ -53,6 +53,7 @@ include_directories(
 
 add_library(BlendingVisualizer STATIC ${SOURCE_FILES})
 
+set_target_properties(BlendingVisualizer PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(BlendingVisualizer PROPERTIES DEBUG_POSTFIX _d)
 target_link_libraries(
 	BlendingVisualizer
