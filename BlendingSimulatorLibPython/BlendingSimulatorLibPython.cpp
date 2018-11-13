@@ -10,61 +10,13 @@ using namespace pybind11::literals;
 #include "BlendingSimulatorFast.h"
 #include "BlendingSimulatorDetailed.h"
 #include "ParticleParameters.h"
-#include "BlendingVisualizer.h"
-
-class VisualizationWrapper
-{
-	public:
-		VisualizationWrapper(BlendingSimulator<AveragedParameters>* simulator, bool verbose, bool pretty)
-			: cancel(false)
-			, verbose(verbose)
-		{
-			if (verbose) {
-				std::cerr << "Starting visualization" << std::endl;
-			}
-			visualizationThread = std::thread([this, simulator, verbose, pretty]() {
-				BlendingVisualizer<AveragedParameters> visualizer(simulator, verbose, pretty);
-				try {
-					visualizer.run();
-				} catch (std::exception& e) {
-					std::cerr << "Error during execution of visualizer.run(): " << e.what() << std::endl;
-				}
-
-				bool wasCancelled = cancel.exchange(true);
-				if (!wasCancelled) {
-					std::cerr << "Stopping simulation input" << std::endl;
-				}
-			});
-		}
-
-		~VisualizationWrapper()
-		{
-			cancel.store(true);
-
-			if (visualizationThread.joinable()) {
-				if (verbose) {
-					std::cerr << "Waiting for visualization" << std::endl;
-				}
-				visualizationThread.join();
-				if (verbose) {
-					std::cerr << "Visualization finished" << std::endl;
-				}
-			}
-		}
-
-	private:
-		std::thread visualizationThread;
-		std::atomic_bool cancel;
-		bool verbose;
-};
 
 class BlendingSimulatorLibPython
 {
 	public:
 		BlendingSimulatorLibPython(float heapWorldSizeX, float heapWorldSizeZ, float reclaimAngle, float particlesPerCubicMeter, bool circular,
-			float eightLikelihood, bool visualize, float bulkDensityFactor, float dropHeight, bool detailed, float reclaimIncrement, bool pretty)
+			float eightLikelihood, float bulkDensityFactor, float dropHeight, bool detailed, float reclaimIncrement)
 			: reclaimIncrement(reclaimIncrement)
-			, visualizationWrapper(nullptr)
 			, verbose(false)
 		{
 			SimulationParameters simulationParameters{
@@ -74,7 +26,7 @@ class BlendingSimulatorLibPython
 				particlesPerCubicMeter,
 				circular,
 				eightLikelihood,
-				visualize,
+				false, // visualize - not available in python library
 				bulkDensityFactor,
 				dropHeight
 			};
@@ -84,16 +36,11 @@ class BlendingSimulatorLibPython
 			} else {
 				simulator = new BlendingSimulatorFast<AveragedParameters>(simulationParameters);
 			}
-
-			if (visualize) {
-				visualizationWrapper = new VisualizationWrapper(simulator, verbose, pretty);
-			}
 		}
 
 		~BlendingSimulatorLibPython()
 		{
 			delete simulator;
-			delete visualizationWrapper;
 		}
 
 		void stack(double timestamp, float x, float z, double volume, const std::vector<double>& parameter)
@@ -187,7 +134,6 @@ class BlendingSimulatorLibPython
 		BlendingSimulator<AveragedParameters>* simulator;
 		float reclaimIncrement;
 		std::vector<std::string> parameterColumns;
-		VisualizationWrapper* visualizationWrapper;
 		bool verbose;
 
 		void finishStacking()
@@ -205,7 +151,7 @@ PYBIND11_MODULE(blending_simulator_lib, m)
 	m.doc() = "Blending Simulator Lib for Python";
 
 	py::class_<BlendingSimulatorLibPython>(m, "BlendingSimulatorLib")
-		.def(py::init<float, float, float, float, bool, float, bool, float, float, bool, float, bool>())
+		.def(py::init<float, float, float, float, bool, float, float, float, bool, float>())
 		.def("stack", &BlendingSimulatorLibPython::stack)
 		.def("stack_list", &BlendingSimulatorLibPython::stackList)
 		.def("reclaim", &BlendingSimulatorLibPython::reclaim)

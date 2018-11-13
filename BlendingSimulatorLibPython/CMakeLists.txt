@@ -11,7 +11,6 @@ target_link_libraries(
 	BlendingSimulatorLib
 	BlendingSimulatorFastLib
 	BlendingSimulatorDetailedLib
-	BlendingVisualizer
 	pthread
 	pybind11::pybind11
 	pybind11::embed
