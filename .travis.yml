@@ -1,5 +1,11 @@
 language: cpp
 
+addons:
+  apt:
+    packages:
+    - python3.6
+    - python3.6-dev
+
 compiler:
 - gcc
 - clang
@@ -7,7 +13,7 @@ compiler:
 before_script:
 - mkdir build
 - cd build
-- cmake ..
+- cmake .. -DPYBIND11_PYTHON_VERSION=3.6
 
 script:
 - cmake --build
