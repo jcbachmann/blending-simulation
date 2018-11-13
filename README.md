@@ -5,6 +5,7 @@ This software package contains libraries and executables for the simulation of s
 
 ## Dependencies
 Here are all dependencies for the libraries and executables in this repository.
+
 External dependencies are marked with System (indicating that installation is required at system level) or Hunter (indicating automatic installation using [Hunter](https://docs.hunter.sh/en/latest/)).
 
 ### By module
@@ -18,11 +19,3 @@ External dependencies are marked with System (indicating that installation is re
 | BlendingSimulatorDetailedLib-test (executable) | <ul><li>BlendingSimulatorDetailedLib</li></ul> | <ul><li>Google Test (Hunter)</li></ul> |
 | BlendingVisualizer (static library) | <ul><li>BlendingSimulatorLib</li></ul> | <ul><li>OGRE (System)</li><li>SDL (Hunter)</li></ul> |
 | BlendingSimulatorLibPython (shared library) | <ul><li>BlendingSimulatorLib</li><li>BlendingSimulatorFastLib</li><li>BlendingSimulatorDetailedLib</li></ul> | <ul><li>pybind11 (Hunter)</li></ul> |
-
-### All external dependencies
-* Boost (Hunter)
-* Bullet Physics (Hunter)
-* Google Test (Hunter)
-* OGRE (System)
-* pybind11 (Hunter)
-* SDL (Hunter)
