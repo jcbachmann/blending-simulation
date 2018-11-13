@@ -1,11 +1,5 @@
 language: cpp
 
-addons:
-  apt:
-    packages:
-    - python3.6
-    - python3.6-dev
-
 compiler:
 - gcc
 - clang
