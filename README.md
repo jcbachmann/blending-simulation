@@ -21,3 +21,10 @@ A configuration file `processing.config` is generated with default parameters on
 * "\<stockpilename\>.stockpile \<timestamp\> stack.csv.sim.slices.csv": output of simulation
 * "\<stockpilename\>.stockpile \<timestamp\> reclaim.csv.slices.csv": format adapted
 
+## Dependencies
+* Boost
+* Bullet Physics
+* Google Test
+* OGRE
+* Python
+* SDL
