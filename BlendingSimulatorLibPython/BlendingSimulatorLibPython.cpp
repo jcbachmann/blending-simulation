@@ -1,7 +1,11 @@
 #include <sstream>
 #include <iostream>
 
-#include <boost/python.hpp>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+using namespace pybind11::literals;
 
 #include "BlendingSimulatorFast.h"
 #include "BlendingSimulatorDetailed.h"
@@ -63,8 +67,7 @@ class BlendingSimulatorLibPython
 			, visualizationWrapper(nullptr)
 			, verbose(false)
 		{
-			SimulationParameters simulationParameters
-			{
+			SimulationParameters simulationParameters{
 				heapWorldSizeX,
 				heapWorldSizeZ,
 				reclaimAngle,
@@ -93,17 +96,12 @@ class BlendingSimulatorLibPython
 			delete visualizationWrapper;
 		}
 
-		void stack(double timestamp, float x, float z, double volume, const boost::python::list& parameter)
+		void stack(double timestamp, float x, float z, double volume, const std::vector<double>& parameter)
 		{
-			auto len = boost::python::len(parameter);
-			std::vector<double> values(static_cast<unsigned long>(len));
-			for (int i = 0; i < len; i++) {
-				values[i] = boost::python::extract<double>(parameter[i]);
-			}
-			simulator->stack(x, z, AveragedParameters(volume, std::move(values)));
+			simulator->stack(x, z, AveragedParameters(volume, parameter));
 		}
 
-		void stackList(const boost::python::list& data, const boost::python::list& columns, int rows, int cols)
+		void stackList(const std::vector<std::vector<double>>& data, const std::vector<std::string>& columns, int rows, int cols)
 		{
 //			int timestampCol = -1;
 			int xCol = -1;
@@ -111,39 +109,31 @@ class BlendingSimulatorLibPython
 			int volumeCol = -1;
 			std::vector<int> parameterColumnIndices;
 
-			auto len = boost::python::len(columns);
-			for (int i = 0; i < len; i++) {
-				std::string t = boost::python::extract<std::string>(columns[i]);
-				if (t == "timestamp") {
+			for (int i = 0; i < columns.size(); i++) {
+				if (columns[i] == "timestamp") {
 //					timestampCol = i;
-				} else if (t == "x") {
+				} else if (columns[i] == "x") {
 					xCol = i;
-				} else if (t == "z") {
+				} else if (columns[i] == "z") {
 					zCol = i;
-				} else if (t == "volume") {
+				} else if (columns[i] == "volume") {
 					volumeCol = i;
 				} else {
 					parameterColumnIndices.push_back(i);
-					parameterColumns.push_back(t);
+					parameterColumns.push_back(columns[i]);
 				}
 			}
 
 			for (int i = 0; i < rows; i++) {
-				const boost::python::list& row = boost::python::extract<boost::python::list>(data[i]);
 				std::vector<double> values(parameterColumnIndices.size());
-
 				for (int j = 0; j < parameterColumnIndices.size(); j++) {
-					values[j] = boost::python::extract<double>(row[parameterColumnIndices[j]]);
+					values[j] = data[i][parameterColumnIndices[j]];
 				}
-				simulator->stack(
-					boost::python::extract<float>(row[xCol]),
-					boost::python::extract<float>(row[zCol]),
-					AveragedParameters(boost::python::extract<double>(row[volumeCol]), std::move(values))
-				);
+				simulator->stack((float)data[i][xCol], (float)data[i][zCol], AveragedParameters(data[i][volumeCol], values));
 			}
 		}
 
-		boost::python::dict reclaim()
+		py::dict reclaim()
 		{
 			finishStacking();
 
@@ -151,9 +141,9 @@ class BlendingSimulatorLibPython
 				std::cerr << "Reclaiming" << std::endl;
 			}
 
-			boost::python::list x;
-			boost::python::list volume;
-			std::vector<boost::python::list> parameter(parameterColumns.size());
+			py::list x;
+			py::list volume;
+			std::vector<py::list> parameter(parameterColumns.size());
 
 			float position = 0.0f;
 			while (!simulator->reclaimingFinished()) {
@@ -167,32 +157,27 @@ class BlendingSimulatorLibPython
 				position += reclaimIncrement;
 			}
 
-			boost::python::dict ret;
-			ret["x"] = x;
-			ret["volume"] = volume;
+			py::dict ret("x"_a = x, "volume"_a = volume);
 			for (int i = 0; i < parameterColumns.size(); i++) {
-				ret[parameterColumns[i]] = parameter[i];
+				ret[parameterColumns[i].c_str()] = parameter[i];
 			}
 			return ret;
 		}
 
-		boost::python::list getHeights()
+		std::vector<std::vector<float>> getHeights()
 		{
 			finishStacking();
 
 			if (verbose) {
 				std::cerr << "Acquiring heights" << std::endl;
 			}
-			boost::python::list heights;
 
 			auto heapMapSize = simulator->getHeapMapSize();
+			std::vector<std::vector<float>> heights;
+			heights.reserve(heapMapSize.second);
 			const float* heapMap = simulator->getHeapMap(); // +1 for Y coordinate
 			for (int z = 0; z < heapMapSize.second; z++) {
-				boost::python::list l;
-				for (int x = 0; x < heapMapSize.first; x++) {
-					l.append(heapMap[z * heapMapSize.first + x + 1]);
-				}
-				heights.append(l);
+				heights.emplace_back(heapMap + z * heapMapSize.first + 1, heapMap + z * heapMapSize.first + 1 + heapMapSize.first);
 			}
 
 			return heights;
@@ -215,10 +200,12 @@ class BlendingSimulatorLibPython
 		}
 };
 
-BOOST_PYTHON_MODULE (blending_simulator_lib)
+PYBIND11_MODULE(blending_simulator_lib, m)
 {
-	boost::python::class_<BlendingSimulatorLibPython>("BlendingSimulatorLib",
-		boost::python::init<float, float, float, float, bool, float, bool, float, float, bool, float, bool>())
+	m.doc() = "Blending Simulator Lib for Python";
+
+	py::class_<BlendingSimulatorLibPython>(m, "BlendingSimulatorLib")
+		.def(py::init<float, float, float, float, bool, float, bool, float, float, bool, float, bool>())
 		.def("stack", &BlendingSimulatorLibPython::stack)
 		.def("stack_list", &BlendingSimulatorLibPython::stackList)
 		.def("reclaim", &BlendingSimulatorLibPython::reclaim)
