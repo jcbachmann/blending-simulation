@@ -4,11 +4,10 @@ This software package contains libraries and executables for the simulation of s
 [![Build Status](https://travis-ci.com/jcbachmann/blending-simulation.svg?branch=master)](https://travis-ci.com/jcbachmann/blending-simulation)
 
 ## Dependencies
-Here are all dependencies for the libraries and executables in this repository.
+The following table lists all dependencies for the libraries and executables in this repository.
 
 External dependencies are marked with System (indicating that installation is required at system level) or Hunter (indicating automatic installation using [Hunter](https://docs.hunter.sh/en/latest/)).
 
-### By module
 | Target | Internal Dependencies | External Dependencies |
 | ------ | --------------------- | --------------------- |
 | `BlendingSimulator`<br>*executable* | `BlendingSimulatorLib`<br>`BlendingSimulatorFastLib`<br>`BlendingSimulatorDetailedLib`<br>`BlendingVisualizer` | [Boost](https://www.boost.org) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/Boost.html)) | 
