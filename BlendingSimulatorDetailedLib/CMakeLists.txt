@@ -2,17 +2,16 @@ cmake_minimum_required(VERSION 3.9)
 
 add_library(BlendingSimulatorDetailedLib INTERFACE)
 
-target_include_directories(
-	BlendingSimulatorDetailedLib INTERFACE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	/usr/include/bullet
-)
+hunter_add_package(bullet)
+find_package(bullet CONFIG REQUIRED)
+
+target_include_directories(BlendingSimulatorDetailedLib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(
 	BlendingSimulatorDetailedLib INTERFACE
 	BlendingSimulatorLib
-	BulletCollision
-	BulletDynamics
-	BulletSoftBody
-	LinearMath
+	bullet::BulletCollision
+	bullet::BulletDynamics
+	bullet::BulletSoftBody
+	bullet::LinearMath
 )

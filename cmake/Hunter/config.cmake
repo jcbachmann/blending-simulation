@@ -1,0 +1,1 @@
+hunter_config(bullet VERSION 2.87-p0 CMAKE_ARGS CMAKE_CXX_FLAGS=-fPIC)
