@@ -12,10 +12,10 @@ class AveragedParameters
 		{
 		}
 
-		AveragedParameters(double volume, std::vector<double>&& values)
+		AveragedParameters(double volume, const std::vector<double>& values)
 			: volume(0)
 		{
-			push(volume, std::move(values));
+			push(volume, values);
 		}
 
 		void push(const AveragedParameters& other)
@@ -38,7 +38,7 @@ class AveragedParameters
 			}
 		}
 
-		void push(double otherVolume, std::vector<double>&& otherValues)
+		void push(double otherVolume, const std::vector<double>& otherValues)
 		{
 			if (values.empty()) {
 				values.resize(otherValues.size(), 0.0);
