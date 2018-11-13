@@ -11,11 +11,11 @@ External dependencies are marked with System (indicating that installation is re
 ### By module
 | Target | Internal Dependencies | External Dependencies |
 | ------ | --------------------- | --------------------- |
-| BlendingSimulator (executable) | <ul><li>BlendingSimulatorLib</li><li>BlendingSimulatorFastLib</li><li>BlendingSimulatorDetailedLib</li><li>BlendingVisualizer</li></ul> | <ul><li>Boost (Hunter)</li></ul> | 
-| BlendingSimulatorLib (header-only library) | none | none |
-| BlendingSimulatorFastLib (header-only library) | <ul><li>BlendingSimulatorLib</li></ul> | none |
-| BlendingSimulatorFastLib-test (executable) | <ul><li>BlendingSimulatorFastLib</li></ul> | <ul><li>Google Test (Hunter)</li></ul> |
-| BlendingSimulatorDetailedLib (header-only library) | <ul><li>BlendingSimulatorLib</li></ul> | <ul><li>Bullet Physics (Hunter)</li></ul> |
-| BlendingSimulatorDetailedLib-test (executable) | <ul><li>BlendingSimulatorDetailedLib</li></ul> | <ul><li>Google Test (Hunter)</li></ul> |
-| BlendingVisualizer (static library) | <ul><li>BlendingSimulatorLib</li></ul> | <ul><li>OGRE (System)</li><li>SDL (Hunter)</li></ul> |
-| BlendingSimulatorLibPython (shared library) | <ul><li>BlendingSimulatorLib</li><li>BlendingSimulatorFastLib</li><li>BlendingSimulatorDetailedLib</li></ul> | <ul><li>pybind11 (Hunter)</li></ul> |
+| `BlendingSimulator`<br>*executable* | `BlendingSimulatorLib`<br>`BlendingSimulatorFastLib`<br>`BlendingSimulatorDetailedLib`<br>`BlendingVisualizer` | [Boost](https://www.boost.org) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/Boost.html)) | 
+| `BlendingSimulatorLib`<br>*header-only library* | *none* | *none* |
+| `BlendingSimulatorFastLib`<br>*header-only library* | `BlendingSimulatorLib` | *none* |
+| `BlendingSimulatorFastLib-test`<br>*executable* | `BlendingSimulatorFastLib` | [Google Test](https://github.com/google/googletest) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/GTest.html)) |
+| `BlendingSimulatorDetailedLib`<br>*header-only library* | `BlendingSimulatorLib` | [Bullet Physics](https://github.com/bulletphysics/bullet3) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/bullet.html)) |
+| `BlendingSimulatorDetailedLib-test`<br>*executable* | `BlendingSimulatorDetailedLib` | [Google Test](https://github.com/google/googletest) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/GTest.html)) |
+| `BlendingVisualizer`<br>*static library* | `BlendingSimulatorLib` | [OGRE](https://github.com/OGRECave/ogre) (System)<br>[SDL2](https://www.libsdl.org) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/SDL2.html)) |
+| `BlendingSimulatorLibPython`<br>*shared library* | `BlendingSimulatorLib`<br>`BlendingSimulatorFastLib`<br>`BlendingSimulatorDetailedLib` | [pybind11](https://github.com/pybind/pybind11) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/pybind11.html)) |
