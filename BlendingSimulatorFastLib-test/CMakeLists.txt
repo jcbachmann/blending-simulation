@@ -5,6 +5,7 @@ set(
 	BlendingSimulatorFast-test.cpp
 )
 
+hunter_add_package(GTest)
 include(GoogleTest)
 
 add_executable(BlendingSimulatorFastLib-test ${SOURCE_FILES})
