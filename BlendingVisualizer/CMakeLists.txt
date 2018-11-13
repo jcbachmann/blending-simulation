@@ -18,6 +18,7 @@ hunter_add_package(SDL2)
 find_package(SDL2 CONFIG REQUIRED)
 
 # TODO hunter
+include(../cmake/OgreUbuntu.cmake)
 find_package(OGRE REQUIRED)
 
 add_library(BlendingVisualizer STATIC ${SOURCE_FILES})
