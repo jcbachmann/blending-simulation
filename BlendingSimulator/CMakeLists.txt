@@ -8,7 +8,7 @@ set(
 	ExecutionParameters.h
 )
 
-find_package(Boost 1.61 COMPONENTS program_options REQUIRED)
+find_package(Boost COMPONENTS program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 
 add_executable(BlendingSimulator ${SOURCE_FILES})
