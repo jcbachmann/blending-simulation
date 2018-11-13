@@ -5,6 +5,8 @@ set(
 	BlendingSimulatorDetailed-test.cpp
 )
 
+include(GoogleTest)
+
 add_executable(BlendingSimulatorDetailedLib-test ${SOURCE_FILES})
 
 target_link_libraries(
@@ -13,3 +15,5 @@ target_link_libraries(
 	gtest
 	gtest_main
 )
+
+gtest_add_tests(TARGET BlendingSimulatorDetailedLib-test)
