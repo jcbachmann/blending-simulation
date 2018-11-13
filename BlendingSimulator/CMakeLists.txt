@@ -20,5 +20,5 @@ target_link_libraries(
 	BlendingSimulatorDetailedLib
 	BlendingVisualizer
 	pthread
-	${Boost_LIBRARIES}
+	Boost::program_options
 )
