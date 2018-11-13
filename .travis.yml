@@ -9,6 +9,7 @@ matrix:
     - PYTHON_VERSION=3.6
 
 before_install:
+- pyenv global system 3.6
 - pip install --user --upgrade pip virtualenv
 - virtualenv -p python$PYTHON_VERSION venv
 - source venv/bin/activate
