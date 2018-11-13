@@ -7,7 +7,7 @@ compiler:
 before_script:
 - mkdir build
 - cd build
-- cmake .. -DPYBIND11_PYTHON_VERSION=3.6
+- cmake .. -DPYBIND11_PYTHON_VERSION=3.6.3
 
 script:
 - cmake --build
