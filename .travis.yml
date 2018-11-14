@@ -7,13 +7,18 @@ matrix:
     compiler: clang
     env:
     - PYTHON_VERSION=3.6
+    - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
     addons:
       apt:
+        sources:
+        - llvm-toolchain-trusty-5.0
         packages:
         - libogre-1.9-dev
+        - clang-5.0
 
 before_install:
 - pyenv global system $PYTHON_VERSION
+- eval "${MATRIX_EVAL}"
 
 before_script:
 - mkdir build && cd build
