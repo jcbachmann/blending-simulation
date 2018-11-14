@@ -18,3 +18,5 @@ External dependencies are marked with System (indicating that installation is re
 | `BlendingSimulatorDetailedLib-test`<br>*executable* | `BlendingSimulatorDetailedLib` | [Google Test](https://github.com/google/googletest) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/GTest.html)) |
 | `BlendingVisualizer`<br>*static library* | `BlendingSimulatorLib` | [OGRE](https://github.com/OGRECave/ogre) (System)<br>[SDL2](https://www.libsdl.org) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/SDL2.html)) |
 | `BlendingSimulatorLibPython`<br>*shared library* | `BlendingSimulatorLib`<br>`BlendingSimulatorFastLib`<br>`BlendingSimulatorDetailedLib` | [pybind11](https://github.com/pybind/pybind11) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/pybind11.html)) |
+
+When building `BlendingSimulator` the build of `BlendingVisualizer` can be turned off setting the CMake option `BUILD_VISUALIZER` to `OFF`. This allows compilation of all targets when the OGRE dependency can not be satisfied. 
