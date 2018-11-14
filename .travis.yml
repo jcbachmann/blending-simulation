@@ -25,4 +25,7 @@ before_script:
 - cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION
 
 script:
+- cmake --version
+- ${CC} --version
+- ${CXX} --version
 - cmake --build . && ctest .
