@@ -161,8 +161,8 @@ void BlendingSimulatorDetailed<Parameters>::freezeParticles()
 			continue;
 		}
 
-		if (simulationTickCount >= particle->creationTickCount && simulationTickCount - particle->creationTickCount >= maxFreezeTimeout ||
-			particle->rigidBody->getActivationState() == WANTS_DEACTIVATION && simulationTickCount - particle->creationTickCount >= minFreezeTimeout) {
+		if ((simulationTickCount >= particle->creationTickCount && (simulationTickCount - particle->creationTickCount >= maxFreezeTimeout)) ||
+			(particle->rigidBody->getActivationState() == WANTS_DEACTIVATION && (simulationTickCount - particle->creationTickCount >= minFreezeTimeout))) {
 			freezeParticle(particle);
 		}
 	}
