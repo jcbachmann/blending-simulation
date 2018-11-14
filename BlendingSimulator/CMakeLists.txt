@@ -23,7 +23,14 @@ target_link_libraries(
 	BlendingSimulatorLib
 	BlendingSimulatorFastLib
 	BlendingSimulatorDetailedLib
-	BlendingVisualizer
 	pthread
 	Boost::program_options
 )
+
+if (BUILD_VISUALIZER)
+	message(STATUS "Building BlendingSimulator with visualization")
+	target_compile_definitions(BlendingSimulator PUBLIC VISUALIZER_AVAILABLE)
+	target_link_libraries(BlendingSimulator BlendingVisualizer)
+else ()
+	message(STATUS "Building BlendingSimulator without visualization")
+endif ()

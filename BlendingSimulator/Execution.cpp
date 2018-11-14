@@ -5,8 +5,11 @@
 
 #include "BlendingSimulatorFast.h"
 #include "BlendingSimulatorDetailed.h"
-#include "BlendingVisualizer.h"
 #include "ParticleParameters.h"
+
+#ifdef VISUALIZER_AVAILABLE
+#include "BlendingVisualizer.h"
+#endif
 
 void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, ExecutionParameters parameters)
 {
@@ -14,6 +17,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 	std::thread visualizationThread;
 	std::atomic_bool cancel(false);
 
+#ifdef VISUALIZER_AVAILABLE
 	if (parameters.visualize) {
 		std::cerr << "Starting visualization" << std::endl;
 		visualizationThread = std::thread([&simulator, &cancel, parameters]() {
@@ -30,6 +34,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 			}
 		});
 	}
+#endif
 
 	std::cerr << "Starting stacking from stdin" << std::endl;
 
@@ -96,11 +101,13 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 
 	std::cerr << "Stacking finished" << std::endl;
 
+#ifdef VISUALIZER_AVAILABLE
 	if (parameters.visualize) {
 		std::cerr << "Waiting for visualization" << std::endl;
 		visualizationThread.join();
 		std::cerr << "Visualization finished" << std::endl;
 	}
+#endif
 
 	if (!parameters.heightsFile.empty()) {
 		std::cerr << "Writing height map into '" << parameters.heightsFile << "'" << std::endl;

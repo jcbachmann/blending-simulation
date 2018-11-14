@@ -11,9 +11,11 @@ struct ExecutionParameters
 	// Simulation Options
 	bool detailed = false;
 
+#ifdef VISUALIZER_AVAILABLE
 	// Visualization
 	bool visualize = false;
 	bool pretty = false;
+#endif
 
 	// Input / Output Options
 	std::string heightsFile;

@@ -38,10 +38,12 @@ int main(int argc, char* argv[]) try
 		("dropheight,h", po::value<float>(&simulationParameters.dropHeight)->required()->notifier(boost::bind(&in_range, _1, 0.001f, 1000.0f)), "stacker drop height")
 		("reclaimincrement", po::value<float>(&executionParameters.reclaimIncrement)->default_value(1.0f)->notifier(boost::bind(&in_range, _1, 0.001f, 1000.0f)), "reclaimer position increment");
 
+#ifdef VISUALIZER_AVAILABLE
 	po::options_description descVisualization("Visualization Options");
 	descVisualization.add_options()
 		("visualize", po::bool_switch(&executionParameters.visualize), "show visualization")
 		("pretty", po::bool_switch(&executionParameters.pretty), "render nicer landscape and details");
+#endif
 
 	po::options_description descInputOutput("Input / Output Options");
 	descInputOutput.add_options()
@@ -49,7 +51,11 @@ int main(int argc, char* argv[]) try
 		("reclaim", po::value<std::string>(&executionParameters.reclaimFile)->default_value(""), "reclaim output file");
 
 	po::options_description descAll;
-	descAll.add(descGeneric).add(descSimulation).add(descVisualization).add(descInputOutput);
+	descAll.add(descGeneric).add(descSimulation)
+#ifdef VISUALIZER_AVAILABLE
+	.add(descVisualization)
+#endif
+	.add(descInputOutput);
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, descAll), vm);
@@ -65,7 +71,11 @@ int main(int argc, char* argv[]) try
 
 	po::notify(vm);
 
+#ifdef VISUALIZER_AVAILABLE
 	simulationParameters.visualize = executionParameters.visualize;
+#else
+	simulationParameters.visualize = false;
+#endif
 	executeSimulation(executionParameters, simulationParameters);
 } catch (std::exception& e) {
 	std::cerr << e.what() << std::endl;

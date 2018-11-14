@@ -7,6 +7,8 @@ HunterGate(
 	LOCAL
 )
 
+option(BUILD_VISUALIZER "Build the visualization libary" ON)
+
 project(BlendingSimulator)
 
 enable_testing()
@@ -18,4 +20,7 @@ add_subdirectory(BlendingSimulatorDetailedLib)
 add_subdirectory(BlendingSimulatorDetailedLib-test)
 add_subdirectory(BlendingSimulatorLibPython)
 add_subdirectory(BlendingSimulator)
-add_subdirectory(BlendingVisualizer)
+
+if (BUILD_VISUALIZER)
+	add_subdirectory(BlendingVisualizer)
+endif ()
