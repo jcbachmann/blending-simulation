@@ -1,20 +1,34 @@
 language: cpp
+os: linux
+dist: trusty
+
+addons:
+  apt:
+    packages:
+    - libogre-1.9-dev
+
+env:
+- PYTHON_VERSION=3.6
 
 matrix:
   include:
-  - os: linux
-    dist: trusty
-    compiler: clang
-    env:
-    - PYTHON_VERSION=3.6
-    - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
-    addons:
+  - addons:
       apt:
         sources:
         - llvm-toolchain-trusty-5.0
         packages:
-        - libogre-1.9-dev
         - clang-5.0
+    env:
+    - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+  - addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-7
+    env:
+    - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
 
 before_install:
 - pyenv global system $PYTHON_VERSION
@@ -28,4 +42,4 @@ script:
 - cmake --version
 - ${CC} --version
 - ${CXX} --version
-- cmake --build . && ctest .
+- make VERBOSE=1 && ctest .
