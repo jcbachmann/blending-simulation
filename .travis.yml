@@ -7,15 +7,6 @@ matrix:
   - addons:
       apt:
         sources:
-        - llvm-toolchain-trusty-5.0
-        packages:
-        - clang-5.0
-        - libogre-1.9-dev
-    env:
-    - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0" PYTHON_VERSION=3.6
-  - addons:
-      apt:
-        sources:
         - ubuntu-toolchain-r-test
         packages:
         - g++-7
