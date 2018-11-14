@@ -6,6 +6,11 @@ hunter_add_package(pybind11)
 find_package(pybind11 CONFIG REQUIRED)
 pybind11_add_module(blending_simulator_lib BlendingSimulatorLibPython.cpp)
 
+set_target_properties(
+	blending_simulator_lib PROPERTIES
+	CXX_STANDARD_REQUIRED 14
+)
+
 target_link_libraries(
 	blending_simulator_lib PRIVATE
 	BlendingSimulatorLib

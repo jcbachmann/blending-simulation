@@ -13,6 +13,11 @@ find_package(Boost CONFIG REQUIRED program_options)
 
 add_executable(BlendingSimulator ${SOURCE_FILES})
 
+set_target_properties(
+	BlendingSimulator PROPERTIES
+	CXX_STANDARD_REQUIRED 14
+)
+
 target_link_libraries(
 	BlendingSimulator
 	BlendingSimulatorLib

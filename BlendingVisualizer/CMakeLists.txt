@@ -23,6 +23,11 @@ find_package(OGRE REQUIRED)
 
 add_library(BlendingVisualizer STATIC ${SOURCE_FILES})
 
+set_target_properties(
+	BlendingVisualizer PROPERTIES
+	CXX_STANDARD_REQUIRED 14
+)
+
 target_link_libraries(
 	BlendingVisualizer
 	BlendingSimulatorLib

@@ -10,6 +10,11 @@ find_package(GTest CONFIG REQUIRED)
 
 add_executable(BlendingSimulatorFastLib-test ${SOURCE_FILES})
 
+set_target_properties(
+	BlendingSimulatorFastLib-test PROPERTIES
+	CXX_STANDARD_REQUIRED 14
+)
+
 target_link_libraries(
 	BlendingSimulatorFastLib-test
 	BlendingSimulatorFastLib
