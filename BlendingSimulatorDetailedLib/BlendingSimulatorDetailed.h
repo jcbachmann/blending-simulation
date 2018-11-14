@@ -9,8 +9,8 @@
 #include <atomic>
 
 // Bullet
-#include <bullet/LinearMath/btVector3.h>
-#include <bullet/LinearMath/btQuaternion.h>
+#include <LinearMath/btVector3.h>
+#include <LinearMath/btQuaternion.h>
 
 class btCollisionShape;
 

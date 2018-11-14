@@ -3,8 +3,8 @@
 #include <algorithm>
 
 // Bullet
-#include <bullet/btBulletDynamicsCommon.h>
-#include <bullet/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
+#include <btBulletDynamicsCommon.h>
+#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 // Local
 #include "ParticleDetailed.h"

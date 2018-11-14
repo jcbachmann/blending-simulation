@@ -1,7 +1,7 @@
 #include "ParticleDetailed.h"
 
 // Bullet
-#include <bullet/btBulletDynamicsCommon.h>
+#include <btBulletDynamicsCommon.h>
 
 // Blending Simulator Lib
 #include "Particle.h"
