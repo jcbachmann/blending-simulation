@@ -21,7 +21,7 @@ before_install:
 
 before_script:
 - mkdir build && cd build
-- cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION
+- cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DBUILD_VISUALIZER=OFF
 
 script:
-- make VERBOSE=1 && ctest .
+- cmake --build . && ctest .
