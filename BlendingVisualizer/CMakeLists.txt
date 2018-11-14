@@ -36,7 +36,7 @@ target_link_libraries(
 )
 
 target_include_directories(
-	BlendingVisualizer
-	PRIVATE ${OGRE_INCLUDE_DIRS}
-	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+	BlendingVisualizer PUBLIC
+	${OGRE_INCLUDE_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}
 )
