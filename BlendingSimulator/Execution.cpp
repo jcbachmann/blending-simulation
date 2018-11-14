@@ -88,7 +88,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 				parameterCount = static_cast<int>(values.size());
 			}
 
-			simulator.stack(xPos, zPos, AveragedParameters(volume, std::move(values)));
+			simulator.stack(xPos, zPos, AveragedParameters(volume, values));
 		} catch (std::exception& e) {
 			std::cerr << "could not match line '" << line << "': " << e.what() << std::endl;
 		}
