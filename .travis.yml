@@ -2,14 +2,6 @@ language: cpp
 os: linux
 dist: trusty
 
-addons:
-  apt:
-    packages:
-    - libogre-1.9-dev
-
-env:
-- PYTHON_VERSION=3.6
-
 matrix:
   include:
   - addons:
@@ -18,16 +10,18 @@ matrix:
         - llvm-toolchain-trusty-5.0
         packages:
         - clang-5.0
+        - libogre-1.9-dev
     env:
-    - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+    - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0" PYTHON_VERSION=3.6
   - addons:
       apt:
         sources:
         - ubuntu-toolchain-r-test
         packages:
         - g++-7
+        - libogre-1.9-dev
     env:
-    - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" PYTHON_VERSION=3.6
 
 
 before_install:
