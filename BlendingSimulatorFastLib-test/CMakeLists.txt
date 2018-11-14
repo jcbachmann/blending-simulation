@@ -6,15 +6,15 @@ set(
 )
 
 hunter_add_package(GTest)
-include(GoogleTest)
+find_package(GTest CONFIG REQUIRED)
 
 add_executable(BlendingSimulatorFastLib-test ${SOURCE_FILES})
 
 target_link_libraries(
 	BlendingSimulatorFastLib-test
 	BlendingSimulatorFastLib
-	gtest
-	gtest_main
+	GTest::main
 )
 
+include(GoogleTest)
 gtest_add_tests(TARGET BlendingSimulatorFastLib-test)
