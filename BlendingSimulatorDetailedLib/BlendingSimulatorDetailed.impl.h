@@ -346,6 +346,7 @@ void BlendingSimulatorDetailed<Parameters>::stackSingle(float x, float z, const 
 		step();
 	}
 
+	// TODO OMG this leaks particle size between two executions of the simulator
 	static const float sizeVariation = particleSize * 0.05f;
 	static const float positionVariation = 0.5f * stackerBeltWidth;
 	static const float miscVariation = 0.005f; // 1 +/- variation for speed, height, and angle

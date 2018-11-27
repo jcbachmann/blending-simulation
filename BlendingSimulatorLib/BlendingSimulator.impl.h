@@ -61,7 +61,6 @@ template<typename Parameters>
 void BlendingSimulator<Parameters>::stack(float x, float z, const Parameters& parameters)
 {
 	float volumePerParticle = 1.0f / simulationParameters.particlesPerCubicMeter;
-	static Parameters parameterBuffer;
 	parameterBuffer.push(parameters);
 
 	while (parameterBuffer.contains(volumePerParticle)) {

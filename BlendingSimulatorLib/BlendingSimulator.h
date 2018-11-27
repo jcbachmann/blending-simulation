@@ -52,6 +52,9 @@ class BlendingSimulator
 		virtual void updateHeapMap()
 		{
 		};
+
+	private:
+		Parameters parameterBuffer;
 };
 
 #include "BlendingSimulator.impl.h"
