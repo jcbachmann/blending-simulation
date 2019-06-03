@@ -5,7 +5,10 @@ add_library(BlendingSimulatorDetailedLib INTERFACE)
 hunter_add_package(bullet)
 find_package(bullet CONFIG REQUIRED)
 
-target_include_directories(BlendingSimulatorDetailedLib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(
+	BlendingSimulatorDetailedLib
+	INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 target_compile_features(BlendingSimulatorDetailedLib INTERFACE cxx_std_14)
 
@@ -17,3 +20,5 @@ target_link_libraries(
 	bullet::BulletSoftBody
 	bullet::LinearMath
 )
+
+add_subdirectory(test)

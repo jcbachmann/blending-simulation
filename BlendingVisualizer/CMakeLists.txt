@@ -2,16 +2,10 @@ cmake_minimum_required(VERSION 3.9)
 
 set(
 	SOURCE_FILES
-	Visualizer.cpp
-	Visualizer.h
-	QualityColor.cpp
-	QualityColor.h
-	BlendingVisualizer.impl.h
-	BlendingVisualizer.h
-	HeapMesh.cpp
-	HeapMesh.h
-	Noise.cpp
-	Noise.h
+	src/Visualizer.cpp
+	src/QualityColor.cpp
+	src/HeapMesh.cpp
+	src/Noise.cpp
 )
 
 hunter_add_package(SDL2)
@@ -36,7 +30,9 @@ target_link_libraries(
 )
 
 target_include_directories(
-	BlendingVisualizer PUBLIC
-	${OGRE_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
+	BlendingVisualizer
+	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/BlendingSimulator
+	PUBLIC ${OGRE_INCLUDE_DIRS}
+	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )

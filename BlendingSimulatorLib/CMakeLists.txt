@@ -4,4 +4,7 @@ add_library(BlendingSimulatorLib INTERFACE)
 
 target_compile_features(BlendingSimulatorLib INTERFACE cxx_std_14)
 
-target_include_directories(BlendingSimulatorLib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(
+	BlendingSimulatorLib
+	INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include
+)

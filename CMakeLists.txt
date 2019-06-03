@@ -15,11 +15,9 @@ enable_testing()
 
 add_subdirectory(BlendingSimulatorLib)
 add_subdirectory(BlendingSimulatorFastLib)
-add_subdirectory(BlendingSimulatorFastLib-test)
 add_subdirectory(BlendingSimulatorDetailedLib)
-add_subdirectory(BlendingSimulatorDetailedLib-test)
 add_subdirectory(BlendingSimulatorLibPython)
-add_subdirectory(BlendingSimulator)
+add_subdirectory(BlendingSimulatorCli)
 
 if (BUILD_VISUALIZER)
 	add_subdirectory(BlendingVisualizer)

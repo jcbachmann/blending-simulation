@@ -4,7 +4,10 @@ project(BlendingSimulatorLibPython VERSION 1.0.0 DESCRIPTION "Blending Simulator
 
 hunter_add_package(pybind11)
 find_package(pybind11 CONFIG REQUIRED)
-pybind11_add_module(blending_simulator_lib BlendingSimulatorLibPython.cpp)
+pybind11_add_module(
+	blending_simulator_lib
+	src/BlendingSimulatorLibPython.cpp
+)
 
 set_target_properties(
 	blending_simulator_lib PROPERTIES
