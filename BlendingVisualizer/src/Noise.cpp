@@ -3,7 +3,7 @@
 #define BM 0xff
 #define N 0x1000
 
-Noise::Noise(const Ogre::Real& alpha, const Ogre::Real& beta, int iterationNum, const Ogre::Real& cycle, const Ogre::Real& heightScale)
+blendingsimulator::Noise::Noise(const Ogre::Real& alpha, const Ogre::Real& beta, int iterationNum, const Ogre::Real& cycle, const Ogre::Real& heightScale)
 	: mAlpha(alpha)
 	, mBeta(beta)
 	, mIterationNum(iterationNum)
@@ -38,7 +38,7 @@ Noise::Noise(const Ogre::Real& alpha, const Ogre::Real& beta, int iterationNum, 
 	}
 }
 
-Ogre::Real Noise::get(const Ogre::Vector2& vec2)
+Ogre::Real blendingsimulator::Noise::get(const Ogre::Vector2& vec2)
 {
 	Ogre::Vector2 tempVec(vec2);
 	Ogre::Real sum = 0;
@@ -52,7 +52,7 @@ Ogre::Real Noise::get(const Ogre::Vector2& vec2)
 	return sum;
 }
 
-Ogre::Real Noise::noise(const Ogre::Vector2& vec2)
+Ogre::Real blendingsimulator::Noise::noise(const Ogre::Vector2& vec2)
 {
 	int bx0, bx1, by0, by1, b00, b10, b01, b11;
 	Ogre::Real rx0, rx1, ry0, ry1, sx, sy, a, b, u, v;
@@ -82,7 +82,7 @@ Ogre::Real Noise::noise(const Ogre::Vector2& vec2)
 	return lerp(sy, a, b);
 }
 
-void Noise::setup(const Ogre::Real& target, int& b0, int& b1, Ogre::Real& r0, Ogre::Real& r1)
+void blendingsimulator::Noise::setup(const Ogre::Real& target, int& b0, int& b1, Ogre::Real& r0, Ogre::Real& r1)
 {
 	Ogre::Real t = target + N;
 	b0 = ((int)t) & BM;

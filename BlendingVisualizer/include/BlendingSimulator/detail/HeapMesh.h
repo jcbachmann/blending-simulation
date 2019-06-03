@@ -3,6 +3,8 @@
 
 #include <Ogre.h>
 
+namespace blendingsimulator
+{
 class HeapMesh
 {
 	public:
@@ -31,5 +33,6 @@ class HeapMesh
 		void calculateFakeNormals();
 		void calculateNormals();
 };
+}
 
 #endif

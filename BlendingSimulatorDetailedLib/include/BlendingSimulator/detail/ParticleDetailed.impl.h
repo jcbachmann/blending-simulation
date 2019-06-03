@@ -2,7 +2,7 @@
 #include <btBulletDynamicsCommon.h>
 
 template<typename Parameters>
-ParticleDetailed<Parameters>::ParticleDetailed()
+blendingsimulator::ParticleDetailed<Parameters>::ParticleDetailed()
 	: frozen(false)
 	, inSimulation(true)
 	, creationTickCount(0)
@@ -14,7 +14,7 @@ ParticleDetailed<Parameters>::ParticleDetailed()
 }
 
 template<typename Parameters>
-ParticleDetailed<Parameters>::~ParticleDetailed()
+blendingsimulator::ParticleDetailed<Parameters>::~ParticleDetailed()
 {
 	if (collisionShape) {
 		delete collisionShape;

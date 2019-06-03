@@ -3,9 +3,11 @@
 #include "BlendingSimulator/BlendingSimulatorDetailed.h"
 #include "BlendingSimulator/ParticleParameters.h"
 
+namespace bs = blendingsimulator;
+
 TEST(BlendingSimulatorDetailed, test_constructor_destructor)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 1.0f;
 	simulationParameters.heapWorldSizeZ = 1.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -14,7 +16,7 @@ TEST(BlendingSimulatorDetailed, test_constructor_destructor)
 	simulationParameters.dropHeight = 10.0f;
 
 	{
-		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
 		std::pair<float, float> heapWorldSize = simulator.getHeapWorldSize();
 		EXPECT_NEAR(heapWorldSize.first, simulationParameters.heapWorldSizeX, 0.1);
 		EXPECT_NEAR(heapWorldSize.second, simulationParameters.heapWorldSizeZ, 0.1);
@@ -23,7 +25,7 @@ TEST(BlendingSimulatorDetailed, test_constructor_destructor)
 
 TEST(BlendingSimulatorDetailed, test_is_paused)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 1.0f;
 	simulationParameters.heapWorldSizeZ = 1.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -32,7 +34,7 @@ TEST(BlendingSimulatorDetailed, test_is_paused)
 	simulationParameters.dropHeight = 10.0f;
 
 	{
-		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
 		EXPECT_FALSE(simulator.isPaused());
 		simulator.pause();
 		EXPECT_TRUE(simulator.isPaused());
@@ -43,7 +45,7 @@ TEST(BlendingSimulatorDetailed, test_is_paused)
 
 TEST(BlendingSimulatorDetailed, test_heap_map)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 10.0f;
 	simulationParameters.heapWorldSizeZ = 20.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -52,7 +54,7 @@ TEST(BlendingSimulatorDetailed, test_heap_map)
 	simulationParameters.dropHeight = 10.0f;
 
 	{
-		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		float* heapMap = simulator.getHeapMap();
 		ASSERT_NE(heapMap, nullptr);
@@ -66,7 +68,7 @@ TEST(BlendingSimulatorDetailed, test_heap_map)
 
 TEST(BlendingSimulatorDetailed, test_stack_clear)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 3.0f;
 	simulationParameters.heapWorldSizeZ = 3.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -75,10 +77,10 @@ TEST(BlendingSimulatorDetailed, test_stack_clear)
 	simulationParameters.dropHeight = 10.0f;
 
 	{
-		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 1.0;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 1.0f;
 		float z = 1.0f;
@@ -98,7 +100,7 @@ TEST(BlendingSimulatorDetailed, test_stack_clear)
 
 TEST(BlendingSimulatorDetailed, test_stack_reclaim)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 3.0f;
 	simulationParameters.heapWorldSizeZ = 3.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -107,10 +109,10 @@ TEST(BlendingSimulatorDetailed, test_stack_reclaim)
 	simulationParameters.dropHeight = 10.0f;
 
 	{
-		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 10.0;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 1.0f;
 		float z = 1.0f;
@@ -118,7 +120,7 @@ TEST(BlendingSimulatorDetailed, test_stack_reclaim)
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut = simulator.reclaim(100);
+		bs::AveragedParameters pOut = simulator.reclaim(100);
 		EXPECT_NEAR(pOut.getVolume(), volume, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());

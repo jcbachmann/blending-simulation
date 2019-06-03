@@ -4,6 +4,6 @@
 #include "ExecutionParameters.h"
 #include "BlendingSimulator/SimulationParameters.h"
 
-void executeSimulation(const ExecutionParameters& parameters, const SimulationParameters& simulationParameters);
+void executeSimulation(const ExecutionParameters& parameters, const blendingsimulator::SimulationParameters& simulationParameters);
 
 #endif

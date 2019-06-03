@@ -13,7 +13,9 @@
 
 #endif
 
-void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, const ExecutionParameters& parameters)
+namespace bs = blendingsimulator;
+
+void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator, const ExecutionParameters& parameters)
 {
 	std::cerr << "Initializing simulation" << std::endl;
 	std::thread visualizationThread;
@@ -23,7 +25,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, const E
 	if (parameters.visualize) {
 		std::cerr << "Starting visualization" << std::endl;
 		visualizationThread = std::thread([&simulator, &cancel, parameters]() {
-			BlendingVisualizer<AveragedParameters> visualizer(&simulator, parameters.verbose, parameters.pretty);
+			bs::BlendingVisualizer<bs::AveragedParameters> visualizer(&simulator, parameters.verbose, parameters.pretty);
 			try {
 				visualizer.run();
 			} catch (std::exception& e) {
@@ -90,7 +92,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, const E
 				parameterCount = static_cast<int>(values.size());
 			}
 
-			simulator.stack(xPos, zPos, AveragedParameters(volume, values));
+			simulator.stack(xPos, zPos, bs::AveragedParameters(volume, values));
 		} catch (std::exception& e) {
 			std::cerr << "could not match line '" << line << "': " << e.what() << std::endl;
 		}
@@ -156,7 +158,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, const E
 
 			float position = 0.0f;
 			while (!simulator.reclaimingFinished()) {
-				AveragedParameters p = simulator.reclaim(position);
+				bs::AveragedParameters p = simulator.reclaim(position);
 
 				out << position << "\t" << p.getVolume();
 				for (unsigned int i = 0; i < parameterCount; i++) {
@@ -177,13 +179,13 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, const E
 	}
 }
 
-void executeSimulation(const ExecutionParameters& executionParameters, const SimulationParameters& simulationParameters)
+void executeSimulation(const ExecutionParameters& executionParameters, const bs::SimulationParameters& simulationParameters)
 {
 	if (executionParameters.detailed) {
-		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
 		executeSimulation(simulator, executionParameters);
 	} else {
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 		executeSimulation(simulator, executionParameters);
 	}
 }

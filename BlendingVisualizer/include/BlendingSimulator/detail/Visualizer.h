@@ -15,6 +15,8 @@
 #include <Bites/OgreCameraMan.h>
 #include <SDL2/SDL.h>
 
+namespace blendingsimulator
+{
 class Visualizer : public Ogre::FrameListener, public OgreBites::WindowEventListener, public OgreBites::InputListener, OgreBites::TrayListener
 {
 	public:
@@ -96,5 +98,6 @@ class Visualizer : public Ogre::FrameListener, public OgreBites::WindowEventList
 		OgreBites::CameraMan* mCameraMan;
 		OgreBites::ParamsPanel* mDetailsPanel;
 };
+}
 
 #endif

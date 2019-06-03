@@ -11,6 +11,8 @@ using namespace pybind11::literals;
 #include "BlendingSimulator/BlendingSimulatorDetailed.h"
 #include "BlendingSimulator/ParticleParameters.h"
 
+namespace bs = blendingsimulator;
+
 class BlendingSimulatorLibPython
 {
 	public:
@@ -19,7 +21,7 @@ class BlendingSimulatorLibPython
 			: reclaimIncrement(reclaimIncrement)
 			, verbose(false)
 		{
-			SimulationParameters simulationParameters{
+			bs::SimulationParameters simulationParameters{
 				heapWorldSizeX,
 				heapWorldSizeZ,
 				reclaimAngle,
@@ -32,9 +34,9 @@ class BlendingSimulatorLibPython
 			};
 
 			if (detailed) {
-				simulator = new BlendingSimulatorDetailed<AveragedParameters>(simulationParameters);
+				simulator = new bs::BlendingSimulatorDetailed<bs::AveragedParameters>(simulationParameters);
 			} else {
-				simulator = new BlendingSimulatorFast<AveragedParameters>(simulationParameters);
+				simulator = new bs::BlendingSimulatorFast<bs::AveragedParameters>(simulationParameters);
 			}
 		}
 
@@ -45,7 +47,7 @@ class BlendingSimulatorLibPython
 
 		void stack(double timestamp, float x, float z, double volume, const std::vector<double>& parameter)
 		{
-			simulator->stack(x, z, AveragedParameters(volume, parameter));
+			simulator->stack(x, z, bs::AveragedParameters(volume, parameter));
 		}
 
 		void stackList(const std::vector<std::vector<double>>& data, const std::vector<std::string>& columns, int rows, int cols)
@@ -76,7 +78,7 @@ class BlendingSimulatorLibPython
 				for (int j = 0; j < parameterColumnIndices.size(); j++) {
 					values[j] = data[i][parameterColumnIndices[j]];
 				}
-				simulator->stack((float)data[i][xCol], (float)data[i][zCol], AveragedParameters(data[i][volumeCol], values));
+				simulator->stack((float)data[i][xCol], (float)data[i][zCol], bs::AveragedParameters(data[i][volumeCol], values));
 			}
 		}
 
@@ -94,7 +96,7 @@ class BlendingSimulatorLibPython
 
 			float position = 0.0f;
 			while (!simulator->reclaimingFinished()) {
-				AveragedParameters p = simulator->reclaim(position);
+				bs::AveragedParameters p = simulator->reclaim(position);
 				x.append(position);
 				volume.append(p.getVolume());
 				const auto& values = p.getValues();
@@ -131,7 +133,7 @@ class BlendingSimulatorLibPython
 		}
 
 	private:
-		BlendingSimulator<AveragedParameters>* simulator;
+		bs::BlendingSimulator<bs::AveragedParameters>* simulator;
 		float reclaimIncrement;
 		std::vector<std::string> parameterColumns;
 		bool verbose;

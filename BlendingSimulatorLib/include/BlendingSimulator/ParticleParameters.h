@@ -4,6 +4,8 @@
 #include <vector>
 #include <stdexcept>
 
+namespace blendingsimulator
+{
 class AveragedParameters
 {
 	public:
@@ -117,5 +119,6 @@ class AveragedParameters
 		double volume;
 		std::vector<double> values;
 };
+}
 
 #endif

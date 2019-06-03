@@ -22,7 +22,7 @@ const unsigned long long simulationIntervalMs = 30;
 const int simulationIntervalSubSteps = 3;
 
 template<typename Parameters>
-BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(SimulationParameters simulationParameters)
+blendingsimulator::BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(SimulationParameters simulationParameters)
 	: BlendingSimulator<Parameters>(simulationParameters)
 	, particleSize(std::pow(simulationParameters.bulkDensityFactor / simulationParameters.particlesPerCubicMeter, 1.0f / 3.0f))
 	, resolutionPerWorldSize(1.0f / particleSize)
@@ -54,7 +54,7 @@ BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(SimulationParam
 }
 
 template<typename Parameters>
-BlendingSimulatorDetailed<Parameters>::~BlendingSimulatorDetailed()
+blendingsimulator::BlendingSimulatorDetailed<Parameters>::~BlendingSimulatorDetailed()
 {
 	clear();
 
@@ -72,7 +72,7 @@ BlendingSimulatorDetailed<Parameters>::~BlendingSimulatorDetailed()
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::clear()
+void blendingsimulator::BlendingSimulatorDetailed<Parameters>::clear()
 {
 	std::lock_guard<std::mutex> lock(simulationMutex);
 	simulationTickCount = 0;
@@ -101,7 +101,8 @@ void BlendingSimulatorDetailed<Parameters>::clear()
 }
 
 template<typename Parameters>
-ParticleDetailed<Parameters>* BlendingSimulatorDetailed<Parameters>::createParticle(btVector3 position, Parameters parameters, bool frozen,
+blendingsimulator::ParticleDetailed<Parameters>*
+blendingsimulator::BlendingSimulatorDetailed<Parameters>::createParticle(btVector3 position, Parameters parameters, bool frozen,
 	btQuaternion rotation, btVector3 velocity, btVector3 size)
 {
 	auto particle = new ParticleDetailed<Parameters>();
@@ -152,7 +153,7 @@ ParticleDetailed<Parameters>* BlendingSimulatorDetailed<Parameters>::createParti
 
 // Freeze old particles
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::freezeParticles()
+void blendingsimulator::BlendingSimulatorDetailed<Parameters>::freezeParticles()
 {
 	for (auto it = activeParticles.begin(); it != activeParticles.end(); it++) {
 		ParticleDetailed<Parameters>* particle = *it;
@@ -169,7 +170,7 @@ void BlendingSimulatorDetailed<Parameters>::freezeParticles()
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::freezeParticle(ParticleDetailed<Parameters>* particle)
+void blendingsimulator::BlendingSimulatorDetailed<Parameters>::freezeParticle(ParticleDetailed<Parameters>* particle)
 {
 	// Freeze position
 	particle->rigidBody->setMassProps(btScalar(0), btVector3(0, 0, 0));
@@ -188,7 +189,7 @@ void BlendingSimulatorDetailed<Parameters>::freezeParticle(ParticleDetailed<Para
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::addParticleToHeapMap(float x, float y, float z)
+void blendingsimulator::BlendingSimulatorDetailed<Parameters>::addParticleToHeapMap(float x, float y, float z)
 {
 	// Scale position to heap map resolution
 	x *= resolutionPerWorldSize;
@@ -219,7 +220,7 @@ void setBilinear(float* heapMap, int sizeX, int sizeZ, float x, float z, int xi,
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::addParticleToHeapMapBilinear(float x, float y, float z)
+void blendingsimulator::BlendingSimulatorDetailed<Parameters>::addParticleToHeapMapBilinear(float x, float y, float z)
 {
 	// Scale position to heap map resolution
 	x *= resolutionPerWorldSize;
@@ -234,7 +235,7 @@ void BlendingSimulatorDetailed<Parameters>::addParticleToHeapMapBilinear(float x
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::optimizeFrozenParticles()
+void blendingsimulator::BlendingSimulatorDetailed<Parameters>::optimizeFrozenParticles()
 {
 	for (auto it = allParticles.begin(); it != allParticles.end(); it++) {
 		ParticleDetailed<Parameters>* particle = *it;
@@ -258,7 +259,7 @@ void BlendingSimulatorDetailed<Parameters>::optimizeFrozenParticles()
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::finishStacking()
+void blendingsimulator::BlendingSimulatorDetailed<Parameters>::finishStacking()
 {
 	while (activeParticlesAvailable.load()) {
 		step();
@@ -266,13 +267,13 @@ void BlendingSimulatorDetailed<Parameters>::finishStacking()
 }
 
 template<typename Parameters>
-bool BlendingSimulatorDetailed<Parameters>::reclaimingFinished()
+bool blendingsimulator::BlendingSimulatorDetailed<Parameters>::reclaimingFinished()
 {
 	return allParticles.empty();
 }
 
 template<typename Parameters>
-Parameters BlendingSimulatorDetailed<Parameters>::reclaim(float position)
+Parameters blendingsimulator::BlendingSimulatorDetailed<Parameters>::reclaim(float position)
 {
 	double tanReclaimAngle;
 	if (std::abs(90.0f - this->simulationParameters.reclaimAngle) < 0.01) {
@@ -339,7 +340,7 @@ Parameters BlendingSimulatorDetailed<Parameters>::reclaim(float position)
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::stackSingle(float x, float z, const Parameters& parameters)
+void blendingsimulator::BlendingSimulatorDetailed<Parameters>::stackSingle(float x, float z, const Parameters& parameters)
 {
 	while (simulationTickCount < nextParticleTickCount) {
 		// TODO wait for particle parameter time
@@ -376,7 +377,7 @@ void BlendingSimulatorDetailed<Parameters>::stackSingle(float x, float z, const 
 }
 
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::step()
+void blendingsimulator::BlendingSimulatorDetailed<Parameters>::step()
 {
 	if (this->paused.load()) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -409,7 +410,7 @@ std::tuple<double, double, double> toTuple(btVector3 v)
 
 // Output particle details to graphics interface
 template<typename Parameters>
-void BlendingSimulatorDetailed<Parameters>::doOutputParticles()
+void blendingsimulator::BlendingSimulatorDetailed<Parameters>::doOutputParticles()
 {
 	std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
 
@@ -427,9 +428,9 @@ void BlendingSimulatorDetailed<Parameters>::doOutputParticles()
 
 		particle->outputParticle->parameters = particle->parameters;
 		particle->outputParticle->frozen = particle->frozen;
-		particle->outputParticle->position = bs::Vector3(toTuple(trans.getOrigin()));
-		particle->outputParticle->size = bs::Vector3(toTuple(particle->size));
-		particle->outputParticle->orientation = bs::Quaternion(toTuple(trans.getRotation()));
+		particle->outputParticle->position = Vector3(toTuple(trans.getOrigin()));
+		particle->outputParticle->size = Vector3(toTuple(particle->size));
+		particle->outputParticle->orientation = Quaternion(toTuple(trans.getRotation()));
 
 		if (particle->frozen) {
 			it = activeParticles.erase(it);

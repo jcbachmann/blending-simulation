@@ -3,9 +3,11 @@
 #include "BlendingSimulator/BlendingSimulatorFast.h"
 #include "BlendingSimulator/ParticleParameters.h"
 
+namespace bs = blendingsimulator;
+
 TEST(BlendingSimulatorFast, test_constructor_destructor)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 1.0f;
 	simulationParameters.heapWorldSizeZ = 1.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -13,7 +15,7 @@ TEST(BlendingSimulatorFast, test_constructor_destructor)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		EXPECT_EQ(heapMapSize.first, 1);
 		EXPECT_EQ(heapMapSize.second, 1);
@@ -25,7 +27,7 @@ TEST(BlendingSimulatorFast, test_constructor_destructor)
 
 TEST(BlendingSimulatorFast, test_heap_size_1ppcm)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 100.0f;
 	simulationParameters.heapWorldSizeZ = 200.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -33,7 +35,7 @@ TEST(BlendingSimulatorFast, test_heap_size_1ppcm)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		EXPECT_EQ(heapMapSize.first, 100);
 		EXPECT_EQ(heapMapSize.second, 200);
@@ -42,7 +44,7 @@ TEST(BlendingSimulatorFast, test_heap_size_1ppcm)
 
 TEST(BlendingSimulatorFast, test_heap_size_8ppcm)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 100.0f;
 	simulationParameters.heapWorldSizeZ = 200.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -50,7 +52,7 @@ TEST(BlendingSimulatorFast, test_heap_size_8ppcm)
 	simulationParameters.particlesPerCubicMeter = 8.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		EXPECT_EQ(heapMapSize.first, 200);
 		EXPECT_EQ(heapMapSize.second, 400);
@@ -62,7 +64,7 @@ TEST(BlendingSimulatorFast, test_heap_size_8ppcm)
 
 TEST(BlendingSimulatorFast, test_is_paused)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 1.0f;
 	simulationParameters.heapWorldSizeZ = 1.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -70,7 +72,7 @@ TEST(BlendingSimulatorFast, test_is_paused)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 		EXPECT_FALSE(simulator.isPaused());
 		simulator.pause();
 		EXPECT_TRUE(simulator.isPaused());
@@ -81,7 +83,7 @@ TEST(BlendingSimulatorFast, test_is_paused)
 
 TEST(BlendingSimulatorFast, test_heap_map)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 10.0f;
 	simulationParameters.heapWorldSizeZ = 20.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -89,7 +91,7 @@ TEST(BlendingSimulatorFast, test_heap_map)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
 		float* heapMap = simulator.getHeapMap();
 		ASSERT_NE(heapMap, nullptr);
@@ -103,7 +105,7 @@ TEST(BlendingSimulatorFast, test_heap_map)
 
 TEST(BlendingSimulatorFast, test_stacking)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 3.0f;
 	simulationParameters.heapWorldSizeZ = 3.0f;
 	simulationParameters.reclaimAngle = 90;
@@ -111,10 +113,10 @@ TEST(BlendingSimulatorFast, test_stacking)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 1.0;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 1.0f;
 		float z = 1.0f;
@@ -138,7 +140,7 @@ TEST(BlendingSimulatorFast, test_stacking)
 
 TEST(BlendingSimulatorFast, test_clear)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 3.0f;
 	simulationParameters.heapWorldSizeZ = 3.0f;
 	simulationParameters.reclaimAngle = 90;
@@ -146,10 +148,10 @@ TEST(BlendingSimulatorFast, test_clear)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 1.0;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 1.0f;
 		float z = 1.0f;
@@ -169,7 +171,7 @@ TEST(BlendingSimulatorFast, test_clear)
 
 TEST(BlendingSimulatorFast, test_reclaim)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 3.0f;
 	simulationParameters.heapWorldSizeZ = 3.0f;
 	simulationParameters.reclaimAngle = 90;
@@ -177,10 +179,10 @@ TEST(BlendingSimulatorFast, test_reclaim)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 1.0;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 1.0f;
 		float z = 1.0f;
@@ -188,15 +190,15 @@ TEST(BlendingSimulatorFast, test_reclaim)
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut = simulator.reclaim(1.0);
+		bs::AveragedParameters pOut = simulator.reclaim(1.0);
 		EXPECT_NEAR(pOut.getVolume(), 0, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut2 = simulator.reclaim(2.0);
+		bs::AveragedParameters pOut2 = simulator.reclaim(2.0);
 		EXPECT_NEAR(pOut2.getVolume(), 1, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut3 = simulator.reclaim(3.0);
+		bs::AveragedParameters pOut3 = simulator.reclaim(3.0);
 		EXPECT_NEAR(pOut3.getVolume(), 0, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());
@@ -205,7 +207,7 @@ TEST(BlendingSimulatorFast, test_reclaim)
 
 TEST(BlendingSimulatorFast, test_reclaim_angle_90)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 3.0f;
 	simulationParameters.heapWorldSizeZ = 3.0f;
 	simulationParameters.reclaimAngle = 90;
@@ -213,10 +215,10 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_90)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 6.0 + 1e-3;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 1.0f;
 		float z = 1.0f;
@@ -224,15 +226,15 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_90)
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut = simulator.reclaim(1.0);
+		bs::AveragedParameters pOut = simulator.reclaim(1.0);
 		EXPECT_NEAR(pOut.getVolume(), 1, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut2 = simulator.reclaim(2.0);
+		bs::AveragedParameters pOut2 = simulator.reclaim(2.0);
 		EXPECT_NEAR(pOut2.getVolume(), 4, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut3 = simulator.reclaim(3.0);
+		bs::AveragedParameters pOut3 = simulator.reclaim(3.0);
 		EXPECT_NEAR(pOut3.getVolume(), 1, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());
@@ -241,7 +243,7 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_90)
 
 TEST(BlendingSimulatorFast, test_reclaim_angle_45)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 3.0f;
 	simulationParameters.heapWorldSizeZ = 3.0f;
 	simulationParameters.reclaimAngle = 45.0;
@@ -249,10 +251,10 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_45)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 6.0;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 1.0f;
 		float z = 1.0f;
@@ -260,15 +262,15 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_45)
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut = simulator.reclaim(1.0);
+		bs::AveragedParameters pOut = simulator.reclaim(1.0);
 		EXPECT_NEAR(pOut.getVolume(), 2, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut2 = simulator.reclaim(2.0);
+		bs::AveragedParameters pOut2 = simulator.reclaim(2.0);
 		EXPECT_NEAR(pOut2.getVolume(), 3, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut3 = simulator.reclaim(3.0);
+		bs::AveragedParameters pOut3 = simulator.reclaim(3.0);
 		EXPECT_NEAR(pOut3.getVolume(), 1, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());
@@ -277,7 +279,7 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_45)
 
 TEST(BlendingSimulatorFast, test_reclaim_eight)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 3.0f;
 	simulationParameters.heapWorldSizeZ = 3.0f;
 	simulationParameters.reclaimAngle = 90;
@@ -285,10 +287,10 @@ TEST(BlendingSimulatorFast, test_reclaim_eight)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 9.0;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 1.0f;
 		float z = 1.0f;
@@ -296,15 +298,15 @@ TEST(BlendingSimulatorFast, test_reclaim_eight)
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut = simulator.reclaim(1.0);
+		bs::AveragedParameters pOut = simulator.reclaim(1.0);
 		EXPECT_NEAR(pOut.getVolume(), 3, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut2 = simulator.reclaim(2.0);
+		bs::AveragedParameters pOut2 = simulator.reclaim(2.0);
 		EXPECT_NEAR(pOut2.getVolume(), 3, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut3 = simulator.reclaim(3.0);
+		bs::AveragedParameters pOut3 = simulator.reclaim(3.0);
 		EXPECT_NEAR(pOut3.getVolume(), 3, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());
@@ -313,7 +315,7 @@ TEST(BlendingSimulatorFast, test_reclaim_eight)
 
 TEST(BlendingSimulatorFast, test_reclaim_8ppcm)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 6.0f / 4.0f;
 	simulationParameters.heapWorldSizeZ = 6.0f / 4.0f;
 	simulationParameters.reclaimAngle = 90;
@@ -321,10 +323,10 @@ TEST(BlendingSimulatorFast, test_reclaim_8ppcm)
 	simulationParameters.particlesPerCubicMeter = 8.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 6.0 / 8.0;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 2.0f / 4.0f;
 		float z = 2.0f / 4.0f;
@@ -332,15 +334,15 @@ TEST(BlendingSimulatorFast, test_reclaim_8ppcm)
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut = simulator.reclaim(2.0f / 4.0f);
+		bs::AveragedParameters pOut = simulator.reclaim(2.0f / 4.0f);
 		EXPECT_NEAR(pOut.getVolume(), 1.0 / 8.0, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut2 = simulator.reclaim(4.0f / 4.0f);
+		bs::AveragedParameters pOut2 = simulator.reclaim(4.0f / 4.0f);
 		EXPECT_NEAR(pOut2.getVolume(), 4.0 / 8.0, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut3 = simulator.reclaim(6.0f / 4.0f);
+		bs::AveragedParameters pOut3 = simulator.reclaim(6.0f / 4.0f);
 		EXPECT_NEAR(pOut3.getVolume(), 1.0 / 8.0, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());
@@ -349,7 +351,7 @@ TEST(BlendingSimulatorFast, test_reclaim_8ppcm)
 
 TEST(BlendingSimulatorFast, test_reclaim_angle_0)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 3.0f;
 	simulationParameters.heapWorldSizeZ = 3.0f;
 	simulationParameters.reclaimAngle = 0.0;
@@ -357,10 +359,10 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_0)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 6.0;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 1.0f;
 		float z = 1.0f;
@@ -368,15 +370,15 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_0)
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut = simulator.reclaim(1.0);
+		bs::AveragedParameters pOut = simulator.reclaim(1.0);
 		EXPECT_NEAR(pOut.getVolume(), 6, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut2 = simulator.reclaim(2.0);
+		bs::AveragedParameters pOut2 = simulator.reclaim(2.0);
 		EXPECT_NEAR(pOut2.getVolume(), 0, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut3 = simulator.reclaim(3.0);
+		bs::AveragedParameters pOut3 = simulator.reclaim(3.0);
 		EXPECT_NEAR(pOut3.getVolume(), 0, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());
@@ -385,7 +387,7 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_0)
 
 TEST(BlendingSimulatorFast, test_reclaim_angle_180)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 3.0f;
 	simulationParameters.heapWorldSizeZ = 3.0f;
 	simulationParameters.reclaimAngle = 180.0;
@@ -393,10 +395,10 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_180)
 	simulationParameters.particlesPerCubicMeter = 1.0f;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 
 		double volume = 6.0;
-		AveragedParameters p(volume, {1.0});
+		bs::AveragedParameters p(volume, {1.0});
 
 		float x = 1.0f;
 		float z = 1.0f;
@@ -404,15 +406,15 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_180)
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut = simulator.reclaim(1.0);
+		bs::AveragedParameters pOut = simulator.reclaim(1.0);
 		EXPECT_NEAR(pOut.getVolume(), 0, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut2 = simulator.reclaim(2.0);
+		bs::AveragedParameters pOut2 = simulator.reclaim(2.0);
 		EXPECT_NEAR(pOut2.getVolume(), 0, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut3 = simulator.reclaim(3.0);
+		bs::AveragedParameters pOut3 = simulator.reclaim(3.0);
 		EXPECT_NEAR(pOut3.getVolume(), 6, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());
@@ -421,7 +423,7 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_180)
 
 TEST(BlendingSimulatorFast, test_circular)
 {
-	SimulationParameters simulationParameters;
+	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = 10.0f;
 	simulationParameters.heapWorldSizeZ = 10.0f;
 	simulationParameters.reclaimAngle = 90;
@@ -430,7 +432,7 @@ TEST(BlendingSimulatorFast, test_circular)
 	simulationParameters.circular = true;
 
 	{
-		BlendingSimulatorFast<AveragedParameters> simulator(simulationParameters);
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 
 		//        X
 		//     0 1 . 8 9
@@ -447,19 +449,19 @@ TEST(BlendingSimulatorFast, test_circular)
 		simulator.finishStacking();
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut = simulator.reclaim(0.25f * total_way);
+		bs::AveragedParameters pOut = simulator.reclaim(0.25f * total_way);
 		EXPECT_NEAR(pOut.getVolume(), 0, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut2 = simulator.reclaim(0.5f * total_way);
+		bs::AveragedParameters pOut2 = simulator.reclaim(0.5f * total_way);
 		EXPECT_NEAR(pOut2.getVolume(), 1, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut3 = simulator.reclaim(0.75f * total_way);
+		bs::AveragedParameters pOut3 = simulator.reclaim(0.75f * total_way);
 		EXPECT_NEAR(pOut3.getVolume(), 2, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
-		AveragedParameters pOut4 = simulator.reclaim(1.0f * total_way);
+		bs::AveragedParameters pOut4 = simulator.reclaim(1.0f * total_way);
 		EXPECT_NEAR(pOut4.getVolume(), 3, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());

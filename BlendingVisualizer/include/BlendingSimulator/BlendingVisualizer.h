@@ -11,6 +11,8 @@ class TerrainGroup;
 class TerrainGlobalOptions;
 }
 
+namespace blendingsimulator
+{
 class HeapMesh;
 
 struct VisualizationParticle;
@@ -55,6 +57,7 @@ class BlendingVisualizer : public Visualizer
 		void refreshHeightMap();
 		void refreshParticles();
 };
+}
 
 #include "detail/BlendingVisualizer.impl.h"
 

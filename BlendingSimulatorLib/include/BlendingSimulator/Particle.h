@@ -3,20 +3,23 @@
 
 #include "detail/BasicTypes.h"
 
+namespace blendingsimulator
+{
 template<typename Parameters>
 struct Particle
 {
 	Parameters parameters;
 	bool frozen;
 
-	bs::Vector3 position;
-	bs::Vector3 size;
-	bs::Quaternion orientation;
+	Vector3 position;
+	Vector3 size;
+	Quaternion orientation;
 
 	Particle()
 		: frozen(false)
 	{
 	}
 };
+}
 
 #endif

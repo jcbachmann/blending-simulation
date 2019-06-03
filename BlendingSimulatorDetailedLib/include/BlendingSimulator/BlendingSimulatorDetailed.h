@@ -47,6 +47,8 @@ class btDiscreteDynamicsWorld;
 // Local
 #include "BlendingSimulator/BlendingSimulator.h"
 
+namespace blendingsimulator
+{
 template<typename Parameters>
 class Particle;
 
@@ -100,6 +102,7 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		ParticleDetailed<Parameters>* createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation, btVector3 velocity,
 			btVector3 size);
 };
+}
 
 #include "detail/BlendingSimulatorDetailed.impl.h"
 

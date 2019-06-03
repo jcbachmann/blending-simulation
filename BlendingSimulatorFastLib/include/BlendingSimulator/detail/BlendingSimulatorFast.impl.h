@@ -3,7 +3,7 @@
 #include <thread>
 
 template<typename Parameters>
-BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(SimulationParameters simulationParameters)
+blendingsimulator::BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(SimulationParameters simulationParameters)
 	: BlendingSimulator<Parameters>(simulationParameters)
 	, reclaimerPos(0.0f)
 	, realWorldSizeFactor(1.0f / std::pow(simulationParameters.particlesPerCubicMeter, 1.0f / 3.0f))
@@ -36,7 +36,7 @@ BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(SimulationParameters si
 }
 
 template<typename Parameters>
-void BlendingSimulatorFast<Parameters>::clear()
+void blendingsimulator::BlendingSimulatorFast<Parameters>::clear()
 {
 	std::fill(stackedHeights[0].begin(), stackedHeights[0].end(), std::numeric_limits<int>::max());
 	for (unsigned int x = 1; x < this->heapSizeX + 1; x++) {
@@ -68,19 +68,19 @@ void BlendingSimulatorFast<Parameters>::clear()
 }
 
 template<typename Parameters>
-void BlendingSimulatorFast<Parameters>::finishStacking()
+void blendingsimulator::BlendingSimulatorFast<Parameters>::finishStacking()
 {
 	// Nothing to do
 }
 
 template<typename Parameters>
-bool BlendingSimulatorFast<Parameters>::reclaimingFinished()
+bool blendingsimulator::BlendingSimulatorFast<Parameters>::reclaimingFinished()
 {
 	return int(reclaimerPos / realWorldSizeFactor + 0.5) >= reclaimParameters.size();
 }
 
 template<typename Parameters>
-Parameters BlendingSimulatorFast<Parameters>::reclaim(float position)
+Parameters blendingsimulator::BlendingSimulatorFast<Parameters>::reclaim(float position)
 {
 	double oldPos = reclaimerPos / realWorldSizeFactor;
 	double newPos = position / realWorldSizeFactor;
@@ -124,7 +124,7 @@ Parameters BlendingSimulatorFast<Parameters>::reclaim(float position)
 }
 
 template<typename Parameters>
-void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Parameters& parameters)
+void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Parameters& parameters)
 {
 	while (this->paused.load()) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -148,11 +148,11 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		particle = new Particle<Parameters>();
 		particle->parameters = parameters;
 		particle->frozen = false;
-		particle->size = bs::Vector3(0.95 * realWorldSizeFactor, 0.95 * realWorldSizeFactor, 0.95 * realWorldSizeFactor);
-		particle->orientation = bs::Quaternion(0, 0, 1, 0);
+		particle->size = Vector3(0.95 * realWorldSizeFactor, 0.95 * realWorldSizeFactor, 0.95 * realWorldSizeFactor);
+		particle->orientation = Quaternion(0, 0, 1, 0);
 
 		if (slow) {
-			particle->position = bs::Vector3(
+			particle->position = Vector3(
 				(float(xi) - 0.5f) * realWorldSizeFactor,
 				(float(minHeight) + 0.5f) * realWorldSizeFactor,
 				(float(zi) - 0.5f) * realWorldSizeFactor
@@ -216,7 +216,7 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 			if (this->simulationParameters.visualize && slow) {
 				{
 					std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
-					particle->position = bs::Vector3(
+					particle->position = Vector3(
 						(float(xi) - 0.5f) * realWorldSizeFactor,
 						(float(minHeight) + 0.5f) * realWorldSizeFactor,
 						(float(zi) - 0.5f) * realWorldSizeFactor
@@ -239,7 +239,7 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 				this->activeOutputParticles.pop_back();
 			}
 
-			particle->position = bs::Vector3(
+			particle->position = Vector3(
 				(float(xi) - 0.5f) * realWorldSizeFactor,
 				(float(minHeight) + 0.5f) * realWorldSizeFactor,
 				(float(zi) - 0.5f) * realWorldSizeFactor
@@ -306,7 +306,7 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 }
 
 template<typename Parameters>
-void BlendingSimulatorFast<Parameters>::updateHeapMap()
+void blendingsimulator::BlendingSimulatorFast<Parameters>::updateHeapMap()
 {
 	// Either way this is cache inefficient
 	for (int z = 0; z < this->heapSizeZ; z++) {

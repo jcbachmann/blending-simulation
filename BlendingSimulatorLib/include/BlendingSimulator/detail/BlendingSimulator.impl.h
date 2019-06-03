@@ -3,7 +3,7 @@
 #include "BlendingSimulator/Particle.h"
 
 template<typename Parameters>
-BlendingSimulator<Parameters>::BlendingSimulator(SimulationParameters simulationParameters)
+blendingsimulator::BlendingSimulator<Parameters>::BlendingSimulator(SimulationParameters simulationParameters)
 	: simulationParameters(simulationParameters)
 	, heapSizeX(0)
 	, heapSizeZ(0)
@@ -13,7 +13,7 @@ BlendingSimulator<Parameters>::BlendingSimulator(SimulationParameters simulation
 }
 
 template<typename Parameters>
-BlendingSimulator<Parameters>::~BlendingSimulator()
+blendingsimulator::BlendingSimulator<Parameters>::~BlendingSimulator()
 {
 	if (heapMap) {
 		delete[] heapMap;
@@ -22,7 +22,7 @@ BlendingSimulator<Parameters>::~BlendingSimulator()
 }
 
 template<typename Parameters>
-float* BlendingSimulator<Parameters>::getHeapMap()
+float* blendingsimulator::BlendingSimulator<Parameters>::getHeapMap()
 {
 	updateHeapMap();
 
@@ -30,37 +30,37 @@ float* BlendingSimulator<Parameters>::getHeapMap()
 }
 
 template<typename Parameters>
-std::pair<float, float> BlendingSimulator<Parameters>::getHeapWorldSize()
+std::pair<float, float> blendingsimulator::BlendingSimulator<Parameters>::getHeapWorldSize()
 {
 	return {simulationParameters.heapWorldSizeX, simulationParameters.heapWorldSizeZ};
 }
 
 template<typename Parameters>
-std::pair<unsigned int, unsigned int> BlendingSimulator<Parameters>::getHeapMapSize()
+std::pair<unsigned int, unsigned int> blendingsimulator::BlendingSimulator<Parameters>::getHeapMapSize()
 {
 	return {heapSizeX, heapSizeZ};
 }
 
 template<typename Parameters>
-void BlendingSimulator<Parameters>::pause()
+void blendingsimulator::BlendingSimulator<Parameters>::pause()
 {
 	paused = true;
 }
 
 template<typename Parameters>
-void BlendingSimulator<Parameters>::resume()
+void blendingsimulator::BlendingSimulator<Parameters>::resume()
 {
 	paused = false;
 }
 
 template<typename Parameters>
-bool BlendingSimulator<Parameters>::isPaused()
+bool blendingsimulator::BlendingSimulator<Parameters>::isPaused()
 {
 	return paused.load();
 }
 
 template<typename Parameters>
-void BlendingSimulator<Parameters>::stack(float x, float z, const Parameters& parameters)
+void blendingsimulator::BlendingSimulator<Parameters>::stack(float x, float z, const Parameters& parameters)
 {
 	float volumePerParticle = 1.0f / simulationParameters.particlesPerCubicMeter;
 	parameterBuffer.push(parameters);
@@ -72,7 +72,7 @@ void BlendingSimulator<Parameters>::stack(float x, float z, const Parameters& pa
 }
 
 template<typename Parameters>
-void BlendingSimulator<Parameters>::initializeHeapMap(unsigned int pHeapSizeX, unsigned int pHeapSizeZ)
+void blendingsimulator::BlendingSimulator<Parameters>::initializeHeapMap(unsigned int pHeapSizeX, unsigned int pHeapSizeZ)
 {
 	if (heapMap) {
 		throw std::runtime_error("invalid call to BlendingSimulatorCli::initializeHeapMap(): heap map already initialized");

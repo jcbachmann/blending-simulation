@@ -6,7 +6,7 @@
 #include <OgreTextureManager.h>
 #include <Bites/OgreBitesConfigDialog.h>
 
-Visualizer::Visualizer(bool verbose)
+blendingsimulator::Visualizer::Visualizer(bool verbose)
 	: mRoot(nullptr)
 	, mCamera(nullptr)
 	, mSceneMgr(nullptr)
@@ -29,13 +29,13 @@ Visualizer::Visualizer(bool verbose)
 	mFSLayer = new Ogre::FileSystemLayer("Visualizer ... again");
 }
 
-Visualizer::~Visualizer()
+blendingsimulator::Visualizer::~Visualizer()
 {
 	delete mFSLayer;
 	mFSLayer = nullptr;
 }
 
-void Visualizer::initApp()
+void blendingsimulator::Visualizer::initApp()
 {
 	mRoot = new Ogre::Root(mPluginsCfg);
 	mRoot->addFrameListener(this);
@@ -68,7 +68,7 @@ void Visualizer::initApp()
 	createFrameListener();
 }
 
-void Visualizer::closeApp()
+void blendingsimulator::Visualizer::closeApp()
 {
 	destroyScene();
 
@@ -107,7 +107,7 @@ void Visualizer::closeApp()
 	}
 }
 
-Ogre::RenderWindow* Visualizer::createWindow()
+Ogre::RenderWindow* blendingsimulator::Visualizer::createWindow()
 {
 	const char* appName = "Visualizer";
 	mRoot->initialise(false, appName);
@@ -143,7 +143,7 @@ Ogre::RenderWindow* Visualizer::createWindow()
 	return mRoot->createRenderWindow(appName, (unsigned int)width, (unsigned int)height, false, &miscParams);
 }
 
-void Visualizer::setupInput(bool grab)
+void blendingsimulator::Visualizer::setupInput(bool grab)
 {
 	if (!mSDLWindow) {
 		OGRE_EXCEPT(Ogre::Exception::ERR_INVALID_STATE, "you must create a SDL window first",
@@ -156,7 +156,7 @@ void Visualizer::setupInput(bool grab)
 	SDL_SetRelativeMouseMode(sdl_grab);
 }
 
-void Visualizer::locateResources()
+void blendingsimulator::Visualizer::locateResources()
 {
 	Ogre::ConfigFile cf;
 	cf.load(mFSLayer->getConfigFilePath(mResourcesCfg));
@@ -180,7 +180,7 @@ void Visualizer::locateResources()
 	}
 }
 
-void Visualizer::loadResources()
+void blendingsimulator::Visualizer::loadResources()
 {
 	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("Essential");
 	mTrayMgr = new OgreBites::TrayManager("Tray Manager", mWindow, this);
@@ -196,7 +196,7 @@ void Visualizer::loadResources()
 	destroyDummyScene();
 }
 
-void Visualizer::createDummyScene()
+void blendingsimulator::Visualizer::createDummyScene()
 {
 	mWindow->removeAllViewports();
 	Ogre::SceneManager* sm = mRoot->createSceneManager(Ogre::DefaultSceneManagerFactory::FACTORY_TYPE_NAME, "DummyScene");
@@ -205,7 +205,7 @@ void Visualizer::createDummyScene()
 	mWindow->addViewport(cam);
 }
 
-void Visualizer::destroyDummyScene()
+void blendingsimulator::Visualizer::destroyDummyScene()
 {
 	if (!mRoot->hasSceneManager("DummyScene")) {
 		return;
@@ -217,7 +217,7 @@ void Visualizer::destroyDummyScene()
 	mRoot->destroySceneManager(dummyScene);
 }
 
-void Visualizer::createCamera()
+void blendingsimulator::Visualizer::createCamera()
 {
 	mCamera = mSceneMgr->createCamera("Camera");
 	mCameraNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
@@ -239,7 +239,7 @@ void Visualizer::createCamera()
 	mCameraMan->setStyle(OgreBites::CS_MANUAL);
 }
 
-void Visualizer::createFrameListener()
+void blendingsimulator::Visualizer::createFrameListener()
 {
 	windowResized(mWindow);
 
@@ -259,7 +259,7 @@ void Visualizer::createFrameListener()
 	mDetailsPanel->hide();
 }
 
-bool Visualizer::acquireConfiguration()
+bool blendingsimulator::Visualizer::acquireConfiguration()
 {
 	if (!mRoot->restoreConfig()) {
 		return mRoot->showConfigDialog(OgreBites::getNativeConfigDialog());
@@ -267,7 +267,7 @@ bool Visualizer::acquireConfiguration()
 	return true;
 }
 
-void Visualizer::run()
+void blendingsimulator::Visualizer::run()
 {
 #ifdef _DEBUG
 	mResourcesCfg = "resources_d.cfg";
@@ -286,19 +286,19 @@ void Visualizer::run()
 	closeApp();
 }
 
-bool Visualizer::frameStarted(const Ogre::FrameEvent& evt)
+bool blendingsimulator::Visualizer::frameStarted(const Ogre::FrameEvent& evt)
 {
 	pollEvents();
 	return true;
 }
 
-bool Visualizer::frameRenderingQueued(const Ogre::FrameEvent& evt)
+bool blendingsimulator::Visualizer::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
 	frameRendered(evt);
 	return true;
 }
 
-void Visualizer::frameRendered(const Ogre::FrameEvent& evt)
+void blendingsimulator::Visualizer::frameRendered(const Ogre::FrameEvent& evt)
 {
 	if (mWindow->isClosed()) {
 		return;
@@ -321,7 +321,7 @@ void Visualizer::frameRendered(const Ogre::FrameEvent& evt)
 	}
 }
 
-bool Visualizer::keyPressed(const OgreBites::KeyboardEvent& evt)
+bool blendingsimulator::Visualizer::keyPressed(const OgreBites::KeyboardEvent& evt)
 {
 	if (mTrayMgr->isDialogVisible()) {
 		return true;
@@ -372,13 +372,13 @@ bool Visualizer::keyPressed(const OgreBites::KeyboardEvent& evt)
 	return true;
 }
 
-bool Visualizer::keyReleased(const OgreBites::KeyboardEvent& evt)
+bool blendingsimulator::Visualizer::keyReleased(const OgreBites::KeyboardEvent& evt)
 {
 	mCameraMan->keyReleased(evt);
 	return true;
 }
 
-bool Visualizer::mouseMoved(const OgreBites::MouseMotionEvent& evt)
+bool blendingsimulator::Visualizer::mouseMoved(const OgreBites::MouseMotionEvent& evt)
 {
 	if (mTrayMgr->mouseMoved(evt)) {
 		return true;
@@ -387,7 +387,7 @@ bool Visualizer::mouseMoved(const OgreBites::MouseMotionEvent& evt)
 	return true;
 }
 
-bool Visualizer::mousePressed(const OgreBites::MouseButtonEvent& evt)
+bool blendingsimulator::Visualizer::mousePressed(const OgreBites::MouseButtonEvent& evt)
 {
 	if (mTrayMgr->mousePressed(evt)) {
 		return true;
@@ -402,7 +402,7 @@ bool Visualizer::mousePressed(const OgreBites::MouseButtonEvent& evt)
 	return true;
 }
 
-bool Visualizer::mouseReleased(const OgreBites::MouseButtonEvent& evt)
+bool blendingsimulator::Visualizer::mouseReleased(const OgreBites::MouseButtonEvent& evt)
 {
 	if (mTrayMgr->mouseReleased(evt)) {
 		return true;
@@ -412,7 +412,7 @@ bool Visualizer::mouseReleased(const OgreBites::MouseButtonEvent& evt)
 	return true;
 }
 
-void Visualizer::windowResized(Ogre::RenderWindow* rw)
+void blendingsimulator::Visualizer::windowResized(Ogre::RenderWindow* rw)
 {
 	// Adjust mouse clipping area
 	unsigned int width, height, depth;
@@ -422,7 +422,7 @@ void Visualizer::windowResized(Ogre::RenderWindow* rw)
 	mCamera->setAspectRatio((Ogre::Real)mViewport->getActualWidth() / (Ogre::Real)mViewport->getActualHeight());
 }
 
-void Visualizer::fireInputEvent(const SDL_Event& sdlEvent)
+void blendingsimulator::Visualizer::fireInputEvent(const SDL_Event& sdlEvent)
 {
 	// TODO how is this done correctly with the new API?
 	OgreBites::Event event = *reinterpret_cast<const OgreBites::Event*>(&sdlEvent);
@@ -455,7 +455,7 @@ void Visualizer::fireInputEvent(const SDL_Event& sdlEvent)
 	}
 }
 
-void Visualizer::pollEvents()
+void blendingsimulator::Visualizer::pollEvents()
 {
 	if (!mSDLWindow) {
 		// SDL events not initialized
@@ -481,14 +481,14 @@ void Visualizer::pollEvents()
 	}
 }
 
-void Visualizer::grab()
+void blendingsimulator::Visualizer::grab()
 {
 	grabbed = true;
 	setupInput(true);
 	mCameraMan->setStyle(OgreBites::CS_FREELOOK);
 }
 
-void Visualizer::ungrab()
+void blendingsimulator::Visualizer::ungrab()
 {
 	grabbed = false;
 	setupInput(false);

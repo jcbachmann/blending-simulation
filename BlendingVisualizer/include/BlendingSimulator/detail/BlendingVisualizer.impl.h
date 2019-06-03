@@ -22,6 +22,8 @@ const char* SIMULATION_ACTIVE = "SIMULATION_ACTIVE";
 const char* SHOW_PARTICLES = "SHOW_PARTICLES";
 const char* SHOW_HEAP = "SHOW_HEAP";
 
+namespace blendingsimulator
+{
 struct VisualizationParticle
 {
 	VisualizationParticle()
@@ -45,9 +47,10 @@ struct VisualizationInstancedParticle
 
 	Ogre::InstancedEntity* entity;
 };
+}
 
 template<typename Parameters>
-BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>* simulator, bool verbose, bool pretty)
+blendingsimulator::BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>* simulator, bool verbose, bool pretty)
 	: Visualizer(verbose)
 	, pretty(pretty)
 	, mSimulationPanel(nullptr)
@@ -64,7 +67,7 @@ BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::createFrameListener()
+void blendingsimulator::BlendingVisualizer<Parameters>::createFrameListener()
 {
 	Visualizer::createFrameListener();
 
@@ -90,7 +93,7 @@ void BlendingVisualizer<Parameters>::createFrameListener()
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::createScene()
+void blendingsimulator::BlendingVisualizer<Parameters>::createScene()
 {
 	// Camera position and direction
 	mCameraNode->setPosition(Ogre::Vector3(10, 50, -5));
@@ -131,7 +134,7 @@ void BlendingVisualizer<Parameters>::createScene()
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::destroyScene()
+void blendingsimulator::BlendingVisualizer<Parameters>::destroyScene()
 {
 	for (auto inactiveParticle : inactiveParticles) {
 		Ogre::SceneNode* sceneNode = inactiveParticle->entity->getParentSceneNode();
@@ -167,7 +170,7 @@ void BlendingVisualizer<Parameters>::destroyScene()
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::frameRendered(const Ogre::FrameEvent& evt)
+void blendingsimulator::BlendingVisualizer<Parameters>::frameRendered(const Ogre::FrameEvent& evt)
 {
 	Visualizer::frameRendered(evt);
 
@@ -175,7 +178,7 @@ void BlendingVisualizer<Parameters>::frameRendered(const Ogre::FrameEvent& evt)
 }
 
 template<typename Parameters>
-bool BlendingVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEvent& evt)
+bool blendingsimulator::BlendingVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEvent& evt)
 {
 	if (mTrayMgr->isDialogVisible()) {
 		return true;
@@ -191,7 +194,7 @@ bool BlendingVisualizer<Parameters>::keyPressed(const OgreBites::KeyboardEvent& 
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::checkBoxToggled(OgreBites::CheckBox* box)
+void blendingsimulator::BlendingVisualizer<Parameters>::checkBoxToggled(OgreBites::CheckBox* box)
 {
 	if (box->getName() == SIMULATION_ACTIVE) {
 		if (box->isChecked()) {
@@ -234,7 +237,7 @@ void BlendingVisualizer<Parameters>::checkBoxToggled(OgreBites::CheckBox* box)
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::addTerrain(float flatSizeX, float flatSizeZ)
+void blendingsimulator::BlendingVisualizer<Parameters>::addTerrain(float flatSizeX, float flatSizeZ)
 {
 	const uint16_t terrainSize = 2048 + 1;
 	const float terrainExtend = 4;
@@ -310,7 +313,7 @@ void BlendingVisualizer<Parameters>::addTerrain(float flatSizeX, float flatSizeZ
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::addGroundPlane()
+void blendingsimulator::BlendingVisualizer<Parameters>::addGroundPlane()
 {
 	Ogre::MaterialManager& materialManager = Ogre::MaterialManager::getSingleton();
 	const Ogre::MaterialPtr& groundMaterial = materialManager.create("Ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -326,7 +329,7 @@ void BlendingVisualizer<Parameters>::addGroundPlane()
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::addHeap(float heapWorldSizeX, float heapWorldSizeZ)
+void blendingsimulator::BlendingVisualizer<Parameters>::addHeap(float heapWorldSizeX, float heapWorldSizeZ)
 {
 	Ogre::MaterialManager& materialManager = Ogre::MaterialManager::getSingleton();
 	const Ogre::MaterialPtr& groundMaterial = materialManager.create("HeapIn", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -346,7 +349,7 @@ void BlendingVisualizer<Parameters>::addHeap(float heapWorldSizeX, float heapWor
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::refreshHeightMap()
+void blendingsimulator::BlendingVisualizer<Parameters>::refreshHeightMap()
 {
 	if (!heapMesh) {
 		return;
@@ -358,7 +361,7 @@ void BlendingVisualizer<Parameters>::refreshHeightMap()
 }
 
 template<typename Parameters>
-void BlendingVisualizer<Parameters>::refreshParticles()
+void blendingsimulator::BlendingVisualizer<Parameters>::refreshParticles()
 {
 	bool doRefreshHeightMap = false;
 
@@ -404,9 +407,9 @@ void BlendingVisualizer<Parameters>::refreshParticles()
 			}
 
 			// Set position, scale and orientation
-			bs::Vector3 p = particle->position;
-			bs::Quaternion o = particle->orientation;
-			bs::Vector3 s = particle->size;
+			Vector3 p = particle->position;
+			Quaternion o = particle->orientation;
+			Vector3 s = particle->size;
 			cube->node->setPosition(float(p.x), float(p.y), float(p.z));
 			cube->node->setScale(float(s.x) / 100.0f, float(s.y) / 100.0f, float(s.z) / 100.0f);
 			cube->node->setOrientation(float(o.w), float(o.x), float(o.y), float(o.z));
@@ -453,9 +456,9 @@ void BlendingVisualizer<Parameters>::refreshParticles()
 				cube->entity->setCastShadows(true);
 
 				// Set position, scale and orientation
-				bs::Vector3 p = particle->position;
-				bs::Quaternion o = particle->orientation;
-				bs::Vector3 s = particle->size;
+				Vector3 p = particle->position;
+				Quaternion o = particle->orientation;
+				Vector3 s = particle->size;
 				cube->entity->setPosition(Ogre::Vector3(float(p.x), float(p.y), float(p.z)));
 				cube->entity->setScale(Ogre::Vector3(float(s.x), float(s.y), float(s.z)));
 				cube->entity->setOrientation(Ogre::Quaternion(float(o.w), float(o.x), float(o.y), float(o.z)));

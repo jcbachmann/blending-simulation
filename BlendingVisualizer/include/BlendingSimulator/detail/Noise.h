@@ -3,8 +3,8 @@
 
 #include <Ogre.h>
 
-#define B 0x100
-
+namespace blendingsimulator
+{
 class Noise
 {
 	public:
@@ -51,10 +51,12 @@ class Noise
 		Ogre::Real mHeightScale;
 		Ogre::Vector2 mOriginPoint;
 
+		static constexpr const int B = 0x100;
 		int p[B + B + 2]{};
 		Ogre::Vector3 g3[B + B + 2];
 		Ogre::Vector2 g2[B + B + 2];
 		Ogre::Real g1[B + B + 2]{};
 };
+}
 
 #endif

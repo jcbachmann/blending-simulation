@@ -4,6 +4,7 @@
 #include <boost/bind.hpp>
 
 #include "Execution.h"
+#include "BlendingSimulator/SimulationParameters.h"
 
 namespace po = boost::program_options;
 
@@ -17,7 +18,7 @@ void in_range(float value, float min, float max)
 int main(int argc, char* argv[]) try
 {
 	ExecutionParameters executionParameters;
-	SimulationParameters simulationParameters;
+	blendingsimulator::SimulationParameters simulationParameters;
 
 	po::options_description descGeneric("Generic Options");
 	descGeneric.add_options()

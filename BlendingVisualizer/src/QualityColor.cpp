@@ -4,7 +4,7 @@ constexpr const double DRAW_COLOR_MIN = 0.0;
 constexpr const double DRAW_COLOR_MAX = 230.0;
 constexpr const double DRAW_COLOR_MID = 0.5 * (DRAW_COLOR_MAX + DRAW_COLOR_MIN);
 
-std::tuple<double, double, double> hsvToRgb(double h, double s, double v)
+std::tuple<double, double, double> blendingsimulator::hsvToRgb(double h, double s, double v)
 {
 	if (s <= 0.0) {
 		return std::make_tuple(v, v, v);
@@ -65,19 +65,19 @@ std::tuple<double, double, double> hsvToRgb(double h, double s, double v)
 	return std::make_tuple(r, g, b);
 }
 
-double mapRange(double fromMin, double fromMax, double toMin, double toMax, double value)
+double blendingsimulator::mapRange(double fromMin, double fromMax, double toMin, double toMax, double value)
 {
 	return (toMax - toMin) * (value - fromMin) / (fromMax - fromMin) + toMin;
 }
 
-double qualityHue(double quality)
+double blendingsimulator::qualityHue(double quality)
 {
 	const double QUALITY_MIN = 22.1;
 	const double QUALITY_MAX = 40.6;
 	return mapRange(QUALITY_MIN, QUALITY_MAX, DRAW_COLOR_MIN, DRAW_COLOR_MAX, quality);
 }
 
-double qualityHue(int amountLow, int amountMid, int amountHigh)
+double blendingsimulator::qualityHue(int amountLow, int amountMid, int amountHigh)
 {
 	int total = amountLow + amountMid + amountHigh;
 	if (total <= 0) {
@@ -86,7 +86,7 @@ double qualityHue(int amountLow, int amountMid, int amountHigh)
 	return (double(amountLow) * DRAW_COLOR_MIN + double(amountMid) * DRAW_COLOR_MID + double(amountHigh) * DRAW_COLOR_MAX) / double(total);
 }
 
-std::tuple<double, double, double> qualityColor(float volume1, float volume2, float volume3)
+std::tuple<double, double, double> blendingsimulator::qualityColor(float volume1, float volume2, float volume3)
 {
 	if (volume1 > volume2 && volume1 > volume3) {
 		// Red

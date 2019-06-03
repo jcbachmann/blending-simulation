@@ -5,6 +5,8 @@
 
 #include "BlendingSimulator/BlendingSimulator.h"
 
+namespace blendingsimulator
+{
 template<typename Parameters>
 class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 {
@@ -39,6 +41,7 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 		// Variables for grouping the particles per cross section
 		std::vector<Parameters> reclaimParameters;
 };
+}
 
 #include "detail/BlendingSimulatorFast.impl.h"
 

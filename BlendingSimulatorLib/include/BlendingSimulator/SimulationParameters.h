@@ -1,6 +1,8 @@
 #ifndef BLENDINGSIMULATOR_SYSTEMPARAMETERS_H
 #define BLENDINGSIMULATOR_SYSTEMPARAMETERS_H
 
+namespace blendingsimulator
+{
 struct SimulationParameters
 {
 	/* Generic */
@@ -38,5 +40,6 @@ struct SimulationParameters
 	/// Height in m above ground from which particles are dropped
 	float dropHeight = 0.0f;
 };
+}
 
 #endif

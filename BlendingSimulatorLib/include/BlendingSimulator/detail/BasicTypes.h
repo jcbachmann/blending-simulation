@@ -3,7 +3,7 @@
 
 #include <tuple>
 
-namespace bs
+namespace blendingsimulator
 {
 struct Vector3
 {

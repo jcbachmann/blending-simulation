@@ -14,6 +14,8 @@ class btDefaultMotionState;
 // Blending Simulator Lib
 #include "BlendingSimulator/Particle.h"
 
+namespace blendingsimulator
+{
 template<typename Parameters>
 struct ParticleDetailed
 {
@@ -33,6 +35,7 @@ struct ParticleDetailed
 	ParticleDetailed();
 	~ParticleDetailed();
 };
+}
 
 #include "ParticleDetailed.impl.h"
 

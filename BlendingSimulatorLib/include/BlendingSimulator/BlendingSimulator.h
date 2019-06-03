@@ -9,6 +9,8 @@
 
 #include "SimulationParameters.h"
 
+namespace blendingsimulator
+{
 template<typename Parameters>
 struct Particle;
 
@@ -58,6 +60,7 @@ class BlendingSimulator
 	private:
 		Parameters parameterBuffer;
 };
+}
 
 #include "detail/BlendingSimulator.impl.h"
 

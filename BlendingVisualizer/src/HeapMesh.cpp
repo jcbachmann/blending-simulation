@@ -1,6 +1,7 @@
 #include "detail/HeapMesh.h"
 
-HeapMesh::HeapMesh(const Ogre::String& meshName, unsigned int meshSizeX, unsigned int meshSizeZ, Ogre::Real worldSizeX, Ogre::Real worldSizeZ, bool fakeNormals)
+blendingsimulator::HeapMesh::HeapMesh(const Ogre::String& meshName, unsigned int meshSizeX, unsigned int meshSizeZ, Ogre::Real worldSizeX,
+	Ogre::Real worldSizeZ, bool fakeNormals)
 	: meshName(meshName)
 	, meshSizeX(meshSizeX)
 	, meshSizeZ(meshSizeZ)
@@ -101,7 +102,7 @@ HeapMesh::HeapMesh(const Ogre::String& meshName, unsigned int meshSizeX, unsigne
 	mesh->touch();
 }
 
-HeapMesh::~HeapMesh()
+blendingsimulator::HeapMesh::~HeapMesh()
 {
 	delete[] vertexBuffer;
 	delete[] vNormals;
@@ -109,7 +110,7 @@ HeapMesh::~HeapMesh()
 	Ogre::MeshManager::getSingleton().remove(meshName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 }
 
-void HeapMesh::calculateFakeNormals()
+void blendingsimulator::HeapMesh::calculateFakeNormals()
 {
 	float* buf = vertexBuffer + 1;
 	auto* pNormals = (float*)normVertexBuffer->lock(0, normVertexBuffer->getSizeInBytes(), Ogre::HardwareBuffer::HBL_DISCARD);
@@ -131,7 +132,7 @@ void HeapMesh::calculateFakeNormals()
 	normVertexBuffer->unlock();
 }
 
-void HeapMesh::calculateNormals()
+void blendingsimulator::HeapMesh::calculateNormals()
 {
 	// zero normals
 	for (int i = 0; i < numVertices; i++) {
@@ -170,7 +171,7 @@ void HeapMesh::calculateNormals()
 	normVertexBuffer->unlock();
 }
 
-void HeapMesh::updateMesh(const float* heapMap)
+void blendingsimulator::HeapMesh::updateMesh(const float* heapMap)
 {
 	float* buf = vertexBuffer + 1; // +1 for Y coordinate
 
