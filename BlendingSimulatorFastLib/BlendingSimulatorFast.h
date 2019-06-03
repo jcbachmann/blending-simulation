@@ -11,14 +11,14 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 	public:
 		explicit BlendingSimulatorFast(SimulationParameters simulationParameters);
 
-		virtual void clear() override;
-		virtual void finishStacking() override;
-		virtual bool reclaimingFinished() override;
-		virtual Parameters reclaim(float position) override;
+		void clear() override;
+		void finishStacking() override;
+		bool reclaimingFinished() override;
+		Parameters reclaim(float position) override;
 
 	protected:
-		virtual void stackSingle(float x, float z, const Parameters& parameters) override;
-		virtual void updateHeapMap() override;
+		void stackSingle(float x, float z, const Parameters& parameters) override;
+		void updateHeapMap() override;
 
 	private:
 		// Size factor for calculating real world positions / sized from internal data

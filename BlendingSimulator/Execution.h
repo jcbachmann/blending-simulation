@@ -4,6 +4,6 @@
 #include "ExecutionParameters.h"
 #include "SimulationParameters.h"
 
-void executeSimulation(ExecutionParameters parameters, SimulationParameters simulationParameters);
+void executeSimulation(const ExecutionParameters& parameters, const SimulationParameters& simulationParameters);
 
 #endif

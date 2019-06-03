@@ -25,7 +25,7 @@ struct Vector3
 	{
 	}
 
-	Vector3(std::tuple<double, double, double> t)
+	explicit Vector3(std::tuple<double, double, double> t)
 		: x(std::get<0>(t))
 		, y(std::get<1>(t))
 		, z(std::get<2>(t))
@@ -56,7 +56,7 @@ struct Quaternion
 	{
 	}
 
-	Quaternion(std::tuple<double, double, double, double> t)
+	explicit Quaternion(std::tuple<double, double, double, double> t)
 		: w(std::get<0>(t))
 		, x(std::get<1>(t))
 		, y(std::get<2>(t))

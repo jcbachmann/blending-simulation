@@ -15,11 +15,11 @@
 #include <Bites/OgreCameraMan.h>
 #include <SDL2/SDL.h>
 
-class Visualizer : public Ogre::FrameListener, public Ogre::WindowEventListener, public OgreBites::InputListener, OgreBites::TrayListener
+class Visualizer : public Ogre::FrameListener, public OgreBites::WindowEventListener, public OgreBites::InputListener, OgreBites::TrayListener
 {
 	public:
-		Visualizer(bool verbose);
-		virtual ~Visualizer();
+		explicit Visualizer(bool verbose);
+		~Visualizer() override;
 
 		virtual void run();
 
@@ -34,37 +34,37 @@ class Visualizer : public Ogre::FrameListener, public Ogre::WindowEventListener,
 		virtual void loadResources();
 
 		// Ogre::FrameListener
-		virtual bool frameStarted(const Ogre::FrameEvent& evt) override;
-		virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt) override;
-//		virtual bool frameEnded(const Ogre::FrameEvent& evt) override;
+		bool frameStarted(const Ogre::FrameEvent& evt) override;
+		bool frameRenderingQueued(const Ogre::FrameEvent& evt) override;
+//		bool frameEnded(const Ogre::FrameEvent& evt) override;
 
-		// Ogre::WindowEventListener
-//		virtual void windowMoved(Ogre::RenderWindow* rw) override;
-		virtual void windowResized(Ogre::RenderWindow* rw) override;
-//		virtual bool windowClosing(Ogre::RenderWindow* rw) override;
-//		virtual void windowClosed(Ogre::RenderWindow* rw) override;
-//		virtual void windowFocusChange(Ogre::RenderWindow* rw) override;
+		// OgreBites::WindowEventListener
+//		void windowMoved(Ogre::RenderWindow* rw) override;
+		void windowResized(Ogre::RenderWindow* rw) override;
+//		bool windowClosing(Ogre::RenderWindow* rw) override;
+//		void windowClosed(Ogre::RenderWindow* rw) override;
+//		void windowFocusChange(Ogre::RenderWindow* rw) override;
 
 		// OgreBites::InputListener
-		virtual void frameRendered(const Ogre::FrameEvent& evt) override;
-		virtual bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
-		virtual bool keyReleased(const OgreBites::KeyboardEvent& evt) override;
-//		virtual bool touchMoved(const OgreBites::TouchFingerEvent& evt) override;
-//		virtual bool touchPressed(const OgreBites::TouchFingerEvent& evt) override;
-//		virtual bool touchReleased(const OgreBites::TouchFingerEvent& evt) override;
-		virtual bool mouseMoved(const OgreBites::MouseMotionEvent& evt) override;
-//		virtual bool mouseWheelRolled(const OgreBites::MouseWheelEvent& evt) override;
-		virtual bool mousePressed(const OgreBites::MouseButtonEvent& evt) override;
-		virtual bool mouseReleased(const OgreBites::MouseButtonEvent& evt) override;
+		void frameRendered(const Ogre::FrameEvent& evt) override;
+		bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
+		bool keyReleased(const OgreBites::KeyboardEvent& evt) override;
+//		bool touchMoved(const OgreBites::TouchFingerEvent& evt) override;
+//		bool touchPressed(const OgreBites::TouchFingerEvent& evt) override;
+//		bool touchReleased(const OgreBites::TouchFingerEvent& evt) override;
+		bool mouseMoved(const OgreBites::MouseMotionEvent& evt) override;
+//		bool mouseWheelRolled(const OgreBites::MouseWheelEvent& evt) override;
+		bool mousePressed(const OgreBites::MouseButtonEvent& evt) override;
+		bool mouseReleased(const OgreBites::MouseButtonEvent& evt) override;
 
 		// OgreBites::TrayListener
-//		virtual void buttonHit(OgreBites::Button* button) override;
-//		virtual void itemSelected(OgreBites::SelectMenu* menu) override;
-//		virtual void labelHit(OgreBites::Label* label) override;
-//		virtual void sliderMoved(OgreBites::Slider* slider) override;
-//		virtual void checkBoxToggled(OgreBites::CheckBox* box) override;
-//		virtual void okDialogClosed(const Ogre::DisplayString& message) override;
-//		virtual void yesNoDialogClosed(const Ogre::DisplayString& question, bool yesHit) override;
+//		void buttonHit(OgreBites::Button* button) override;
+//		void itemSelected(OgreBites::SelectMenu* menu) override;
+//		void labelHit(OgreBites::Label* label) override;
+//		void sliderMoved(OgreBites::Slider* slider) override;
+//		void checkBoxToggled(OgreBites::CheckBox* box) override;
+//		void okDialogClosed(const Ogre::DisplayString& message) override;
+//		void yesNoDialogClosed(const Ogre::DisplayString& question, bool yesHit) override;
 
 		Ogre::RenderWindow* createWindow();
 		bool acquireConfiguration();

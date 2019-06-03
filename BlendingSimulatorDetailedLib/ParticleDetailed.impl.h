@@ -1,3 +1,6 @@
+#ifndef ParticleDetailedImplH
+#define ParticleDetailedImplH
+
 #include "ParticleDetailed.h"
 
 // Bullet
@@ -37,3 +40,5 @@ ParticleDetailed<Parameters>::~ParticleDetailed()
 		delete outputParticle;
 	}
 }
+
+#endif

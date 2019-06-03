@@ -18,8 +18,12 @@ Visualizer::Visualizer(bool verbose)
 	, mCameraMan(nullptr)
 	, mDetailsPanel(nullptr)
 	, grabbed(false)
+	, mViewport(nullptr)
+	, mCameraNode(nullptr)
+	, mLight(nullptr)
+	, mOverlaySystem(nullptr)
 {
-	Ogre::LogManager* lm = new Ogre::LogManager();
+	auto lm = new Ogre::LogManager();
 	lm->createLog("ogre.log", true, verbose, false);
 
 	mFSLayer = new Ogre::FileSystemLayer("Visualizer ... again");
@@ -44,7 +48,7 @@ void Visualizer::initApp()
 	}
 
 	mWindow = createWindow();
-	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
+	OgreBites::WindowEventUtilities::addWindowEventListener(mWindow, this);
 
 	setupInput(false);
 
@@ -71,7 +75,7 @@ void Visualizer::closeApp()
 	mRoot->saveConfig();
 
 	if (mWindow) {
-		Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
+		OgreBites::WindowEventUtilities::removeWindowEventListener(mWindow, this);
 		mRoot->destroyRenderTarget(mWindow);
 		mWindow = nullptr;
 	}
@@ -108,9 +112,9 @@ Ogre::RenderWindow* Visualizer::createWindow()
 	const char* appName = "Visualizer";
 	mRoot->initialise(false, appName);
 	Ogre::NameValuePairList miscParams;
-	Ogre::ConfigOptionMap& ropts = mRoot->getRenderSystem()->getConfigOptions();
+	const Ogre::ConfigOptionMap& ropts = mRoot->getRenderSystem()->getConfigOptions();
 
-	std::istringstream mode(ropts["Video Mode"].currentValue);
+	std::istringstream mode(ropts.at("Video Mode").currentValue);
 	size_t width;
 	Ogre::String token;
 	size_t height;
@@ -118,18 +122,17 @@ Ogre::RenderWindow* Visualizer::createWindow()
 	mode >> token; // 'x' as separator between width and height
 	mode >> height; // height
 
-	miscParams["FSAA"] = ropts["FSAA"].currentValue;
-	miscParams["vsync"] = ropts["VSync"].currentValue;
+	miscParams["FSAA"] = ropts.at("FSAA").currentValue;
+	miscParams["vsync"] = ropts.at("VSync").currentValue;
 
 	if (!SDL_WasInit(SDL_INIT_VIDEO)) {
 		SDL_InitSubSystem(SDL_INIT_VIDEO);
 	}
 
-	mSDLWindow = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, (int) width, (int) height,
-		SDL_WINDOW_RESIZABLE);
+	mSDLWindow = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, (int)width, (int)height, SDL_WINDOW_RESIZABLE);
 
 	SDL_SysWMinfo wmInfo;
-	SDL_VERSION(&wmInfo.version);
+	SDL_VERSION(&wmInfo.version)
 	SDL_GetWindowWMInfo(mSDLWindow, &wmInfo);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -137,7 +140,7 @@ Ogre::RenderWindow* Visualizer::createWindow()
 #elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	miscParams["externalWindowHandle"] = Ogre::StringConverter::toString(size_t(wmInfo.info.win.window));
 #endif
-	return mRoot->createRenderWindow(appName, (unsigned int) width, (unsigned int) height, false, &miscParams);
+	return mRoot->createRenderWindow(appName, (unsigned int)width, (unsigned int)height, false, &miscParams);
 }
 
 void Visualizer::setupInput(bool grab)
@@ -148,7 +151,7 @@ void Visualizer::setupInput(bool grab)
 	}
 
 	SDL_ShowCursor(grab ? SDL_FALSE : SDL_TRUE);
-	SDL_bool sdl_grab = SDL_bool(grab);
+	auto sdl_grab = SDL_bool(grab);
 	SDL_SetWindowGrab(mSDLWindow, sdl_grab);
 	SDL_SetRelativeMouseMode(sdl_grab);
 }
@@ -416,7 +419,7 @@ void Visualizer::windowResized(Ogre::RenderWindow* rw)
 	int left, top;
 	rw->getMetrics(width, height, depth, left, top);
 
-	mCamera->setAspectRatio((Ogre::Real) mViewport->getActualWidth() / (Ogre::Real) mViewport->getActualHeight());
+	mCamera->setAspectRatio((Ogre::Real)mViewport->getActualWidth() / (Ogre::Real)mViewport->getActualHeight());
 }
 
 void Visualizer::fireInputEvent(const SDL_Event& sdlEvent)
@@ -467,7 +470,7 @@ void Visualizer::pollEvents()
 				break;
 			case SDL_WINDOWEVENT:
 				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-					mWindow->resize((unsigned int) event.window.data1, (unsigned int) event.window.data2);
+					mWindow->resize((unsigned int)event.window.data1, (unsigned int)event.window.data2);
 					windowResized(mWindow);
 				}
 				break;

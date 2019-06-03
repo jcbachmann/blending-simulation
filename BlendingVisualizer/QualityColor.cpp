@@ -16,7 +16,7 @@ std::tuple<double, double, double> hsvToRgb(double h, double s, double v)
 	}
 	hh /= 60.0;
 
-	long i = (long) hh;
+	long i = (long)hh;
 	double ff = hh - i;
 	double p = v * (1.0 - s);
 	double q = v * (1.0 - (s * ff));

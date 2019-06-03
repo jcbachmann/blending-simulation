@@ -7,8 +7,8 @@ HeapMesh::HeapMesh(const Ogre::String& meshName, unsigned int meshSizeX, unsigne
 	, vertexBuffer(nullptr)
 	, fakeNormals(fakeNormals)
 {
-	numFaces = size_t(2 * (meshSizeX - 1) * (meshSizeZ - 1));
-	numVertices = size_t(meshSizeX * meshSizeZ);
+	numFaces = 2 * (size_t(meshSizeX) - 1) * (size_t(meshSizeZ) - 1);
+	numVertices = size_t(meshSizeX) * size_t(meshSizeZ);
 
 	// allocate space for normal calculation
 	vNormals = new Ogre::Vector3[numVertices];
@@ -58,7 +58,7 @@ HeapMesh::HeapMesh(const Ogre::String& meshName, unsigned int meshSizeX, unsigne
 	// Prepare buffer for indices
 	indexBuffer = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(Ogre::HardwareIndexBuffer::IT_32BIT, 3 * numFaces,
 		Ogre::HardwareBuffer::HBU_STATIC, true);
-	auto* faceVertexIndices = (unsigned int*) indexBuffer->lock(0, numFaces * 3 * 4, Ogre::HardwareBuffer::HBL_DISCARD);
+	auto* faceVertexIndices = (unsigned int*)indexBuffer->lock(0, numFaces * 3 * 4, Ogre::HardwareBuffer::HBL_DISCARD);
 	for (int z = 0; z < meshSizeZ - 1; z++) {
 		for (int x = 0; x < meshSizeX - 1; x++) {
 			unsigned int* twoface = faceVertexIndices + (z * (meshSizeX - 1) + x) * 2 * 3;
@@ -112,7 +112,7 @@ HeapMesh::~HeapMesh()
 void HeapMesh::calculateFakeNormals()
 {
 	float* buf = vertexBuffer + 1;
-	float* pNormals = (float*) normVertexBuffer->lock(0, normVertexBuffer->getSizeInBytes(), Ogre::HardwareBuffer::HBL_DISCARD);
+	auto* pNormals = (float*)normVertexBuffer->lock(0, normVertexBuffer->getSizeInBytes(), Ogre::HardwareBuffer::HBL_DISCARD);
 	for (int z = 1; z < meshSizeZ - 1; z++) {
 		float* nrow = pNormals + 3 * z * meshSizeX;
 		float* row = buf + 3 * z * meshSizeX;
@@ -138,8 +138,8 @@ void HeapMesh::calculateNormals()
 		vNormals[i] = Ogre::Vector3::ZERO;
 	}
 	// first, calculate normals for faces, add them to proper vertices
-	auto* vinds = (unsigned int*) indexBuffer->lock(0, indexBuffer->getSizeInBytes(), Ogre::HardwareBuffer::HBL_READ_ONLY);
-	auto* pNormals = (float*) normVertexBuffer->lock(0, normVertexBuffer->getSizeInBytes(), Ogre::HardwareBuffer::HBL_DISCARD);
+	auto* vinds = (unsigned int*)indexBuffer->lock(0, indexBuffer->getSizeInBytes(), Ogre::HardwareBuffer::HBL_READ_ONLY);
+	auto* pNormals = (float*)normVertexBuffer->lock(0, normVertexBuffer->getSizeInBytes(), Ogre::HardwareBuffer::HBL_DISCARD);
 	for (int i = 0; i < numFaces; i++) {
 		int p0 = vinds[3 * i];
 		int p1 = vinds[3 * i + 1];

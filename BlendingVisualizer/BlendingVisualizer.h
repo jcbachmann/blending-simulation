@@ -34,33 +34,20 @@ struct VisualizationParticle
 	Ogre::SceneNode* node;
 };
 
-struct VisualizationCube
-{
-	VisualizationCube()
-		: attached(false)
-		, node(nullptr)
-	{
-	}
-
-	bool attached;
-	Ogre::SceneNode* node;
-	Ogre::MaterialPtr material;
-};
-
 template<typename Parameters>
 class BlendingVisualizer : public Visualizer
 {
 	public:
 		BlendingVisualizer(BlendingSimulator<Parameters>* simulator, bool verbose, bool pretty);
-		virtual ~BlendingVisualizer();
+		~BlendingVisualizer() override = default;
 
 	protected:
-		virtual void createFrameListener() override;
-		virtual void createScene() override;
-		virtual void destroyScene() override;
-		virtual void frameRendered(const Ogre::FrameEvent& evt) override;
-		virtual bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
-		virtual void checkBoxToggled(OgreBites::CheckBox* box) override;
+		void createFrameListener() override;
+		void createScene() override;
+		void destroyScene() override;
+		void frameRendered(const Ogre::FrameEvent& evt) override;
+		bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
+		void checkBoxToggled(OgreBites::CheckBox* box) override;
 
 	private:
 		bool pretty;
@@ -71,10 +58,9 @@ class BlendingVisualizer : public Visualizer
 		BlendingSimulator<Parameters>* simulator;
 		std::deque<VisualizationParticle*> activeParticlePool;
 		std::deque<VisualizationInstancedParticle*> inactiveParticles;
-		std::map<std::tuple<int, int, int>, VisualizationCube*> visualizationCubes;
 		bool showInactiveParticles;
 		bool showHeapMap;
-		Ogre::InstanceManager* instanceManager = nullptr;
+		Ogre::InstanceManager* instanceManager;
 		HeapMesh* heapMesh;
 		Ogre::Entity* heapEntity;
 
@@ -85,6 +71,6 @@ class BlendingVisualizer : public Visualizer
 		void refreshParticles();
 };
 
-#include "BlendingVisualizer.impl.h"
-
 #endif
+
+#include "BlendingVisualizer.impl.h"

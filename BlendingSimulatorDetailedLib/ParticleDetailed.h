@@ -35,6 +35,6 @@ struct ParticleDetailed
 	~ParticleDetailed();
 };
 
-#include "ParticleDetailed.impl.h"
-
 #endif
+
+#include "ParticleDetailed.impl.h"

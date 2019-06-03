@@ -45,7 +45,7 @@ class BlendingSimulator
 		unsigned int heapSizeZ;
 		float* heapMap;
 
-		void initializeHeapMap(unsigned int heapSizeX, unsigned int heapSizeZ);
+		void initializeHeapMap(unsigned int pHeapSizeX, unsigned int pHeapSizeZ);
 
 		virtual void stackSingle(float x, float z, const Parameters& parameters) = 0;
 

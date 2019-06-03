@@ -42,7 +42,7 @@ class Noise
 			return a + t * (b - a);
 		}
 
-		void setup(const Ogre::Real& target, int& b0, int& b1, Ogre::Real& r0, Ogre::Real& r1);
+		static void setup(const Ogre::Real& target, int& b0, int& b1, Ogre::Real& r0, Ogre::Real& r1);
 
 		Ogre::Real mAlpha;
 		Ogre::Real mBeta;
@@ -51,10 +51,10 @@ class Noise
 		Ogre::Real mHeightScale;
 		Ogre::Vector2 mOriginPoint;
 
-		int p[B + B + 2];
+		int p[B + B + 2]{};
 		Ogre::Vector3 g3[B + B + 2];
 		Ogre::Vector2 g2[B + B + 2];
-		Ogre::Real g1[B + B + 2];
+		Ogre::Real g1[B + B + 2]{};
 };
 
 #endif

@@ -23,7 +23,7 @@ Noise::Noise(const Ogre::Real& alpha, const Ogre::Real& beta, int iterationNum, 
 	}
 
 	for (int i = 0; i < B; i++) {
-		int j = (int) Ogre::Math::RangeRandom(0, B);
+		int j = (int)Ogre::Math::RangeRandom(0, B);
 
 		int k = p[i];
 		p[i] = p[j];
@@ -57,8 +57,8 @@ Ogre::Real Noise::noise(const Ogre::Vector2& vec2)
 	int bx0, bx1, by0, by1, b00, b10, b01, b11;
 	Ogre::Real rx0, rx1, ry0, ry1, sx, sy, a, b, u, v;
 
-	setup(vec2.x, bx0, bx1, rx0, rx1);
-	setup(vec2.y, by0, by1, ry0, ry1);
+	Noise::setup(vec2.x, bx0, bx1, rx0, rx1);
+	Noise::setup(vec2.y, by0, by1, ry0, ry1);
 
 	int i = p[bx0];
 	int j = p[bx1];
@@ -85,8 +85,8 @@ Ogre::Real Noise::noise(const Ogre::Vector2& vec2)
 void Noise::setup(const Ogre::Real& target, int& b0, int& b1, Ogre::Real& r0, Ogre::Real& r1)
 {
 	Ogre::Real t = target + N;
-	b0 = ((int) t) & BM;
+	b0 = ((int)t) & BM;
 	b1 = (b0 + 1) & BM;
-	r0 = t - (int) t;
+	r0 = t - (int)t;
 	r1 = r0 - 1;
 }

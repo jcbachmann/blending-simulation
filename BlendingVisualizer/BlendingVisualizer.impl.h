@@ -1,3 +1,6 @@
+#ifndef BLENDINGVISUALIZER_IMPL_H
+#define BLENDINGVISUALIZER_IMPL_H
+
 #include "BlendingVisualizer.h"
 
 #include <mutex>
@@ -25,17 +28,15 @@ BlendingVisualizer<Parameters>::BlendingVisualizer(BlendingSimulator<Parameters>
 	: Visualizer(verbose)
 	, pretty(pretty)
 	, mSimulationPanel(nullptr)
+	, mGraphicsPanel(nullptr)
 	, simulator(simulator)
 	, mTerrainGroup(nullptr)
 	, mTerrainGlobals(nullptr)
 	, showInactiveParticles(false)
 	, showHeapMap(true)
+	, instanceManager(nullptr)
 	, heapMesh(nullptr)
-{
-}
-
-template<typename Parameters>
-BlendingVisualizer<Parameters>::~BlendingVisualizer()
+	, heapEntity(nullptr)
 {
 }
 
@@ -224,14 +225,14 @@ void BlendingVisualizer<Parameters>::addTerrain(float flatSizeX, float flatSizeZ
 	mTerrainGlobals->setCompositeMapDiffuse(mLight->getDiffuseColour());
 	mTerrainGlobals->setCastsDynamicShadows(true);
 
-	mTerrainGroup = new Ogre::TerrainGroup(mSceneMgr, Ogre::Terrain::ALIGN_X_Z, (Ogre::uint16) terrainSize, terrainWorldSize);
+	mTerrainGroup = new Ogre::TerrainGroup(mSceneMgr, Ogre::Terrain::ALIGN_X_Z, (Ogre::uint16)terrainSize, terrainWorldSize);
 	mTerrainGroup->setOrigin(Ogre::Vector3(flatSizeX / 2.0f, 0.0, flatSizeZ / 2.0f));
 	Ogre::TerrainMaterialGeneratorA::SM2Profile* matProfile = dynamic_cast<Ogre::TerrainMaterialGeneratorA::SM2Profile*>(
 		mTerrainGlobals->getDefaultMaterialGenerator()->getActiveProfile());
 	matProfile->setReceiveDynamicShadowsEnabled(false);
 
 	Ogre::Terrain::ImportData& importData = mTerrainGroup->getDefaultImportSettings();
-	importData.terrainSize = (Ogre::uint16) terrainSize;
+	importData.terrainSize = (Ogre::uint16)terrainSize;
 	importData.worldSize = terrainWorldSize;
 	importData.inputScale = 1;
 	importData.minBatchSize = 33;
@@ -249,7 +250,7 @@ void BlendingVisualizer<Parameters>::addTerrain(float flatSizeX, float flatSizeZ
 	uint16_t size = terrain->getSize();
 	float* heightMap = terrain->getHeightData();
 	Noise noise = Noise();
-	constexpr const float pi = std::atan(1.0f) * 4.0f;
+	const float pi = 3.14159265359f;
 	constexpr const float leak = 5.0f;
 	for (int z = 0; z < size; z++) {
 		for (int x = 0; x < size; x++) {
@@ -338,7 +339,7 @@ void BlendingVisualizer<Parameters>::refreshParticles()
 {
 	bool doRefreshHeightMap = false;
 
-	std::deque<VisualizationParticle*>::iterator cubePoolIterator = activeParticlePool.begin();
+	auto cubePoolIterator = activeParticlePool.begin();
 
 	{
 		std::lock_guard<std::mutex> lock(simulator->outputParticlesMutex);
@@ -388,7 +389,7 @@ void BlendingVisualizer<Parameters>::refreshParticles()
 			cube->node->setOrientation(float(o.w), float(o.x), float(o.y), float(o.z));
 
 			// Set color
-			std::string materialName = "";
+			std::string materialName;
 			const Parameters& pp = particle->parameters;
 			if (pp.getValue(0) > pp.getValue(1) && pp.getValue(0) > pp.getValue(2)) {
 				materialName = "Particle_red";
@@ -411,10 +412,10 @@ void BlendingVisualizer<Parameters>::refreshParticles()
 				Particle<Parameters>* particle = *it;
 
 				// Create cube
-				VisualizationInstancedParticle* cube = new VisualizationInstancedParticle();
+				auto* cube = new VisualizationInstancedParticle();
 
 				// Set color
-				std::string materialName = "";
+				std::string materialName;
 				const Parameters& pp = particle->parameters;
 				if (pp.getValue(0) > pp.getValue(1) && pp.getValue(0) > pp.getValue(2)) {
 					materialName = "Particle_red";
@@ -459,3 +460,5 @@ void BlendingVisualizer<Parameters>::refreshParticles()
 		refreshHeightMap();
 	}
 }
+
+#endif

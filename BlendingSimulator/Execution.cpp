@@ -8,10 +8,12 @@
 #include "ParticleParameters.h"
 
 #ifdef VISUALIZER_AVAILABLE
+
 #include "BlendingVisualizer.h"
+
 #endif
 
-void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, ExecutionParameters parameters)
+void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, const ExecutionParameters& parameters)
 {
 	std::cerr << "Initializing simulation" << std::endl;
 	std::thread visualizationThread;
@@ -175,7 +177,7 @@ void executeSimulation(BlendingSimulator<AveragedParameters>& simulator, Executi
 	}
 }
 
-void executeSimulation(ExecutionParameters executionParameters, SimulationParameters simulationParameters)
+void executeSimulation(const ExecutionParameters& executionParameters, const SimulationParameters& simulationParameters)
 {
 	if (executionParameters.detailed) {
 		BlendingSimulatorDetailed<AveragedParameters> simulator(simulationParameters);

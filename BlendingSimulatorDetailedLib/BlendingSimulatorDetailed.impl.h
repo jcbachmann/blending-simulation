@@ -4,13 +4,13 @@
 
 // Bullet
 #include <btBulletDynamicsCommon.h>
-#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 // Local
 #include "ParticleDetailed.h"
 
 // System constants
-const float stackerDropOffAngle = btRadians(20); // Radians above horizon
+const float pi = 3.14159265359f;
+const float stackerDropOffAngle = 20 * pi / 180.0; // Radians above horizon
 const float stackerBeltSpeed = 3.0f; // In m/s
 const float stackerBeltWidth = 1.5f; // In m
 const float cubicMetersPerSecond = 1.0; // in m³/s
@@ -26,14 +26,14 @@ BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(SimulationParam
 	: BlendingSimulator<Parameters>(simulationParameters)
 	, particleSize(std::pow(simulationParameters.bulkDensityFactor / simulationParameters.particlesPerCubicMeter, 1.0f / 3.0f))
 	, resolutionPerWorldSize(1.0f / particleSize)
-	, simulationTicksPerParticle((unsigned long long) (1000.0 * std::pow(particleSize, 3.0) / cubicMetersPerSecond))
+	, simulationTicksPerParticle((unsigned long long)(1000.0 * std::pow(particleSize, 3.0) / cubicMetersPerSecond))
 	, simulationTickCount(0)
 	, nextParticleTickCount(0)
 	, activeParticlesAvailable(false)
 {
 	this->initializeHeapMap(
-		(unsigned int) (simulationParameters.heapWorldSizeX / particleSize + 0.5) + 1,
-		(unsigned int) (simulationParameters.heapWorldSizeZ / particleSize + 0.5) + 1
+		(unsigned int)(simulationParameters.heapWorldSizeX / particleSize + 0.5) + 1,
+		(unsigned int)(simulationParameters.heapWorldSizeZ / particleSize + 0.5) + 1
 	);
 
 	// Initialize physics
@@ -104,7 +104,7 @@ template<typename Parameters>
 ParticleDetailed<Parameters>* BlendingSimulatorDetailed<Parameters>::createParticle(btVector3 position, Parameters parameters, bool frozen,
 	btQuaternion rotation, btVector3 velocity, btVector3 size)
 {
-	ParticleDetailed<Parameters>* particle = new ParticleDetailed<Parameters>();
+	auto particle = new ParticleDetailed<Parameters>();
 
 	particle->parameters = parameters;
 	particle->frozen = frozen;
@@ -195,8 +195,8 @@ void BlendingSimulatorDetailed<Parameters>::addParticleToHeapMap(float x, float 
 	z *= resolutionPerWorldSize;
 
 	// Calculate valid position indices
-	int xi = std::max(0, std::min(int(x + 0.5f), int(this->heapSizeX) - 1));
-	int zi = std::max(0, std::min(int(z + 0.5f), int(this->heapSizeZ) - 1));
+	auto xi = std::max(0u, std::min((unsigned int)std::lround(x), this->heapSizeX - 1));
+	auto zi = std::max(0u, std::min((unsigned int)std::lround(z), this->heapSizeZ - 1));
 
 	// Set heap map height to maximum of current value and y
 	float& h = this->heapMap[zi * this->heapSizeX + xi];
@@ -211,7 +211,7 @@ void setBilinear(float* heapMap, int sizeX, int sizeZ, float x, float z, int xi,
 		float dx = std::abs(float(xi) - x);
 		float dz = std::abs(float(zi) - z);
 		float v = vMin + (1.0f - dx) * (1.0f - dz) * (vMax - vMin);
-		float& h = heapMap[zi * sizeX + xi];
+		auto& h = heapMap[zi * sizeX + xi];
 		if (v > h) {
 			h = v;
 		}
@@ -244,8 +244,8 @@ void BlendingSimulatorDetailed<Parameters>::optimizeFrozenParticles()
 			btTransform trans;
 			particle->defaultMotionState->getWorldTransform(trans);
 			btVector3& origin = trans.getOrigin();
-			int x = int(origin.getX() + 0.5);
-			int z = int(origin.getZ() + 0.5);
+			int x = std::lround(origin.getX());
+			int z = std::lround(origin.getZ());
 
 			if (x >= 0 & x < this->heapSizeX && z > 0 && z < this->heapSizeZ) {
 				if (origin.getY() < this->heapMap[z * this->heapSizeX + x] - 4.0 * particleSize) {
@@ -400,12 +400,12 @@ void BlendingSimulatorDetailed<Parameters>::step()
 std::tuple<double, double, double, double> toTuple(btQuaternion q)
 {
 	return std::make_tuple(q.w(), q.x(), q.y(), q.z());
-};
+}
 
 std::tuple<double, double, double> toTuple(btVector3 v)
 {
 	return std::make_tuple(v.x(), v.y(), v.z());
-};
+}
 
 // Output particle details to graphics interface
 template<typename Parameters>

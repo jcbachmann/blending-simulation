@@ -38,8 +38,6 @@ class btDefaultMotionState;
 
 class btRigidBody;
 
-class btHeightfieldTerrainShape;
-
 class btDefaultMotionState;
 
 class btRigidBody;
@@ -62,10 +60,10 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		explicit BlendingSimulatorDetailed(SimulationParameters simulationParameters);
 		~BlendingSimulatorDetailed();
 
-		virtual void clear() override;
-		virtual void finishStacking() override;
-		virtual bool reclaimingFinished() override;
-		virtual Parameters reclaim(float position) override;
+		void clear() override;
+		void finishStacking() override;
+		bool reclaimingFinished() override;
+		Parameters reclaim(float position) override;
 
 	protected:
 		void stackSingle(float x, float z, const Parameters& parameters) override;

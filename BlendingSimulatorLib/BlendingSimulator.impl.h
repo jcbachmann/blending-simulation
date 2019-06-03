@@ -70,19 +70,19 @@ void BlendingSimulator<Parameters>::stack(float x, float z, const Parameters& pa
 }
 
 template<typename Parameters>
-void BlendingSimulator<Parameters>::initializeHeapMap(unsigned int heapSizeX, unsigned int heapSizeZ)
+void BlendingSimulator<Parameters>::initializeHeapMap(unsigned int pHeapSizeX, unsigned int pHeapSizeZ)
 {
 	if (heapMap) {
 		throw std::runtime_error("invalid call to BlendingSimulator::initializeHeapMap(): heap map already initialized");
 	}
 
-	this->heapSizeX = heapSizeX;
-	this->heapSizeZ = heapSizeZ;
+	heapSizeX = pHeapSizeX;
+	heapSizeZ = pHeapSizeZ;
 
-	heapMap = new float[heapSizeZ * heapSizeX];
-	for (int z = 0; z < heapSizeZ; z++) {
-		for (int x = 0; x < heapSizeX; x++) {
-			heapMap[z * heapSizeX + x] = 0.0f;
+	heapMap = new float[pHeapSizeZ * pHeapSizeX];
+	for (int z = 0; z < pHeapSizeZ; z++) {
+		for (int x = 0; x < pHeapSizeX; x++) {
+			heapMap[z * pHeapSizeX + x] = 0.0f;
 		}
 	}
 }

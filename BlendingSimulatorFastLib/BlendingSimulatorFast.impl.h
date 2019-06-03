@@ -15,8 +15,8 @@ BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(SimulationParameters si
 	}
 
 	this->initializeHeapMap(
-		(unsigned int) (simulationParameters.heapWorldSizeX / realWorldSizeFactor + 0.5),
-		(unsigned int) (simulationParameters.heapWorldSizeZ / realWorldSizeFactor + 0.5)
+		(unsigned int)(simulationParameters.heapWorldSizeX / realWorldSizeFactor + 0.5),
+		(unsigned int)(simulationParameters.heapWorldSizeZ / realWorldSizeFactor + 0.5)
 	);
 
 	// Warning: stackedHeights organized first x than z while heap map is first z than x!
@@ -179,8 +179,8 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 		};
 		constexpr const static Offset offsets[] = {
 			{-1, 0},
-			{0,  -1},
-			{0,  +1},
+			{0, -1},
+			{0, +1},
 			{+1, 0},
 			{-1, -1},
 			{-1, +1},
@@ -272,7 +272,7 @@ void BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Para
 			posOnCircumference -= float(minHeight) * realWorldSizeFactor / tanReclaimAngle;
 		}
 
-		reclaimIndex = (unsigned int) (posOnCircumference / realWorldSizeFactor + 0.5);
+		reclaimIndex = (unsigned int)(posOnCircumference / realWorldSizeFactor + 0.5);
 
 		// Acquire positive modulo
 		int n = static_cast<int>(reclaimParameters.size());
