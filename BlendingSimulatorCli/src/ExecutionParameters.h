@@ -20,7 +20,7 @@ struct ExecutionParameters
 	// Input / Output Options
 	std::string heightsFile;
 	std::string reclaimFile;
-	float reclaimIncrement = 0.0f;
+	float reclaimIncrement = 1.0f;
 };
 
 #endif

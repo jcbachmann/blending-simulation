@@ -8,19 +8,19 @@ set(
 	src/Noise.cpp
 )
 
-hunter_add_package(SDL2)
-find_package(SDL2 CONFIG REQUIRED)
-
-# TODO hunter
-include(../cmake/OgreUbuntu.cmake)
-find_package(OGRE REQUIRED)
-
 add_library(BlendingVisualizer STATIC ${SOURCE_FILES})
 
 set_target_properties(
 	BlendingVisualizer PROPERTIES
 	CXX_STANDARD_REQUIRED 14
 )
+
+hunter_add_package(SDL2)
+find_package(SDL2 CONFIG REQUIRED)
+
+# TODO hunter
+include(../cmake/OgreUbuntu.cmake)
+find_package(OGRE REQUIRED)
 
 target_link_libraries(
 	BlendingVisualizer

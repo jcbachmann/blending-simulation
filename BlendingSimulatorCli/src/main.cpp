@@ -1,133 +1,77 @@
 #include <iostream>
 
-#include <boost/program_options.hpp>
-#include <boost/bind.hpp>
+#include <CLI/CLI.hpp>
 
 #include "Execution.h"
 #include "BlendingSimulator/SimulationParameters.h"
-
-namespace po = boost::program_options;
-
-void in_range(float value, float min, float max)
-{
-	if (value < min || value > max) {
-		throw std::runtime_error("value " + std::to_string(value) + " out of range [" + std::to_string(min) + ", " + std::to_string(max) + "]");
-	}
-}
 
 int main(int argc, char* argv[]) try
 {
 	ExecutionParameters executionParameters;
 	blendingsimulator::SimulationParameters simulationParameters;
 
-	po::options_description descGeneric("Generic Options");
-	descGeneric.add_options()
-		("help",
-			"produce help message")
-		("config",
-			po::value<std::string>(),
-			"config file")
-		("verbose,v",
-			po::bool_switch(&executionParameters.verbose),
-			"verbose debug output"
-		);
+	CLI::App app{"Blending Simulator CLI"};
+	std::string configFile;
 
-	po::options_description descSimulation("Simulation Options");
-	descSimulation.add_options()
-		("detailed",
-			po::bool_switch(&executionParameters.detailed),
-			"detailed simulation")
-		("circular",
-			po::bool_switch(&simulationParameters.circular),
-			"detailed simulation")
-		("length,l",
-			po::value<float>(&simulationParameters.heapWorldSizeX)
-				->required()
-				->notifier(boost::bind(&in_range, _1, 0.0f, 1000000.0f)),
-			"blending bed length")
-		("depth,d",
-			po::value<float>(&simulationParameters.heapWorldSizeZ)
-				->required()
-				->notifier(boost::bind(&in_range, _1, 0.0f, 1000000.0f)),
-			"blending bed depth")
-		("reclaimangle",
-			po::value<float>(&simulationParameters.reclaimAngle)
-				->default_value(45.0f)
-				->notifier(boost::bind(&in_range, _1, 0.0f, 180.0f)),
-			"reclaimer angle")
-		("eight",
-			po::value<float>(&simulationParameters.eightLikelihood)
-				->default_value(0.87f)
-				->notifier(boost::bind(&in_range, _1, 0.0f, 1.0f)),
-			"likelihood of 8 vs 4 sides being considered")
-		("bulkdensity",
-			po::value<float>(&simulationParameters.bulkDensityFactor)
-				->default_value(1.0f)
-				->notifier(boost::bind(&in_range, _1, 0.001f, 1000.0f)),
-			"factor for bulk density determination")
-		("ppm3",
-			po::value<float>(&simulationParameters.particlesPerCubicMeter)
-				->default_value(1.0f)
-				->notifier(boost::bind(&in_range, _1, 0.001f, 1000.0f)),
-			"amount of particles per cubic meter")
-		("dropheight,h",
-			po::value<float>(&simulationParameters.dropHeight)
-				->required()
-				->notifier(boost::bind(&in_range, _1, 0.001f, 1000.0f)),
-			"stacker drop height")
-		("reclaimincrement",
-			po::value<float>(&executionParameters.reclaimIncrement)
-				->default_value(1.0f)
-				->notifier(boost::bind(&in_range, _1, 0.001f, 1000.0f)),
-			"reclaimer position increment");
+	// Generic Options
+	app.add_flag("-v,--verbose", executionParameters.verbose, "Verbose debug output");
+	app.set_config("--config")->check(CLI::ExistingFile);
+
+	// Simulation Options
+	app.add_flag("--detailed", executionParameters.detailed, "Detailed simulation")
+		->group("Simulation Options");
+	app.add_flag("--circular", simulationParameters.circular, "Circular simulation")
+		->group("Simulation Options");
+	app.add_option("-l,--length", simulationParameters.heapWorldSizeX, "Blending bed length", true)
+		->group("Simulation Options")
+		->check(CLI::Range(0.0f, 1000000.0f));
+	app.add_option("-d,--depth", simulationParameters.heapWorldSizeZ, "Blending bed depth", true)
+		->group("Simulation Options")
+		->check(CLI::Range(0.0f, 1000000.0f));
+	app.add_option("--reclaimangle", simulationParameters.reclaimAngle, "Reclaimer angle", true)
+		->group("Simulation Options")
+		->check(CLI::Range(0.0f, 180.0f));
+	app.add_option("--eight", simulationParameters.eightLikelihood, "Likelihood of 8 vs 4 sides being considered", true)
+		->group("Simulation Options")
+		->check(CLI::Range(0.0f, 1.0f));
+	app.add_option("--bulkdensity", simulationParameters.bulkDensityFactor, "Factor for bulk density determination", true)
+		->group("Simulation Options")
+		->check(CLI::Range(0.001f, 1000.0f));
+	app.add_option("--ppm3", simulationParameters.particlesPerCubicMeter, "Amount of particles per cubic meter", true)
+		->group("Simulation Options")
+		->check(CLI::Range(0.001f, 1000.0f));
+	app.add_option("--dropheight", simulationParameters.dropHeight, "Stacker drop height", true)
+		->group("Simulation Options")
+		->check(CLI::Range(0.001f, 1000.0f));
+	app.add_option("--reclaimincrement", executionParameters.reclaimIncrement, "Reclaimer position increment", true)
+		->group("Simulation Options")
+		->check(CLI::Range(0.001f, 1000.0f));
 
 #ifdef VISUALIZER_AVAILABLE
-	po::options_description descVisualization("Visualization Options");
-	descVisualization.add_options()
-		("visualize",
-			po::bool_switch(&executionParameters.visualize),
-			"show visualization")
-		("pretty",
-			po::bool_switch(&executionParameters.pretty),
-			"render nicer landscape and details");
+	// Visualization Options
+	app.add_flag("--visualize", executionParameters.visualize, "Show visualization")
+		->group("Visualization Options");
+	app.add_flag("--pretty", executionParameters.pretty, "Render nicer landscape and details")
+		->group("Visualization Options");
 #endif
 
-	po::options_description descInputOutput("Input / Output Options");
-	descInputOutput.add_options()
-		("heights",
-			po::value<std::string>(&executionParameters.heightsFile)
-				->default_value(""),
-			"height map output file")
-		("reclaim",
-			po::value<std::string>(&executionParameters.reclaimFile)
-				->default_value(""),
-			"reclaim output file");
+	// Input / Output Options
+	app.add_option("--heights", executionParameters.heightsFile, "Height map output file")
+		->group("Input / Output Options");
+	app.add_option("--reclaim", executionParameters.reclaimFile, "Reclaim output file")
+		->group("Input / Output Options");
 
-	po::options_description descAll;
-	descAll.add(descGeneric).add(descSimulation)
-#ifdef VISUALIZER_AVAILABLE
-		.add(descVisualization)
-#endif
-		.add(descInputOutput);
-
-	po::variables_map vm;
-	po::store(po::parse_command_line(argc, argv, descAll), vm);
-
-	if (vm.count("config")) {
-		po::store(po::parse_config_file<char>(vm["config"].as<std::string>().c_str(), descAll, true), vm);
+	try {
+		app.parse(argc, argv);
+		std::cerr << "----- CONFIG -----\n";
+		std::cerr << app.config_to_str(true, true) << "\n";
+		std::cerr << "------------------" << std::endl;
+	} catch (const CLI::ParseError& e) {
+		return app.exit(e);
 	}
-
-	if (vm.count("help")) {
-		std::cout << descAll << std::endl;
-		return 1;
-	}
-
-	po::notify(vm);
 
 #ifdef VISUALIZER_AVAILABLE
 	simulationParameters.visualize = executionParameters.visualize;
-#else
-	simulationParameters.visualize = false;
 #endif
 	executeSimulation(executionParameters, simulationParameters);
 } catch (std::exception& e) {

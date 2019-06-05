@@ -6,9 +6,6 @@ set(
 	src/Execution.cpp
 )
 
-hunter_add_package(Boost COMPONENTS program_options)
-find_package(Boost CONFIG REQUIRED program_options)
-
 add_executable(BlendingSimulatorCli ${SOURCE_FILES})
 
 set_target_properties(
@@ -16,13 +13,16 @@ set_target_properties(
 	CXX_STANDARD_REQUIRED 14
 )
 
+hunter_add_package(CLI11)
+find_package(CLI11 CONFIG REQUIRED)
+
 target_link_libraries(
 	BlendingSimulatorCli
 	BlendingSimulatorLib
 	BlendingSimulatorFastLib
 	BlendingSimulatorDetailedLib
 	pthread
-	Boost::program_options
+	CLI11::CLI11
 )
 
 if (BUILD_VISUALIZER)

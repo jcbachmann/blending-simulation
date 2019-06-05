@@ -10,7 +10,7 @@ External dependencies are marked with System (indicating that installation is re
 
 | Target | Internal Dependencies | External Dependencies |
 | ------ | --------------------- | --------------------- |
-| `BlendingSimulator`<br>*executable* | `BlendingSimulatorLib`<br>`BlendingSimulatorFastLib`<br>`BlendingSimulatorDetailedLib`<br>`BlendingVisualizer` | [Boost](https://www.boost.org) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/Boost.html)) | 
+| `BlendingSimulatorCli`<br>*executable* | `BlendingSimulatorLib`<br>`BlendingSimulatorFastLib`<br>`BlendingSimulatorDetailedLib`<br>`BlendingVisualizer` | [CLI11](https://github.com/CLIUtils/CLI11) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html)) | 
 | `BlendingSimulatorLib`<br>*header-only library* | *none* | *none* |
 | `BlendingSimulatorFastLib`<br>*header-only library* | `BlendingSimulatorLib` | *none* |
 | `BlendingSimulatorFastLib-test`<br>*executable* | `BlendingSimulatorFastLib` | [Google Test](https://github.com/google/googletest) ([Hunter](https://docs.hunter.sh/en/latest/packages/pkg/GTest.html)) |
