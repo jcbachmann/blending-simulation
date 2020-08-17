@@ -276,7 +276,7 @@ void blendingsimulator::BlendingVisualizer<Parameters>::addTerrain(float flatSiz
 	uint16_t size = terrain->getSize();
 	float* heightMap = terrain->getHeightData();
 	Noise noise = Noise();
-	const float pi = 3.14159265359f;
+	const float pi = 3.141592653589793238463;
 	constexpr const float leak = 5.0f;
 	for (int z = 0; z < size; z++) {
 		for (int x = 0; x < size; x++) {

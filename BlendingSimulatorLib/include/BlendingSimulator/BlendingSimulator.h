@@ -41,6 +41,8 @@ class BlendingSimulator
 		virtual Parameters reclaim(float position) = 0;
 
 	protected:
+		static constexpr const float pi = 3.141592653589793238463;
+
 		SimulationParameters simulationParameters;
 
 		std::atomic<bool> paused;

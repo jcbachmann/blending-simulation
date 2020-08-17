@@ -26,7 +26,7 @@ blendingsimulator::BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(Simu
 	}
 
 	if (simulationParameters.circular) {
-		circumference = 2.0 * 3.141592653589793238463 * 0.25 * std::min(simulationParameters.heapWorldSizeX, simulationParameters.heapWorldSizeZ);
+		circumference = 2.0 * this->pi * 0.25 * std::min(simulationParameters.heapWorldSizeX, simulationParameters.heapWorldSizeZ);
 		reclaimParameters.resize(static_cast<unsigned int>(circumference / realWorldSizeFactor + 0.5));
 	} else {
 		reclaimParameters.resize(this->heapSizeX);
@@ -261,7 +261,7 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, 
 
 		double dx = double(xi - 0.5f) * realWorldSizeFactor - 0.5 * this->simulationParameters.heapWorldSizeX + 0.5f;
 		double dz = double(zi - 0.5f) * realWorldSizeFactor - 0.5 * this->simulationParameters.heapWorldSizeZ + 0.5f;
-		double posOnCircumference = 0.5 * (1.0 - std::atan2(dz, dx) / 3.141592653589793238463) * this->circumference;
+		double posOnCircumference = 0.5 * (1.0 - std::atan2(dz, dx) / this->pi) * this->circumference;
 
 		if (tanReclaimAngle > 1e10) {
 			// Vertical

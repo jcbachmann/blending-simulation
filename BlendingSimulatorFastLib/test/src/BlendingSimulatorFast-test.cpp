@@ -441,8 +441,8 @@ TEST(BlendingSimulatorFast, test_circular)
 		//   . . . . . .
 		//   8 . . . . .
 		//   9 0 . . . 1
-
-		float total_way = 2.0f * 3.141592653589793238463f * 2.5f;
+		const float pi = 3.141592653589793238463;
+		float total_way = 2.0f * pi * 2.5f;
 		simulator.stack(0.0, 0.0, {3.0, {1.0}});
 		simulator.stack(9.0, 0.0, {2.0, {1.0}});
 		simulator.stack(9.0, 9.0, {1.0, {1.0}});

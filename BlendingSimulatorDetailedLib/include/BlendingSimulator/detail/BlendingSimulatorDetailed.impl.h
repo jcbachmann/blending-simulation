@@ -8,19 +8,6 @@
 // Local
 #include "ParticleDetailed.h"
 
-// System constants
-const float pi = 3.14159265359f;
-const float stackerDropOffAngle = 20 * pi / 180.0; // Radians above horizon
-const float stackerBeltSpeed = 3.0f; // In m/s
-const float stackerBeltWidth = 1.5f; // In m
-const float cubicMetersPerSecond = 1.0; // in m³/s
-
-// Simulator constants
-const int minFreezeTimeout = 15000;
-const int maxFreezeTimeout = 25000;
-const unsigned long long simulationIntervalMs = 30;
-const int simulationIntervalSubSteps = 3;
-
 template<typename Parameters>
 blendingsimulator::BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetailed(SimulationParameters simulationParameters)
 	: BlendingSimulator<Parameters>(simulationParameters)
@@ -283,7 +270,7 @@ Parameters blendingsimulator::BlendingSimulatorDetailed<Parameters>::reclaim(flo
 	}
 
 	double radius = 0.25 * std::min(this->simulationParameters.heapWorldSizeX, this->simulationParameters.heapWorldSizeZ);
-	double circumference = 2.0 * 3.141592653589793238463 * radius;
+	double circumference = 2.0 * this->pi * radius;
 
 	Parameters p;
 	for (auto it = allParticles.begin(); it != allParticles.end();) {
@@ -299,7 +286,7 @@ Parameters blendingsimulator::BlendingSimulatorDetailed<Parameters>::reclaim(flo
 			// Position is along the radius
 			double dx = origin.x() - 0.5 * this->simulationParameters.heapWorldSizeX;
 			double dz = origin.z() - 0.5 * this->simulationParameters.heapWorldSizeZ;
-			comparePosition = 0.5 * (1.0 - std::atan2(dz, dx) / 3.141592653589793238463) * circumference;
+			comparePosition = 0.5 * (1.0 - std::atan2(dz, dx) / this->pi) * circumference;
 
 			if (tanReclaimAngle > 1e10) {
 				// Vertical
@@ -357,7 +344,7 @@ void blendingsimulator::BlendingSimulatorDetailed<Parameters>::stackSingle(float
 	static std::uniform_real_distribution<float> sizeDist(-sizeVariation, sizeVariation);
 	static std::uniform_real_distribution<float> posDist(-positionVariation, positionVariation);
 	static std::uniform_real_distribution<float> minVarDist(1 - miscVariation, 1 + miscVariation);
-	static std::uniform_real_distribution<float> angle(0.0f, 2.0f * 3.141592653589793238463f);
+	static std::uniform_real_distribution<float> angle(0.0f, 2.0f * this->pi);
 
 	createParticle(
 		btVector3(

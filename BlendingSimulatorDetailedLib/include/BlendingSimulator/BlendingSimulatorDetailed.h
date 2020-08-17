@@ -71,6 +71,18 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		void stackSingle(float x, float z, const Parameters& parameters) override;
 
 	private:
+		// System constants
+		static constexpr const float stackerDropOffAngle = 20 * BlendingSimulator<Parameters>::pi / 180.0; // Radians above horizon
+		static constexpr const float stackerBeltSpeed = 3.0f; // In m/s
+		static constexpr const float stackerBeltWidth = 1.5f; // In m
+		static constexpr const float cubicMetersPerSecond = 1.0; // in m³/s
+
+		// Simulator constants
+		static const int minFreezeTimeout = 15000;
+		static const int maxFreezeTimeout = 25000;
+		static const unsigned long long simulationIntervalMs = 30;
+		static const int simulationIntervalSubSteps = 3;
+
 		std::mutex simulationMutex;
 		std::deque<ParticleDetailed<Parameters>*> activeParticles;
 		std::atomic_bool activeParticlesAvailable;
