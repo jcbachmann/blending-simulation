@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 
 add_library(BlendingSimulatorDetailedLib INTERFACE)
 
-target_compile_features(BlendingSimulatorDetailedLib INTERFACE cxx_std_14)
+target_compile_features(BlendingSimulatorDetailedLib INTERFACE cxx_std_17)
 
 hunter_add_package(bullet)
 find_package(bullet CONFIG REQUIRED)

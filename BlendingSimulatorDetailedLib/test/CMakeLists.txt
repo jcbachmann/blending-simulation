@@ -9,7 +9,7 @@ add_executable(BlendingSimulatorDetailedLib-test ${SOURCE_FILES})
 
 set_target_properties(
 	BlendingSimulatorDetailedLib-test PROPERTIES
-	CXX_STANDARD_REQUIRED 14
+	CXX_STANDARD_REQUIRED 17
 )
 
 hunter_add_package(GTest)

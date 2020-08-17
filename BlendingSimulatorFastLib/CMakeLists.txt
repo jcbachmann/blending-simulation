@@ -7,7 +7,7 @@ target_include_directories(
 	INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_compile_features(BlendingSimulatorFastLib INTERFACE cxx_std_14)
+target_compile_features(BlendingSimulatorFastLib INTERFACE cxx_std_17)
 
 target_link_libraries(
 	BlendingSimulatorFastLib

@@ -11,7 +11,7 @@ pybind11_add_module(
 
 set_target_properties(
 	blending_simulator_lib PROPERTIES
-	CXX_STANDARD_REQUIRED 14
+	CXX_STANDARD_REQUIRED 17
 )
 
 target_link_libraries(

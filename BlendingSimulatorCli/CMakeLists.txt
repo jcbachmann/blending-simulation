@@ -10,7 +10,7 @@ add_executable(BlendingSimulatorCli ${SOURCE_FILES})
 
 set_target_properties(
 	BlendingSimulatorCli PROPERTIES
-	CXX_STANDARD_REQUIRED 14
+	CXX_STANDARD_REQUIRED 17
 )
 
 hunter_add_package(CLI11)
