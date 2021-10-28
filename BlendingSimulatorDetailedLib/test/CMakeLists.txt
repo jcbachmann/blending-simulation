@@ -18,7 +18,7 @@ find_package(GTest CONFIG REQUIRED)
 target_link_libraries(
 	BlendingSimulatorDetailedLib-test
 	BlendingSimulatorDetailedLib
-	GTest::main
+	GTest::gtest_main
 )
 
 include(GoogleTest)
