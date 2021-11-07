@@ -193,7 +193,7 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, 
 		static std::uniform_real_distribution<> coneDistribution(0.0, 1.0);
 		const int offsetsCount = coneDistribution(generator) > this->simulationParameters.eightLikelihood ? 4 : 8; // This results in cones instead of pyramids
 
-		static std::uniform_int_distribution<int> randomnessDistribution(0, 8);
+		static std::uniform_int_distribution<int> randomnessDistribution(0, 7);
 		const int r = randomnessDistribution(generator);
 
 		for (int o = 0; o < offsetsCount; o++) {
