@@ -21,4 +21,6 @@ target_link_libraries(
 	bullet::LinearMath
 )
 
-add_subdirectory(test)
+if (BUILD_TESTS)
+	add_subdirectory(test)
+endif ()

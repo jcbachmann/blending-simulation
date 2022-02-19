@@ -18,12 +18,21 @@ find_package(CLI11 CONFIG REQUIRED)
 
 target_link_libraries(
 	BlendingSimulatorCli
+	PRIVATE
 	BlendingSimulatorLib
-	BlendingSimulatorFastLib
-	BlendingSimulatorDetailedLib
 	pthread
 	CLI11::CLI11
 )
+
+if (BUILD_FAST_SIMULATOR)
+	target_link_libraries(BlendingSimulatorCli PRIVATE BlendingSimulatorFastLib)
+	target_compile_definitions(BlendingSimulatorCli PRIVATE FAST_SIMULATOR_AVAILABLE)
+endif ()
+
+if (BUILD_DETAILED_SIMULATOR)
+	target_link_libraries(BlendingSimulatorCli PRIVATE BlendingSimulatorDetailedLib)
+	target_compile_definitions(BlendingSimulatorCli PRIVATE DETAILED_SIMULATOR_AVAILABLE)
+endif ()
 
 if (BUILD_VISUALIZER)
 	message(STATUS "Building BlendingSimulatorCli with visualization")

@@ -17,10 +17,18 @@ set_target_properties(
 target_link_libraries(
 	blending_simulator_lib PRIVATE
 	BlendingSimulatorLib
-	BlendingSimulatorFastLib
-	BlendingSimulatorDetailedLib
 	pthread
 	pybind11::pybind11
 	pybind11::embed
 	pybind11::module
 )
+
+if (BUILD_FAST_SIMULATOR)
+	target_link_libraries(blending_simulator_lib PRIVATE BlendingSimulatorFastLib)
+	target_compile_definitions(blending_simulator_lib PRIVATE FAST_SIMULATOR_AVAILABLE)
+endif ()
+
+if (BUILD_DETAILED_SIMULATOR)
+	target_link_libraries(blending_simulator_lib PRIVATE BlendingSimulatorDetailedLib)
+	target_compile_definitions(blending_simulator_lib PRIVATE DETAILED_SIMULATOR_AVAILABLE)
+endif ()

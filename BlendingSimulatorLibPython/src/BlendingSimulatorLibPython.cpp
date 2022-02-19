@@ -7,8 +7,18 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+#ifdef FAST_SIMULATOR_AVAILABLE
+
 #include "BlendingSimulator/BlendingSimulatorFast.h"
+
+#endif
+
+#ifdef DETAILED_SIMULATOR_AVAILABLE
+
 #include "BlendingSimulator/BlendingSimulatorDetailed.h"
+
+#endif
+
 #include "BlendingSimulator/ParticleParameters.h"
 
 namespace bs = blendingsimulator;
@@ -34,9 +44,17 @@ class BlendingSimulatorLibPython
 			};
 
 			if (detailed) {
+#ifdef DETAILED_SIMULATOR_AVAILABLE
 				simulator = new bs::BlendingSimulatorDetailed<bs::AveragedParameters>(simulationParameters);
+#else
+				throw std::runtime_error("Detailed simulator not available");
+#endif
 			} else {
+#ifdef FAST_SIMULATOR_AVAILABLE
 				simulator = new bs::BlendingSimulatorFast<bs::AveragedParameters>(simulationParameters);
+#else
+				throw std::runtime_error("Fast simulator not available");
+#endif
 			}
 		}
 

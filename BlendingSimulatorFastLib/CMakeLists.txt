@@ -14,4 +14,6 @@ target_link_libraries(
 	INTERFACE BlendingSimulatorLib
 )
 
-add_subdirectory(test)
+if (BUILD_TESTS)
+	add_subdirectory(test)
+endif ()

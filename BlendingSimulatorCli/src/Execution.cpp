@@ -2,9 +2,22 @@
 
 #include <iostream>
 #include <sstream>
+#include <thread>
+
+#include "BlendingSimulator/BlendingSimulator.h"
+
+#ifdef FAST_SIMULATOR_AVAILABLE
 
 #include "BlendingSimulator/BlendingSimulatorFast.h"
+
+#endif
+
+#ifdef DETAILED_SIMULATOR_AVAILABLE
+
 #include "BlendingSimulator/BlendingSimulatorDetailed.h"
+
+#endif
+
 #include "BlendingSimulator/ParticleParameters.h"
 
 #ifdef VISUALIZER_AVAILABLE
@@ -182,10 +195,18 @@ void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator,
 void executeSimulation(const ExecutionParameters& executionParameters, const bs::SimulationParameters& simulationParameters)
 {
 	if (executionParameters.detailed) {
+#ifdef DETAILED_SIMULATOR_AVAILABLE
 		bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
 		executeSimulation(simulator, executionParameters);
+#else
+		throw std::runtime_error("Detailed simulation not available");
+#endif
 	} else {
+#ifdef FAST_SIMULATOR_AVAILABLE
 		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
 		executeSimulation(simulator, executionParameters);
+#else
+		throw std::runtime_error("Fast simulation not available");
+#endif
 	}
 }
