@@ -1,8 +1,8 @@
-#include <sstream>
 #include <iostream>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/numpy.h>
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -68,7 +68,7 @@ class BlendingSimulatorLibPython
 			simulator->stack(x, z, bs::AveragedParameters(volume, parameter));
 		}
 
-		void stackList(const std::vector<std::vector<double>>& data, const std::vector<std::string>& columns, int rows, int cols)
+		void stackList(const py::array_t<double>& data, const std::vector<std::string>& columns)
 		{
 //			int timestampCol = -1;
 			int xCol = -1;
@@ -91,12 +91,18 @@ class BlendingSimulatorLibPython
 				}
 			}
 
-			for (int i = 0; i < rows; i++) {
+			auto dataRef = data.unchecked<2>();
+
+			for (py::ssize_t i = 0; i < dataRef.shape(0); i++) {
 				std::vector<double> values(parameterColumnIndices.size());
 				for (int j = 0; j < parameterColumnIndices.size(); j++) {
-					values[j] = data[i][parameterColumnIndices[j]];
+					values[j] = dataRef(i, parameterColumnIndices[j]);
 				}
-				simulator->stack((float)data[i][xCol], (float)data[i][zCol], bs::AveragedParameters(data[i][volumeCol], values));
+				simulator->stack(
+					(float)dataRef(i, xCol),
+					(float)dataRef(i, zCol),
+					bs::AveragedParameters(dataRef(i, volumeCol), values)
+				);
 			}
 		}
 
