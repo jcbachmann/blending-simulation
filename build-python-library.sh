@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+cmake -H. -Bbuild \
+ -DCMAKE_BUILD_TYPE=Release \
+ -DBUILD_VISUALIZER=OFF \
+ -DBUILD_TESTS=OFF \
+ -DBUILD_FAST_SIMULATOR=ON \
+ -DBUILD_DETAILED_SIMULATOR=OFF \
+ -DBUILD_PYTHON_LIB=ON \
+ -DBUILD_CLI=OFF
+cmake --build build -j 4
+
