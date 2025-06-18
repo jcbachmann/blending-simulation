@@ -19,31 +19,41 @@ int main(int argc, char* argv[]) try
 
 	// Simulation Options
 	app.add_flag("--detailed", executionParameters.detailed, "Detailed simulation")
+		->default_val(executionParameters.detailed)
 		->group("Simulation Options");
 	app.add_flag("--circular", simulationParameters.circular, "Circular simulation")
+		->default_val(simulationParameters.circular)
 		->group("Simulation Options");
-	app.add_option("-l,--length", simulationParameters.heapWorldSizeX, "Blending bed length", true)
+	app.add_option("-l,--length", simulationParameters.heapWorldSizeX, "Blending bed length")
+		->default_val(simulationParameters.heapWorldSizeX)
 		->group("Simulation Options")
 		->check(CLI::Range(0.0f, 1000000.0f));
-	app.add_option("-d,--depth", simulationParameters.heapWorldSizeZ, "Blending bed depth", true)
+	app.add_option("-d,--depth", simulationParameters.heapWorldSizeZ, "Blending bed depth")
+		->default_val(simulationParameters.heapWorldSizeZ)
 		->group("Simulation Options")
 		->check(CLI::Range(0.0f, 1000000.0f));
-	app.add_option("--reclaimangle", simulationParameters.reclaimAngle, "Reclaimer angle", true)
+	app.add_option("--reclaimangle", simulationParameters.reclaimAngle, "Reclaimer angle")
+		->default_val(simulationParameters.reclaimAngle)
 		->group("Simulation Options")
 		->check(CLI::Range(0.0f, 180.0f));
-	app.add_option("--eight", simulationParameters.eightLikelihood, "Likelihood of 8 vs 4 sides being considered", true)
+	app.add_option("--eight", simulationParameters.eightLikelihood, "Likelihood of 8 vs 4 sides being considered")
+		->default_val(simulationParameters.eightLikelihood)
 		->group("Simulation Options")
 		->check(CLI::Range(0.0f, 1.0f));
-	app.add_option("--bulkdensity", simulationParameters.bulkDensityFactor, "Factor for bulk density determination", true)
+	app.add_option("--bulkdensity", simulationParameters.bulkDensityFactor, "Factor for bulk density determination")
+		->default_val(simulationParameters.bulkDensityFactor)
 		->group("Simulation Options")
 		->check(CLI::Range(0.001f, 1000.0f));
-	app.add_option("--ppm3", simulationParameters.particlesPerCubicMeter, "Amount of particles per cubic meter", true)
+	app.add_option("--ppm3", simulationParameters.particlesPerCubicMeter, "Amount of particles per cubic meter")
+		->default_val(simulationParameters.particlesPerCubicMeter)
 		->group("Simulation Options")
 		->check(CLI::Range(0.001f, 1000.0f));
-	app.add_option("--dropheight", simulationParameters.dropHeight, "Stacker drop height", true)
+	app.add_option("--dropheight", simulationParameters.dropHeight, "Stacker drop height")
+		->default_val(simulationParameters.dropHeight)
 		->group("Simulation Options")
 		->check(CLI::Range(0.001f, 1000.0f));
-	app.add_option("--reclaimincrement", executionParameters.reclaimIncrement, "Reclaimer position increment", true)
+	app.add_option("--reclaimincrement", executionParameters.reclaimIncrement, "Reclaimer position increment")
+		->default_val(executionParameters.reclaimIncrement)
 		->group("Simulation Options")
 		->check(CLI::Range(0.001f, 1000.0f));
 
