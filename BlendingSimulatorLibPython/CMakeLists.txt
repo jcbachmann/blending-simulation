@@ -9,6 +9,8 @@ pybind11_add_module(
 	src/BlendingSimulatorLibPython.cpp
 )
 
+find_package(Threads REQUIRED)
+
 set_target_properties(
 	blending_simulator_lib PROPERTIES
 	CXX_STANDARD_REQUIRED 17
@@ -17,7 +19,7 @@ set_target_properties(
 target_link_libraries(
 	blending_simulator_lib PRIVATE
 	BlendingSimulatorLib
-	pthread
+	Threads::Threads
 	pybind11::pybind11
 	pybind11::embed
 	pybind11::module

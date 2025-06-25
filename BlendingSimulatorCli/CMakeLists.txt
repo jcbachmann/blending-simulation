@@ -16,11 +16,13 @@ set_target_properties(
 hunter_add_package(CLI11)
 find_package(CLI11 CONFIG REQUIRED)
 
+find_package(Threads REQUIRED)
+
 target_link_libraries(
 	BlendingSimulatorCli
 	PRIVATE
 	BlendingSimulatorLib
-	pthread
+	Threads::Threads
 	CLI11::CLI11
 )
 
