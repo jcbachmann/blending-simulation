@@ -14,12 +14,6 @@ if (BUILD_TESTS)
 	include(cmake/GoogleTest.cmake)
 endif ()
 
-if (BUILD_PYTHON_LIB)
-	# Use system / external library - for python package provided by scikit build core
-	find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-	find_package(pybind11 CONFIG REQUIRED)
-endif ()
-
 if (BUILD_DETAILED_SIMULATOR)
 	include(cmake/Bullet.cmake)
 endif ()

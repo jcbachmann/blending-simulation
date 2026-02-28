@@ -4,7 +4,6 @@ option(BUILD_VISUALIZER "Build the visualization libary" OFF)
 option(BUILD_TESTS "Build the tests" OFF)
 option(BUILD_FAST_SIMULATOR "Build fast simulator" OFF)
 option(BUILD_DETAILED_SIMULATOR "Build detailed simulator" OFF)
-option(BUILD_PYTHON_LIB "Build python lib" OFF)
 option(BUILD_CLI "Build simulator CLI" OFF)
 
 project(BlendingSimulator)
@@ -23,10 +22,6 @@ endif ()
 
 if (BUILD_DETAILED_SIMULATOR)
 	add_subdirectory(BlendingSimulatorDetailedLib)
-endif ()
-
-if (BUILD_PYTHON_LIB)
-	add_subdirectory(BlendingSimulatorLibPython)
 endif ()
 
 if (BUILD_CLI)
