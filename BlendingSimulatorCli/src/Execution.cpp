@@ -2,7 +2,10 @@
 
 #include <iostream>
 #include <sstream>
+
+#ifdef VISUALIZER_AVAILABLE
 #include <thread>
+#endif
 
 #include "BlendingSimulator/BlendingSimulator.h"
 
@@ -31,10 +34,10 @@ namespace bs = blendingsimulator;
 void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator, const ExecutionParameters& parameters)
 {
 	std::cerr << "Initializing simulation" << std::endl;
-	std::thread visualizationThread;
 	std::atomic_bool cancel(false);
 
 #ifdef VISUALIZER_AVAILABLE
+	std::thread visualizationThread;
 	if (parameters.visualize) {
 		std::cerr << "Starting visualization" << std::endl;
 		visualizationThread = std::thread([&simulator, &cancel, parameters]() {

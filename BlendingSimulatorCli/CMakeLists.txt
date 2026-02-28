@@ -17,7 +17,6 @@ target_link_libraries(
 	BlendingSimulatorCli
 	PRIVATE
 	BlendingSimulator::Lib
-	Threads::Threads
 	CLI11::CLI11
 )
 
@@ -34,7 +33,7 @@ endif ()
 if (BUILD_VISUALIZER)
 	message(STATUS "Building BlendingSimulatorCli with visualization")
 	target_compile_definitions(BlendingSimulatorCli PUBLIC VISUALIZER_AVAILABLE)
-	target_link_libraries(BlendingSimulatorCli PRIVATE BlendingSimulator::Visualizer)
+	target_link_libraries(BlendingSimulatorCli PRIVATE BlendingSimulator::Visualizer Threads::Threads)
 else ()
 	message(STATUS "Building BlendingSimulatorCli without visualization")
 endif ()
