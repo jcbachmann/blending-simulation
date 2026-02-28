@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.15)
 
 option(BUILD_VISUALIZER "Build the visualization libary" OFF)
 option(BUILD_TESTS "Build the tests" OFF)
