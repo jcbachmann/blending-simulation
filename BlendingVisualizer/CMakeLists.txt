@@ -9,30 +9,26 @@ set(
 )
 
 add_library(BlendingVisualizer STATIC ${SOURCE_FILES})
+add_library(BlendingSimulator::Visualizer ALIAS BlendingVisualizer)
 
 set_target_properties(
 	BlendingVisualizer PROPERTIES
 	CXX_STANDARD_REQUIRED 17
 )
 
-hunter_add_package(SDL2)
-find_package(SDL2 CONFIG REQUIRED)
-
-# TODO hunter
-include(../cmake/OgreUbuntu.cmake)
-find_package(OGRE REQUIRED)
-
 target_link_libraries(
 	BlendingVisualizer
-	BlendingSimulatorLib
+	BlendingSimulator::Lib
 	SDL2::SDL2
-	${OGRE_LIBRARIES}
+	Ogre::OgreMain
+	Ogre::OgreBites
+	Ogre::OgreOverlay
+	Ogre::OgreTerrain
 )
 
 target_include_directories(
 	BlendingVisualizer
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/BlendingSimulator
-	PUBLIC ${OGRE_INCLUDE_DIRS}
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )

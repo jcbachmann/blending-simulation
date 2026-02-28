@@ -2,23 +2,20 @@ cmake_minimum_required(VERSION 3.9)
 
 project(BlendingSimulatorLibPython VERSION 1.0.0 DESCRIPTION "Blending Simulator Lib for Python")
 
-hunter_add_package(pybind11)
-find_package(pybind11 CONFIG REQUIRED)
 pybind11_add_module(
 	blending_simulator_lib
 	src/BlendingSimulatorLibPython.cpp
 )
 
-find_package(Threads REQUIRED)
-
 set_target_properties(
 	blending_simulator_lib PROPERTIES
 	CXX_STANDARD_REQUIRED 17
+	POSITION_INDEPENDENT_CODE ON
 )
 
 target_link_libraries(
 	blending_simulator_lib PRIVATE
-	BlendingSimulatorLib
+	BlendingSimulator::Lib
 	Threads::Threads
 	pybind11::pybind11
 	pybind11::embed
@@ -26,11 +23,11 @@ target_link_libraries(
 )
 
 if (BUILD_FAST_SIMULATOR)
-	target_link_libraries(blending_simulator_lib PRIVATE BlendingSimulatorFastLib)
+	target_link_libraries(blending_simulator_lib PRIVATE BlendingSimulator::FastLib)
 	target_compile_definitions(blending_simulator_lib PRIVATE FAST_SIMULATOR_AVAILABLE)
 endif ()
 
 if (BUILD_DETAILED_SIMULATOR)
-	target_link_libraries(blending_simulator_lib PRIVATE BlendingSimulatorDetailedLib)
+	target_link_libraries(blending_simulator_lib PRIVATE BlendingSimulator::DetailedLib)
 	target_compile_definitions(blending_simulator_lib PRIVATE DETAILED_SIMULATOR_AVAILABLE)
 endif ()

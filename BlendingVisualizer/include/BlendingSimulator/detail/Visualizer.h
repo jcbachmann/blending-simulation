@@ -10,9 +10,9 @@
 #include <OgreConfigFile.h>
 #include <OgreWindowEventUtilities.h>
 #include <OgreFileSystemLayer.h>
-#include <Bites/OgreInput.h>
-#include <Bites/OgreTrays.h>
-#include <Bites/OgreCameraMan.h>
+#include <OgreInput.h>
+#include <OgreTrays.h>
+#include <OgreCameraMan.h>
 #include <SDL2/SDL.h>
 
 namespace blendingsimulator

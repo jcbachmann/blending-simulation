@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 add_library(BlendingSimulatorLib INTERFACE)
+add_library(BlendingSimulator::Lib ALIAS BlendingSimulatorLib)
 
 target_compile_features(BlendingSimulatorLib INTERFACE cxx_std_17)
 

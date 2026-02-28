@@ -12,12 +12,9 @@ set_target_properties(
 	CXX_STANDARD_REQUIRED 17
 )
 
-hunter_add_package(GTest)
-find_package(GTest CONFIG REQUIRED)
-
 target_link_libraries(
 	BlendingSimulatorFastLib-test
-	BlendingSimulatorFastLib
+	BlendingSimulator::FastLib
 	GTest::gtest_main
 )
 

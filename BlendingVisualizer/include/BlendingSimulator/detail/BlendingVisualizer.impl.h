@@ -5,9 +5,9 @@
 #include <OgreTechnique.h>
 #include <OgreMeshManager.h>
 #include <OgreMovablePlane.h>
-#include <Terrain/OgreTerrain.h>
-#include <Terrain/OgreTerrainGroup.h>
-#include <Terrain/OgreTerrainMaterialGeneratorA.h>
+#include <OgreTerrain.h>
+#include <OgreTerrainGroup.h>
+#include <OgreTerrainMaterialGeneratorA.h>
 #include <Ogre.h>
 #include <SDL2/SDL_keyboard.h>
 

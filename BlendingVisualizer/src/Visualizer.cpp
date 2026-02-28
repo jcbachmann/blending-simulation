@@ -4,7 +4,7 @@
 #include <OgreLogManager.h>
 #include <OgreMaterialManager.h>
 #include <OgreTextureManager.h>
-#include <Bites/OgreBitesConfigDialog.h>
+#include <OgreBitesConfigDialog.h>
 
 blendingsimulator::Visualizer::Visualizer(bool verbose)
 	: mRoot(nullptr)

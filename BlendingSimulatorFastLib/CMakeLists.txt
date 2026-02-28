@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 add_library(BlendingSimulatorFastLib INTERFACE)
+add_library(BlendingSimulator::FastLib ALIAS BlendingSimulatorFastLib)
 
 target_include_directories(
 	BlendingSimulatorFastLib
@@ -11,7 +12,7 @@ target_compile_features(BlendingSimulatorFastLib INTERFACE cxx_std_17)
 
 target_link_libraries(
 	BlendingSimulatorFastLib
-	INTERFACE BlendingSimulatorLib
+	INTERFACE BlendingSimulator::Lib
 )
 
 if (BUILD_TESTS)
