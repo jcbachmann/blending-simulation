@@ -1,0 +1,7 @@
+cmake-build-*
+.git
+.idea
+build
+.gitignore
+.travis.yml
+README.md
