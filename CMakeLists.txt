@@ -7,7 +7,7 @@ option(BUILD_DETAILED_SIMULATOR "Build detailed simulator" OFF)
 option(BUILD_CLI "Build simulator CLI" OFF)
 option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
 
-project(BlendingSimulator VERSION 2026.1)
+project(BlendingSimulator VERSION 2026.1.1)
 
 include(cmake/Dependencies.cmake)
 
