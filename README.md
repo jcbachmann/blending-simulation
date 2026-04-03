@@ -1,8 +1,10 @@
 # Blending Simulator
 
-This software package contains libraries and programs for the simulation of stacking and reclaiming in bulk material blending beds.
+[![Build Status](https://github.com/jcbachmann/blending-simulation/actions/workflows/build.yml/badge.svg)](https://github.com/jcbachmann/blending-simulation/actions/workflows/build.yml)
+[![Test Status](https://github.com/jcbachmann/blending-simulation/actions/workflows/test.yml/badge.svg)](https://github.com/jcbachmann/blending-simulation/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/badge/coverage-view--artifact-blue)](https://github.com/jcbachmann/blending-simulation/actions/workflows/test.yml)
 
-[![CMake on multiple platforms](https://github.com/jcbachmann/blending-simulation/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/jcbachmann/blending-simulation/actions/workflows/cmake-multi-platform.yml)
+This software package contains libraries and programs for the simulation of stacking and reclaiming in bulk material blending beds.
 
 ## Dependencies
 
