@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/jcbachmann/blending-simulation/actions/workflows/build.yml/badge.svg)](https://github.com/jcbachmann/blending-simulation/actions/workflows/build.yml)
 [![Test Status](https://github.com/jcbachmann/blending-simulation/actions/workflows/test.yml/badge.svg)](https://github.com/jcbachmann/blending-simulation/actions/workflows/test.yml)
-[![Coverage](https://img.shields.io/badge/coverage-view--artifact-blue)](https://github.com/jcbachmann/blending-simulation/actions/workflows/test.yml)
+[![Coverage](https://codecov.io/gh/jcbachmann/blending-simulation/branch/master/graph/badge.svg)](https://codecov.io/gh/jcbachmann/blending-simulation)
 
 This software package contains libraries and programs for the simulation of stacking and reclaiming in bulk material blending beds.
 
