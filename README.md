@@ -2,6 +2,8 @@
 
 This software package contains libraries and programs for the simulation of stacking and reclaiming in bulk material blending beds.
 
+[![CMake on multiple platforms](https://github.com/jcbachmann/blending-simulation/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/jcbachmann/blending-simulation/actions/workflows/cmake-multi-platform.yml)
+
 ## Dependencies
 
 The following table lists all internal and external dependencies for the libraries and executables in this repository.
