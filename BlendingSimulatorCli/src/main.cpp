@@ -5,13 +5,13 @@
 #include "Execution.h"
 #include "BlendingSimulator/SimulationParameters.h"
 
-int main(int argc, char* argv[]) try
+int main(const int argc, char* argv[]) try
 {
 	ExecutionParameters executionParameters;
 	blendingsimulator::SimulationParameters simulationParameters;
 
 	CLI::App app{"Blending Simulator CLI"};
-	std::string configFile;
+	app.set_version_flag("-V,--version", std::string(PROJECT_VERSION));
 
 	// Generic Options
 	app.add_flag("-v,--verbose", executionParameters.verbose, "Verbose debug output");

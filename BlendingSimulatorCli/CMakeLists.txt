@@ -13,6 +13,8 @@ set_target_properties(
 	CXX_STANDARD_REQUIRED 17
 )
 
+target_compile_definitions(BlendingSimulatorCli PRIVATE PROJECT_VERSION="${PROJECT_VERSION}")
+
 target_link_libraries(
 	BlendingSimulatorCli
 	PRIVATE
