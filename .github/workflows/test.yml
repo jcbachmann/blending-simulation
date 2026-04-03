@@ -69,7 +69,7 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel $(nproc 2>/dev/null || echo 2)
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 2
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
