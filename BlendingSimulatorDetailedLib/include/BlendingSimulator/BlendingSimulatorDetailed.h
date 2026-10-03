@@ -7,6 +7,7 @@
 #include <map>
 #include <mutex>
 #include <atomic>
+#include <random>
 
 // Bullet
 #include <LinearMath/btVector3.h>
@@ -91,9 +92,18 @@ class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 		const float particleSize; // In m cube side length
 		const float resolutionPerWorldSize; // Cells per meter
 
+		// Random variation of new particles
+		std::uniform_real_distribution<float> sizeDistribution; // In m, +/- 5 % of particleSize
+		std::uniform_real_distribution<float> positionDistribution; // In m across the stacker belt
+		std::uniform_real_distribution<float> variationDistribution; // Factor 1 +/- variation for speed, height, and angle
+		std::uniform_real_distribution<float> angleDistribution; // Orientation in radians
+
 		const unsigned long long simulationTicksPerParticle;
 		unsigned long long simulationTickCount;
 		unsigned long long nextParticleTickCount;
+
+		// Counts simulation steps to run optimizeFrozenParticles every 100 steps
+		int optimizeFrozenParticlesCounter = 0;
 
 		btBroadphaseInterface* broadphase;
 		btDefaultCollisionConfiguration* collisionConfiguration;

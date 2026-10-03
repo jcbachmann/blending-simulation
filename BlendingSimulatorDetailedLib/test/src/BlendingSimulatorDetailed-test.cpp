@@ -126,3 +126,71 @@ TEST(BlendingSimulatorDetailed, test_stack_reclaim)
 		EXPECT_TRUE(simulator.reclaimingFinished());
 	}
 }
+
+TEST(BlendingSimulatorDetailed, test_particle_size_per_instance)
+{
+	bs::SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 10.0f;
+	simulationParameters.heapWorldSizeZ = 10.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.bulkDensityFactor = 1.0f;
+	simulationParameters.dropHeight = 2.0f;
+
+	// A first simulator with 1 m particles must not influence the particles of later simulators
+	{
+		simulationParameters.particlesPerCubicMeter = 1.0f;
+		bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
+		simulator.stack(5.0f, 5.0f, bs::AveragedParameters(1.0, {1.0}));
+		simulator.finishStacking();
+	}
+
+	// 0.5 m particles vary by 5 %
+	simulationParameters.particlesPerCubicMeter = 8.0f;
+	bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
+	simulator.stack(5.0f, 5.0f, bs::AveragedParameters(1.0, {1.0}));
+	simulator.finishStacking();
+
+	ASSERT_EQ(simulator.inactiveOutputParticles.size(), 8);
+	for (const auto* particle : simulator.inactiveOutputParticles) {
+		for (double size : {particle->size.x, particle->size.y, particle->size.z}) {
+			EXPECT_GE(size, 0.5 * 0.95 - 1e-6);
+			EXPECT_LE(size, 0.5 * 1.05 + 1e-6);
+		}
+	}
+}
+
+std::vector<double> stackWithSeed(std::uint32_t seed)
+{
+	bs::SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 10.0f;
+	simulationParameters.heapWorldSizeZ = 10.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.bulkDensityFactor = 1.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	simulationParameters.dropHeight = 2.0f;
+	simulationParameters.seed = seed;
+
+	bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
+	simulator.stack(5.0f, 5.0f, bs::AveragedParameters(5.0, {1.0}));
+	simulator.finishStacking();
+
+	std::vector<double> positions;
+	for (const auto* particle : simulator.inactiveOutputParticles) {
+		positions.push_back(particle->position.x);
+		positions.push_back(particle->position.y);
+		positions.push_back(particle->position.z);
+	}
+	return positions;
+}
+
+TEST(BlendingSimulatorDetailed, test_seed_repeatable)
+{
+	auto positions = stackWithSeed(42);
+	EXPECT_EQ(positions.size(), 15);
+	EXPECT_EQ(positions, stackWithSeed(42));
+}
+
+TEST(BlendingSimulatorDetailed, test_seed_different)
+{
+	EXPECT_NE(stackWithSeed(1), stackWithSeed(2));
+}

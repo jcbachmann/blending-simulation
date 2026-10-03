@@ -13,6 +13,10 @@ blendingsimulator::BlendingSimulatorDetailed<Parameters>::BlendingSimulatorDetai
 	: BlendingSimulator<Parameters>(simulationParameters)
 	, particleSize(std::pow(simulationParameters.bulkDensityFactor / simulationParameters.particlesPerCubicMeter, 1.0f / 3.0f))
 	, resolutionPerWorldSize(1.0f / particleSize)
+	, sizeDistribution(-0.05f * particleSize, 0.05f * particleSize)
+	, positionDistribution(-0.5f * stackerBeltWidth, 0.5f * stackerBeltWidth)
+	, variationDistribution(1.0f - 0.005f, 1.0f + 0.005f)
+	, angleDistribution(0.0f, 2.0f * this->pi)
 	, simulationTicksPerParticle((unsigned long long)(1000.0 * std::pow(particleSize, 3.0) / cubicMetersPerSecond))
 	, simulationTickCount(0)
 	, nextParticleTickCount(0)
@@ -53,9 +57,12 @@ blendingsimulator::BlendingSimulatorDetailed<Parameters>::~BlendingSimulatorDeta
 	delete groundRigidBody;
 	delete groundShape;
 
-	// Physics
+	// Physics, in reverse order of creation
 	delete dynamicsWorld;
 	delete solver;
+	delete broadphase;
+	delete dispatcher;
+	delete collisionConfiguration;
 }
 
 template<typename Parameters>
@@ -63,6 +70,7 @@ void blendingsimulator::BlendingSimulatorDetailed<Parameters>::clear()
 {
 	std::lock_guard<std::mutex> lock(simulationMutex);
 	simulationTickCount = 0;
+	nextParticleTickCount = 0;
 
 	for (int z = 0; z < this->heapSizeZ; z++) {
 		for (int x = 0; x < this->heapSizeX; x++) {
@@ -193,9 +201,9 @@ void blendingsimulator::BlendingSimulatorDetailed<Parameters>::addParticleToHeap
 	}
 }
 
-void setBilinear(float* heapMap, int sizeX, int sizeZ, float x, float z, int xi, int zi, float vMin, float vMax)
+inline void setBilinear(float* heapMap, int sizeX, int sizeZ, float x, float z, int xi, int zi, float vMin, float vMax)
 {
-	if (xi >= 0 & xi < sizeX && zi >= 0 && zi < sizeZ) {
+	if (xi >= 0 && xi < sizeX && zi >= 0 && zi < sizeZ) {
 		float dx = std::abs(float(xi) - x);
 		float dz = std::abs(float(zi) - z);
 		float v = vMin + (1.0f - dx) * (1.0f - dz) * (vMax - vMin);
@@ -232,10 +240,11 @@ void blendingsimulator::BlendingSimulatorDetailed<Parameters>::optimizeFrozenPar
 			btTransform trans;
 			particle->defaultMotionState->getWorldTransform(trans);
 			btVector3& origin = trans.getOrigin();
-			int x = std::lround(origin.getX());
-			int z = std::lround(origin.getZ());
+			// Heap map cell, scaled like in addParticleToHeapMap
+			long x = std::lround(origin.getX() * resolutionPerWorldSize);
+			long z = std::lround(origin.getZ() * resolutionPerWorldSize);
 
-			if (x >= 0 & x < this->heapSizeX && z > 0 && z < this->heapSizeZ) {
+			if (x >= 0 && x < static_cast<long>(this->heapSizeX) && z >= 0 && z < static_cast<long>(this->heapSizeZ)) {
 				if (origin.getY() < this->heapMap[z * this->heapSizeX + x] - 4.0 * particleSize) {
 					dynamicsWorld->removeRigidBody(particle->rigidBody);
 					particle->inSimulation = false;
@@ -334,30 +343,24 @@ void blendingsimulator::BlendingSimulatorDetailed<Parameters>::stackSingle(float
 		step();
 	}
 
-	// TODO OMG this leaks particle size between two executions of the simulator
-	static const float sizeVariation = particleSize * 0.05f;
-	static const float positionVariation = 0.5f * stackerBeltWidth;
-	static const float miscVariation = 0.005f; // 1 +/- variation for speed, height, and angle
-
-	static std::random_device rd;
-	static std::default_random_engine generator(rd());
-	static std::uniform_real_distribution<float> sizeDist(-sizeVariation, sizeVariation);
-	static std::uniform_real_distribution<float> posDist(-positionVariation, positionVariation);
-	static std::uniform_real_distribution<float> minVarDist(1 - miscVariation, 1 + miscVariation);
-	static std::uniform_real_distribution<float> angle(0.0f, 2.0f * this->pi);
+	// Draw in a fixed order (function arguments are evaluated in unspecified order) so that a seed reproduces the same particles
+	auto& generator = this->randomEngine;
+	const float positionOffset = positionDistribution(generator);
+	const float heightFactor = variationDistribution(generator);
+	const float angle = angleDistribution(generator);
+	const float dropOffAngleFactor = variationDistribution(generator);
+	const float speedFactor = variationDistribution(generator);
+	const float sizeX = particleSize + sizeDistribution(generator);
+	const float sizeY = particleSize + sizeDistribution(generator);
+	const float sizeZ = particleSize + sizeDistribution(generator);
 
 	createParticle(
-		btVector3(
-			x + posDist(generator),
-			this->simulationParameters.dropHeight * minVarDist(generator),
-			z - 5.0f
-		), // Position
+		btVector3(x + positionOffset, this->simulationParameters.dropHeight * heightFactor, z - 5.0f), // Position
 		parameters, // Parameters
 		false, // Frozen
-		btQuaternion(btVector3(0, 0, 1), angle(generator)), // Orientation
-		btVector3(0, 0, 1).rotate(btVector3(-1, 0, 0), stackerDropOffAngle * minVarDist(generator)) * stackerBeltSpeed *
-			minVarDist(generator), // Angle and speed
-		btVector3(particleSize + sizeDist(generator), particleSize + sizeDist(generator), particleSize + sizeDist(generator)) // Size
+		btQuaternion(btVector3(0, 0, 1), angle), // Orientation
+		btVector3(0, 0, 1).rotate(btVector3(-1, 0, 0), stackerDropOffAngle * dropOffAngleFactor) * stackerBeltSpeed * speedFactor, // Angle and speed
+		btVector3(sizeX, sizeY, sizeZ) // Size
 	);
 
 	nextParticleTickCount = simulationTickCount + simulationTicksPerParticle;
@@ -377,7 +380,6 @@ void blendingsimulator::BlendingSimulatorDetailed<Parameters>::step()
 	dynamicsWorld->stepSimulation(timeStep, simulationIntervalSubSteps, timeStep / float(simulationIntervalSubSteps));
 	doOutputParticles();
 	freezeParticles();
-	static int optimizeFrozenParticlesCounter = 0;
 	optimizeFrozenParticlesCounter = (optimizeFrozenParticlesCounter + 1) % 100;
 	if (optimizeFrozenParticlesCounter == 0) {
 		optimizeFrozenParticles();
@@ -385,12 +387,12 @@ void blendingsimulator::BlendingSimulatorDetailed<Parameters>::step()
 	simulationTickCount += simulationIntervalMs;
 }
 
-std::tuple<double, double, double, double> toTuple(btQuaternion q)
+inline std::tuple<double, double, double, double> toTuple(btQuaternion q)
 {
 	return std::make_tuple(q.w(), q.x(), q.y(), q.z());
 }
 
-std::tuple<double, double, double> toTuple(btVector3 v)
+inline std::tuple<double, double, double> toTuple(btVector3 v)
 {
 	return std::make_tuple(v.x(), v.y(), v.z());
 }
