@@ -1,6 +1,7 @@
 #ifndef BlendingSimulatorFast_H
 #define BlendingSimulatorFast_H
 
+#include <random>
 #include <vector>
 
 #include "BlendingSimulator/BlendingSimulator.h"
@@ -40,6 +41,12 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 
 		// Variables for grouping the particles per cross section
 		std::vector<Parameters> reclaimParameters;
+
+		// Decides between 4 and 8 fall directions by comparison with eightLikelihood
+		std::uniform_real_distribution<double> coneDistribution{0.0, 1.0};
+
+		// Rotates the order in which the fall directions are checked
+		std::uniform_int_distribution<int> directionDistribution{0, 7};
 };
 }
 

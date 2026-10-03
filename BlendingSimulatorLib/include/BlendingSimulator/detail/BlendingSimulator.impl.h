@@ -5,6 +5,7 @@
 template<typename Parameters>
 blendingsimulator::BlendingSimulator<Parameters>::BlendingSimulator(SimulationParameters simulationParameters)
 	: simulationParameters(simulationParameters)
+	, randomEngine(simulationParameters.seed ? *simulationParameters.seed : std::random_device{}())
 	, heapSizeX(0)
 	, heapSizeZ(0)
 	, heapMap(nullptr)

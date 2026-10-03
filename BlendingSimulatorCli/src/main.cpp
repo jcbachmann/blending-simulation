@@ -56,6 +56,8 @@ int main(const int argc, char* argv[]) try
 		->default_val(executionParameters.reclaimIncrement)
 		->group("Simulation Options")
 		->check(CLI::Range(0.001f, 1000.0f));
+	app.add_option("--seed", simulationParameters.seed, "Random number generator seed for repeatable results (random if not set)")
+		->group("Simulation Options");
 
 #ifdef VISUALIZER_AVAILABLE
 	// Visualization Options

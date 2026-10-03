@@ -1,6 +1,9 @@
 #ifndef BLENDINGSIMULATOR_SYSTEMPARAMETERS_H
 #define BLENDINGSIMULATOR_SYSTEMPARAMETERS_H
 
+#include <cstdint>
+#include <optional>
+
 namespace blendingsimulator
 {
 struct SimulationParameters
@@ -39,6 +42,12 @@ struct SimulationParameters
 
 	/// Height in m above ground from which particles are dropped
 	float dropHeight = 10.0f;
+
+
+	/* Reproducibility */
+
+	/// Seed of the random number generator, a simulator without seed draws a random one so that its results cannot be repeated
+	std::optional<std::uint32_t> seed;
 };
 }
 

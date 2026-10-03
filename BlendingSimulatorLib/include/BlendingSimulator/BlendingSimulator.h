@@ -6,6 +6,7 @@
 #include <mutex>
 #include <map>
 #include <atomic>
+#include <random>
 
 #include "SimulationParameters.h"
 
@@ -46,6 +47,9 @@ class BlendingSimulator
 		SimulationParameters simulationParameters;
 
 		std::atomic<bool> paused;
+
+		// Random number generator of this simulator instance, seeded from simulationParameters.seed if set
+		std::mt19937 randomEngine;
 
 		unsigned int heapSizeX;
 		unsigned int heapSizeZ;

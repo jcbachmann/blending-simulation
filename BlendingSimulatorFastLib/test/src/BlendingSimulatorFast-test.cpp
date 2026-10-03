@@ -467,3 +467,41 @@ TEST(BlendingSimulatorFast, test_circular)
 		EXPECT_TRUE(simulator.reclaimingFinished());
 	}
 }
+
+std::vector<float> stackConeWithSeed(std::optional<std::uint32_t> seed)
+{
+	bs::SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 20.0f;
+	simulationParameters.heapWorldSizeZ = 20.0f;
+	simulationParameters.reclaimAngle = 45.0;
+	simulationParameters.eightLikelihood = 0.5f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	simulationParameters.seed = seed;
+
+	bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
+	simulator.stack(10.0f, 10.0f, bs::AveragedParameters(500.0, {1.0}));
+	simulator.finishStacking();
+
+	std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
+	const float* heapMap = simulator.getHeapMap();
+	std::vector<float> heights(heapMap, heapMap + heapMapSize.first * heapMapSize.second);
+
+	// Append the reclaimed volumes to cover the reclaim slices as well
+	float position = 0.0f;
+	while (!simulator.reclaimingFinished()) {
+		heights.push_back(static_cast<float>(simulator.reclaim(position).getVolume()));
+		position += 1.0f;
+	}
+
+	return heights;
+}
+
+TEST(BlendingSimulatorFast, test_seed_repeatable)
+{
+	EXPECT_EQ(stackConeWithSeed(42), stackConeWithSeed(42));
+}
+
+TEST(BlendingSimulatorFast, test_seed_different)
+{
+	EXPECT_NE(stackConeWithSeed(1), stackConeWithSeed(2));
+}
