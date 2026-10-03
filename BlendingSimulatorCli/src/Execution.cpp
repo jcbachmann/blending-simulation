@@ -1,5 +1,6 @@
 #include "Execution.h"
 
+#include <fstream>
 #include <iostream>
 #include <sstream>
 
@@ -22,6 +23,7 @@
 #endif
 
 #include "BlendingSimulator/ParticleParameters.h"
+#include "HeightMap.h"
 
 #ifdef VISUALIZER_AVAILABLE
 
@@ -134,17 +136,7 @@ void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator,
 		std::ofstream out(parameters.heightsFile);
 
 		if (out) {
-			auto heapMapSize = simulator.getHeapMapSize();
-			const float* heapMap = simulator.getHeapMap(); // +1 for Y coordinate
-			for (int z = 0; z < heapMapSize.second; z++) {
-				for (int x = 0; x < heapMapSize.first; x++) {
-					if (x > 0) {
-						out << "\t";
-					}
-					out << heapMap[z * heapMapSize.first + x + 1];
-				}
-				out << "\n";
-			}
+			writeHeightMap(out, simulator);
 			out.close();
 			std::cerr << "Height map written" << std::endl;
 		} else {

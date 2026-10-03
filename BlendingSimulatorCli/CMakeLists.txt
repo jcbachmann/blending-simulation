@@ -4,6 +4,7 @@ set(
 	SOURCE_FILES
 	src/main.cpp
 	src/Execution.cpp
+	src/HeightMap.cpp
 )
 
 add_executable(BlendingSimulatorCli ${SOURCE_FILES})
@@ -38,4 +39,8 @@ if (BUILD_VISUALIZER)
 	target_link_libraries(BlendingSimulatorCli PRIVATE BlendingSimulator::Visualizer Threads::Threads)
 else ()
 	message(STATUS "Building BlendingSimulatorCli without visualization")
+endif ()
+
+if (BUILD_TESTS AND BUILD_FAST_SIMULATOR)
+	add_subdirectory(test)
 endif ()
