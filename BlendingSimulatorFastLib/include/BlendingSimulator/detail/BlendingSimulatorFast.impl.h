@@ -5,7 +5,6 @@
 template<typename Parameters>
 blendingsimulator::BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(SimulationParameters simulationParameters)
 	: BlendingSimulator<Parameters>(simulationParameters)
-	, reclaimerPos(0.0f)
 	, realWorldSizeFactor(1.0f / std::pow(simulationParameters.particlesPerCubicMeter, 1.0f / 3.0f))
 {
 	if (std::abs(90.0f - simulationParameters.reclaimAngle) < 0.01) {
@@ -27,9 +26,9 @@ blendingsimulator::BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(Simu
 
 	if (simulationParameters.circular) {
 		circumference = 2.0 * this->pi * 0.25 * std::min(simulationParameters.heapWorldSizeX, simulationParameters.heapWorldSizeZ);
-		reclaimParameters.resize(static_cast<unsigned int>(circumference / realWorldSizeFactor + 0.5));
+		slices.resize(static_cast<unsigned int>(circumference / realWorldSizeFactor + 0.5), realWorldSizeFactor);
 	} else {
-		reclaimParameters.resize(this->heapSizeX);
+		slices.resize(this->heapSizeX, realWorldSizeFactor);
 	}
 
 	clear();
@@ -48,9 +47,7 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::clear()
 	}
 	std::fill(stackedHeights[this->heapSizeX + 1].begin(), stackedHeights[this->heapSizeX + 1].end(), std::numeric_limits<int>::max());
 
-	for (Parameters& reclaimParameter : reclaimParameters) {
-		reclaimParameter.clear();
-	}
+	slices.clear();
 
 	{
 		std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
@@ -76,51 +73,13 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::finishStacking()
 template<typename Parameters>
 bool blendingsimulator::BlendingSimulatorFast<Parameters>::reclaimingFinished()
 {
-	return int(reclaimerPos / realWorldSizeFactor + 0.5) >= reclaimParameters.size();
+	return slices.finished();
 }
 
 template<typename Parameters>
 Parameters blendingsimulator::BlendingSimulatorFast<Parameters>::reclaim(float position)
 {
-	double oldPos = reclaimerPos / realWorldSizeFactor;
-	double newPos = position / realWorldSizeFactor;
-	int startPos = static_cast<int>(oldPos);
-	int endPos = static_cast<int>(newPos);
-
-	if (startPos < 0) {
-		startPos = 0;
-	}
-
-	if (endPos > reclaimParameters.size()) {
-		endPos = static_cast<int>(reclaimParameters.size());
-	}
-
-	Parameters p;
-	for (int i = startPos; i < endPos; i++) {
-		p.push(reclaimParameters[i]);
-		reclaimParameters[i].clear();
-	}
-
-	if (endPos < reclaimParameters.size()) {
-		auto& r = reclaimParameters[endPos];
-		double popVolume = 0.0f;
-		if (startPos == endPos) {
-			double missingPart = oldPos - double(endPos);
-			double div = 1.0f - missingPart;
-			if (div > 1e-20) {
-				double originalVolume = r.getVolume() / div;
-				popVolume = std::min((newPos - oldPos) * originalVolume, r.getVolume());
-			} else {
-				r.clear();
-			}
-		} else {
-			popVolume = r.getVolume() * (newPos - double(endPos));
-		}
-		p.push(r.pop(popVolume));
-	}
-
-	reclaimerPos = position;
-	return p;
+	return slices.reclaim(position);
 }
 
 template<typename Parameters>
@@ -271,7 +230,7 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, 
 		reclaimIndex = (unsigned int)(posOnCircumference / realWorldSizeFactor + 0.5);
 
 		// Acquire positive modulo
-		int n = static_cast<int>(reclaimParameters.size());
+		int n = static_cast<int>(slices.size());
 		reclaimIndex = (reclaimIndex % n + n) % n;
 	} else {
 		reclaimIndex = xi - 1;
@@ -283,7 +242,7 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, 
 			if (this->simulationParameters.reclaimAngle < 90.0f) {
 				reclaimIndex = 0;
 			} else {
-				reclaimIndex = static_cast<int>(reclaimParameters.size() - 1);
+				reclaimIndex = static_cast<int>(slices.size() - 1);
 			}
 		} else {
 			reclaimIndex -= int(float(minHeight) / tanReclaimAngle + 0.5f);
@@ -293,12 +252,12 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, 
 			reclaimIndex = 0;
 		}
 
-		if (reclaimIndex >= reclaimParameters.size()) {
-			reclaimIndex = static_cast<int>(reclaimParameters.size() - 1);
+		if (reclaimIndex >= static_cast<int>(slices.size())) {
+			reclaimIndex = static_cast<int>(slices.size() - 1);
 		}
 	}
 
-	reclaimParameters[reclaimIndex].push(parameters);
+	slices.push(reclaimIndex, parameters);
 }
 
 template<typename Parameters>

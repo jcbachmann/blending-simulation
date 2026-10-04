@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "BlendingSimulator/BlendingSimulator.h"
+#include "BlendingSimulator/ReclaimSlices.h"
 
 namespace blendingsimulator
 {
@@ -27,9 +28,6 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 		// Size factor for calculating real world positions / sized from internal data
 		const float realWorldSizeFactor;
 
-		// Position up to which material has been reclaimed
-		float reclaimerPos;
-
 		// Tangent of reclaim angle
 		float tanReclaimAngle;
 
@@ -39,8 +37,8 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 		// Variable tracking the height at each position for falling simulation
 		std::vector<std::vector<int>> stackedHeights;
 
-		// Variables for grouping the particles per cross section
-		std::vector<Parameters> reclaimParameters;
+		// Particles grouped per cross section
+		ReclaimSlices<Parameters> slices;
 
 		// Decides between 4 and 8 fall directions by comparison with eightLikelihood
 		std::uniform_real_distribution<double> coneDistribution{0.0, 1.0};
