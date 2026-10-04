@@ -8,7 +8,7 @@ option(BUILD_LATTICE_SIMULATOR "Build lattice simulator" OFF)
 option(BUILD_CLI "Build simulator CLI" OFF)
 option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
 
-project(BlendingSimulator VERSION 2026.2)
+project(BlendingSimulator VERSION 2026.2.1)
 
 include(cmake/Dependencies.cmake)
 
