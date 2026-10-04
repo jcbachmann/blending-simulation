@@ -21,6 +21,13 @@ int main(const int argc, char* argv[]) try
 	app.add_flag("--detailed", executionParameters.detailed, "Detailed simulation")
 		->default_val(executionParameters.detailed)
 		->group("Simulation Options");
+	app.add_flag("--lattice", executionParameters.lattice, "Lattice simulation (hexagonal close-packed)")
+		->default_val(executionParameters.lattice)
+		->group("Simulation Options");
+	app.add_option("--latticeangle", simulationParameters.latticeAngleOfRepose, "Angle of repose of the lattice simulation")
+		->default_val(simulationParameters.latticeAngleOfRepose)
+		->group("Simulation Options")
+		->check(CLI::Range(1.0f, 89.0f));
 	app.add_flag("--circular", simulationParameters.circular, "Circular simulation")
 		->default_val(simulationParameters.circular)
 		->group("Simulation Options");

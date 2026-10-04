@@ -33,6 +33,11 @@ if (BUILD_DETAILED_SIMULATOR)
 	target_compile_definitions(BlendingSimulatorCli PRIVATE DETAILED_SIMULATOR_AVAILABLE)
 endif ()
 
+if (BUILD_LATTICE_SIMULATOR)
+	target_link_libraries(BlendingSimulatorCli PRIVATE BlendingSimulator::LatticeLib)
+	target_compile_definitions(BlendingSimulatorCli PRIVATE LATTICE_SIMULATOR_AVAILABLE)
+endif ()
+
 if (BUILD_VISUALIZER)
 	message(STATUS "Building BlendingSimulatorCli with visualization")
 	target_compile_definitions(BlendingSimulatorCli PUBLIC VISUALIZER_AVAILABLE)

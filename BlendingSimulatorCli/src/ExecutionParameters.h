@@ -10,6 +10,7 @@ struct ExecutionParameters
 
 	// Simulation Options
 	bool detailed = false;
+	bool lattice = false;
 
 #ifdef VISUALIZER_AVAILABLE
 	// Visualization

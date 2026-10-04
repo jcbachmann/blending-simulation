@@ -10,14 +10,16 @@ This software package contains libraries and programs for the simulation of stac
 
 The following table lists all internal and external dependencies for the libraries and executables in this repository.
 
-Extenral dependencies are automatically downloaded by CMake via `FetchContent`.
+External dependencies are automatically downloaded by CMake via `FetchContent`.
 
 | Target                                                  | Internal Dependencies                                                                                          | External Dependencies                                                                      |
 |---------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| `BlendingSimulatorCli`<br>*executable*                  | `BlendingSimulatorLib`<br>`BlendingSimulatorFastLib`<br>`BlendingSimulatorDetailedLib`<br>`BlendingVisualizer` | [CLI11](https://github.com/CLIUtils/CLI11) v2.6.2                                          | 
+| `BlendingSimulatorCli`<br>*executable*                  | `BlendingSimulatorLib`<br>`BlendingSimulatorFastLib`<br>`BlendingSimulatorDetailedLib`<br>`BlendingSimulatorLatticeLib`<br>`BlendingVisualizer` | [CLI11](https://github.com/CLIUtils/CLI11) v2.6.2                                          | 
 | `BlendingSimulatorLib`<br>*header-only library*         | *none*                                                                                                         | *none*                                                                                     |
 | `BlendingSimulatorFastLib`<br>*header-only library*     | `BlendingSimulatorLib`                                                                                         | *none*                                                                                     |
 | `BlendingSimulatorFastLib-test`<br>*executable*         | `BlendingSimulatorFastLib`                                                                                     | [Google Test](https://github.com/google/googletest) v1.17.0                                |
 | `BlendingSimulatorDetailedLib`<br>*header-only library* | `BlendingSimulatorLib`                                                                                         | [Bullet Physics](https://github.com/bulletphysics/bullet3) v2.87                           |
 | `BlendingSimulatorDetailedLib-test`<br>*executable*     | `BlendingSimulatorDetailedLib`                                                                                 | [Google Test](https://github.com/google/googletest) v1.17.0                                |
+| `BlendingSimulatorLatticeLib`<br>*header-only library*      | `BlendingSimulatorLib`                                                                                         | *none*                                                                                     |
+| `BlendingSimulatorLatticeLib-test`<br>*executable*      | `BlendingSimulatorLatticeLib`                                                                                  | [Google Test](https://github.com/google/googletest) v1.17.0                                |
 | `BlendingVisualizer`<br>*static library*                | `BlendingSimulatorLib`                                                                                         | [OGRE](https://github.com/OGRECave/ogre) v1.11.6<br>[SDL2](https://www.libsdl.org) v2.30.9 |

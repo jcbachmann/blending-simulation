@@ -22,6 +22,12 @@
 
 #endif
 
+#ifdef LATTICE_SIMULATOR_AVAILABLE
+
+#include "BlendingSimulator/BlendingSimulatorLattice.h"
+
+#endif
+
 #include "BlendingSimulator/ParticleParameters.h"
 #include "HeightMap.h"
 
@@ -189,7 +195,14 @@ void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator,
 
 void executeSimulation(const ExecutionParameters& executionParameters, const bs::SimulationParameters& simulationParameters)
 {
-	if (executionParameters.detailed) {
+	if (executionParameters.lattice) {
+#ifdef LATTICE_SIMULATOR_AVAILABLE
+		bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(simulationParameters);
+		executeSimulation(simulator, executionParameters);
+#else
+		throw std::runtime_error("Lattice simulation not available");
+#endif
+	} else if (executionParameters.detailed) {
 #ifdef DETAILED_SIMULATOR_AVAILABLE
 		bs::BlendingSimulatorDetailed<bs::AveragedParameters> simulator(simulationParameters);
 		executeSimulation(simulator, executionParameters);
