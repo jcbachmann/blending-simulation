@@ -295,24 +295,39 @@ void blendingsimulator::BlendingSimulatorLattice<Parameters>::stackSingle(float 
 template<typename Parameters>
 void blendingsimulator::BlendingSimulatorLattice<Parameters>::updateHeapMap()
 {
-	std::fill(this->heapMap, this->heapMap + this->heapSizeX * this->heapSizeZ, 0.0f);
-	for (int zi = minZ; zi < minZ + columnsZ; zi++) {
-		for (int xi = minX; xi < minX + columnsX; xi++) {
-			const int h = heights[column(xi, zi)];
-			if (h <= 0) {
-				continue;
+	// Every cell takes the height of the column whose top site lies closest to the cell center. Assigning each column to the cell around
+	// its top site instead would leave holes: the lattice rows are 0.87 diameters apart and shift with the parity of the top layer.
+	// Distances are measured in diameters, so that equally distant columns are chosen independently of the diameter.
+	const double rowUnits = rowDistance / diameter;
+	for (unsigned int cz = 0; cz < this->heapSizeZ; cz++) {
+		const int zc = static_cast<int>(std::floor(cz / rowUnits));
+		for (unsigned int cx = 0; cx < this->heapSizeX; cx++) {
+			const int xc = static_cast<int>(cx);
+			double bestDistance = 1e100;
+			int bestHeight = 0;
+			for (int zi = zc - 1; zi <= zc + 2; zi++) {
+				for (int xi = xc - 2; xi <= xc + 2; xi++) {
+					const int c = column(xi, zi);
+					if (c < 0) {
+						continue;
+					}
+					const int h = heights[c];
+					const int top = std::max(h - 1, 0);
+					if (!valid[parity(top)][c]) {
+						continue;
+					}
+					double xu;
+					double zu;
+					toUnits({xi, top, zi}, xu, zu);
+					// Cell centers lie at (cx + 0.5, cz + 0.5) diameters, sites at (xu + 0.5, zu * rowUnits + 0.5)
+					const double distance = std::hypot(xu - cx, zu * rowUnits - cz);
+					if (distance < bestDistance) {
+						bestDistance = distance;
+						bestHeight = h;
+					}
+				}
 			}
-			// The top site of the column, whose layer reaches h layers high
-			double xu;
-			double zu;
-			toUnits({xi, h - 1, zi}, xu, zu);
-			const int cx = static_cast<int>(std::floor(xu + 0.5));
-			const int cz = static_cast<int>(std::floor((zu * rowDistance + 0.5 * diameter) / diameter));
-			if (cx < 0 || cx >= static_cast<int>(this->heapSizeX) || cz < 0 || cz >= static_cast<int>(this->heapSizeZ)) {
-				continue;
-			}
-			float& cell = this->heapMap[cz * this->heapSizeX + cx];
-			cell = std::max(cell, static_cast<float>(h * layerDistance));
+			this->heapMap[cz * this->heapSizeX + cx] = static_cast<float>(bestHeight * layerDistance);
 		}
 	}
 }

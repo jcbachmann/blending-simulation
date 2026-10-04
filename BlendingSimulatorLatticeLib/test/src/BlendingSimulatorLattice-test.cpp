@@ -129,6 +129,30 @@ TEST(BlendingSimulatorLattice, test_compression_scales_heights)
 	EXPECT_GT(peak, 1.0);
 }
 
+TEST(BlendingSimulatorLattice, test_heap_map_without_holes)
+{
+	bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(latticeParameters(20.0f, 1.0f));
+	for (int i = 0; i < 300; i++) {
+		simulator.stack(10.0f, 10.0f, bs::AveragedParameters(1.0, {1.0}));
+	}
+
+	// A cone of 300 m³ at 45° has a radius of about 6.6 m: every cell within 4 m of its axis lies on the pile, rising towards the axis
+	auto size = simulator.getHeapMapSize();
+	const float* heights = simulator.getHeapMap();
+	const double d = simulator.getParticleDiameter();
+	int cells = 0;
+	for (unsigned int z = 0; z < size.second; z++) {
+		for (unsigned int x = 0; x < size.first; x++) {
+			const double r = std::hypot((x + 0.5) * d - 10.0, (z + 0.5) * d - 10.0);
+			if (r < 4.0) {
+				EXPECT_GT(heights[z * size.first + x], 6.6 - r - 2.0 * d) << "cell " << x << ", " << z;
+				cells++;
+			}
+		}
+	}
+	EXPECT_GT(cells, 20);
+}
+
 TEST(BlendingSimulatorLattice, test_clear)
 {
 	bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(latticeParameters(10.0f, 1.0f));
