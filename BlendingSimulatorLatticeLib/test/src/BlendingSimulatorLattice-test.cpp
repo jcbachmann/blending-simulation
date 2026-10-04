@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <cmath>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "BlendingSimulator/BlendingSimulatorLattice.h"
@@ -19,15 +22,48 @@ bs::SimulationParameters latticeParameters(float size, float particlesPerCubicMe
 	return simulationParameters;
 }
 
+using Lattice = bs::BlendingSimulatorLattice<bs::AveragedParameters>;
+
+const float nativeAngle = static_cast<float>(Lattice::nativeAngleOfRepose());
+
 double scaleFor(double angle)
 {
 	const double degrees = std::atan(1.0) * 4.0 / 180.0;
-	return std::tan(angle * degrees) / std::tan(bs::BlendingSimulatorLattice<bs::AveragedParameters>::nativeAngleOfRepose * degrees);
+	return std::tan(angle * degrees) / Lattice::nativeTanAngleOfRepose();
+}
+
+double toDegrees(double radians)
+{
+	return radians * 45.0 / std::atan(1.0);
+}
+
+// Slope of a straight line fitted to the points (distance, height) between 20 % and 80 % of the peak height
+double fitSlope(const std::vector<std::pair<double, double>>& points, double peak)
+{
+	double n = 0.0, sx = 0.0, sy = 0.0, sxx = 0.0, sxy = 0.0;
+	for (const auto& [x, y] : points) {
+		if (y > 0.2 * peak && y < 0.8 * peak) {
+			n += 1.0;
+			sx += x;
+			sy += y;
+			sxx += x * x;
+			sxy += x * y;
+		}
+	}
+	return (n * sxy - sx * sy) / (n * sxx - sx * sx);
+}
+
+// A pile of the given volume stacked at the center of a 20 m by 20 m bed with fine particles
+std::unique_ptr<Lattice> centerPile(float angle, double volume)
+{
+	auto simulator = std::make_unique<Lattice>(latticeParameters(20.0f, 512.0f, angle));
+	simulator->stack(10.0f, 10.0f, bs::AveragedParameters(volume, {1.0}));
+	return simulator;
 }
 
 TEST(BlendingSimulatorLattice, test_particle_volume)
 {
-	for (float angle : {30.0f, 45.0f, 59.9f}) {
+	for (float angle : {30.0f, 45.0f, nativeAngle}) {
 		bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(latticeParameters(10.0f, 8.0f, angle));
 		const double d = simulator.getParticleDiameter();
 		const double h = simulator.getParticleHeight();
@@ -53,8 +89,8 @@ TEST(BlendingSimulatorLattice, test_single_particle)
 
 TEST(BlendingSimulatorLattice, test_no_overlap)
 {
-	// Uncompressed lattice, so that touching spheres have exactly one diameter between their centers
-	bs::SimulationParameters simulationParameters = latticeParameters(10.0f, 8.0f, 59.9f);
+	// Uncompressed lattice, so that touching spheres have one diameter between their centers
+	bs::SimulationParameters simulationParameters = latticeParameters(10.0f, 8.0f, nativeAngle);
 	simulationParameters.visualize = true;
 	bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(simulationParameters);
 
@@ -74,7 +110,7 @@ TEST(BlendingSimulatorLattice, test_no_overlap)
 			minimum = std::min(minimum, std::sqrt(dx * dx + dy * dy + dz * dz));
 		}
 	}
-	EXPECT_NEAR(minimum, simulator.getParticleDiameter(), 1e-9);
+	EXPECT_NEAR(minimum, simulator.getParticleDiameter(), 1e-6);
 	// The pile grows above the first layer
 	double top = 0.0;
 	for (const auto& p : positions) {
@@ -109,12 +145,14 @@ TEST(BlendingSimulatorLattice, test_compression_scales_heights)
 	// Same diameter: the uncompressed particles hold the volume of the compressed ones divided by the scale
 	const double scale = scaleFor(45.0);
 	bs::BlendingSimulatorLattice<bs::AveragedParameters> compressed(latticeParameters(10.0f, 8.0f, 45.0f));
-	bs::BlendingSimulatorLattice<bs::AveragedParameters> native(latticeParameters(10.0f, static_cast<float>(8.0 * scale), 59.9f));
+	bs::BlendingSimulatorLattice<bs::AveragedParameters> native(latticeParameters(10.0f, static_cast<float>(8.0 * scale), nativeAngle));
 	ASSERT_NEAR(compressed.getParticleDiameter(), native.getParticleDiameter(), 1e-6);
 
+	// A drop position off the symmetry points of the lattice, where equally distant sites would be chosen by rounding differences, and a
+	// little more than one particle per call, so that the float particle volume of the native lattice cannot hold back a particle
 	for (int i = 0; i < 400; i++) {
-		compressed.stack(5.0f, 5.0f, bs::AveragedParameters(1.0 / 8.0, {1.0}));
-		native.stack(5.0f, 5.0f, bs::AveragedParameters(1.0 / (8.0 * scale), {1.0}));
+		compressed.stack(5.137f, 4.921f, bs::AveragedParameters(1.000001 / 8.0, {1.0}));
+		native.stack(5.137f, 4.921f, bs::AveragedParameters(1.000001 / (8.0 * scale), {1.0}));
 	}
 
 	auto size = compressed.getHeapMapSize();
@@ -151,6 +189,61 @@ TEST(BlendingSimulatorLattice, test_heap_map_without_holes)
 		}
 	}
 	EXPECT_GT(cells, 20);
+}
+
+TEST(BlendingSimulatorLattice, test_native_angle_of_repose)
+{
+	EXPECT_NEAR(toDegrees(std::atan(Lattice::nativeTanAngleOfRepose())), 60.887, 1e-3);
+	EXPECT_NEAR(Lattice::nativeAngleOfRepose(), 60.887, 1e-3);
+}
+
+TEST(BlendingSimulatorLattice, test_native_pile_is_hexagonal_pyramid)
+{
+	const auto simulator = centerPile(nativeAngle, 300.0);
+	auto size = simulator->getHeapMapSize();
+	const float* heights = simulator->getHeapMap();
+	const double d = simulator->getParticleDiameter();
+	const unsigned int cx = size.first / 2;
+	const unsigned int cz = size.second / 2;
+
+	// Along x the pile falls along its edges, along z (across the lattice rows) down its faces
+	std::vector<std::pair<double, double>> alongX;
+	std::vector<std::pair<double, double>> alongZ;
+	double peak = 0.0;
+	for (unsigned int x = 0; x < size.first; x++) {
+		alongX.emplace_back(std::abs((x + 0.5) * d - 10.0), heights[cz * size.first + x]);
+		peak = std::max(peak, double(heights[cz * size.first + x]));
+	}
+	for (unsigned int z = 0; z < size.second; z++) {
+		alongZ.emplace_back(std::abs((z + 0.5) * d - 10.0), heights[z * size.first + cx]);
+	}
+	EXPECT_NEAR(toDegrees(std::atan(-fitSlope(alongX, peak))), toDegrees(std::atan(2.0 * std::sqrt(2.0 / 3.0))), 1.0);
+	EXPECT_NEAR(toDegrees(std::atan(-fitSlope(alongZ, peak))), toDegrees(std::atan(4.0 * std::sqrt(2.0) / 3.0)), 1.0);
+}
+
+TEST(BlendingSimulatorLattice, test_pile_matches_cone_of_angle_of_repose)
+{
+	for (float angle : {30.0f, 45.0f}) {
+		const auto simulator = centerPile(angle, 300.0);
+		auto size = simulator->getHeapMapSize();
+		const float* heights = simulator->getHeapMap();
+		const double d = simulator->getParticleDiameter();
+		double peak = 0.0;
+		for (unsigned int i = 0; i < size.first * size.second; i++) {
+			peak = std::max(peak, double(heights[i]));
+		}
+		// The radius of the circle with the area of the pile above each height falls with the slope of the equivalent cone
+		std::vector<std::pair<double, double>> radii;
+		for (int k = 1; k < 50; k++) {
+			const double level = peak * k / 50.0;
+			int cells = 0;
+			for (unsigned int i = 0; i < size.first * size.second; i++) {
+				cells += heights[i] > level;
+			}
+			radii.emplace_back(std::sqrt(cells * d * d / (std::atan(1.0) * 4.0)), level);
+		}
+		EXPECT_NEAR(toDegrees(std::atan(-fitSlope(radii, peak))), angle, 1.0) << "angle " << angle;
+	}
 }
 
 TEST(BlendingSimulatorLattice, test_clear)

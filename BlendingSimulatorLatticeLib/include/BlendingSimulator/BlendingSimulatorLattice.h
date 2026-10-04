@@ -14,14 +14,19 @@ namespace blendingsimulator
 //
 // Lattice coordinates (xi, yi, zi) follow the hexsim proof of concept: (xi, yi - 1, zi) is always one of the three sites below, so filled
 // sites form contiguous columns and one height per (xi, zi) describes the pile. The resting rule only depends on which sites are filled, so
-// compressing the lattice vertically keeps every pile and scales all slopes: piles of the uncompressed lattice reach nativeAngleOfRepose,
-// the compression maps that to SimulationParameters::latticeAngleOfRepose. The particles become spheroids that keep their volume.
+// compressing the lattice vertically keeps every pile and scales all slopes: the compression maps nativeAngleOfRepose() of the uncompressed
+// lattice to SimulationParameters::latticeAngleOfRepose. The particles become spheroids that keep their volume.
 template<typename Parameters>
 class BlendingSimulatorLattice : public BlendingSimulator<Parameters>
 {
 	public:
-		// Effective angle of repose of cones on the uncompressed lattice, fitted to a cone of 0.25 m particles
-		static constexpr double nativeAngleOfRepose = 59.9;
+		// Angle of repose of the uncompressed lattice, as tangent and in degrees. A pile on the lattice is a hexagonal pyramid: every two
+		// layers (2 sqrt(2/3) d higher) its level sets shrink by a regular hexagon of side d, the three sites below a site and the three
+		// sites below the next layer combined. The cone of the same height and volume has the same base area, so its slope is
+		// 2 sqrt(2/3) / sqrt(3 sqrt(3) / (2 pi)) = 4/3 sqrt(pi / sqrt(3)) = tan 60.89°. This is also the mean slope over all directions
+		// (60.92°); the faces are steeper (tan = 4 sqrt(2) / 3, 62.06°) and the edges flatter (tan = 2 sqrt(2/3), 58.52°).
+		static double nativeTanAngleOfRepose();
+		static double nativeAngleOfRepose();
 
 		explicit BlendingSimulatorLattice(SimulationParameters simulationParameters);
 

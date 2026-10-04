@@ -15,7 +15,7 @@ blendingsimulator::BlendingSimulatorLattice<Parameters>::BlendingSimulatorLattic
 	}
 
 	const double degrees = std::atan(1.0) * 4.0 / 180.0;
-	verticalScale = std::tan(simulationParameters.latticeAngleOfRepose * degrees) / std::tan(nativeAngleOfRepose * degrees);
+	verticalScale = std::tan(simulationParameters.latticeAngleOfRepose * degrees) / nativeTanAngleOfRepose();
 
 	// A close-packed sphere of diameter d occupies d^3 / sqrt(2), compressed by the vertical scale; that is the particle volume
 	const double particleVolume = 1.0 / simulationParameters.particlesPerCubicMeter;
@@ -58,6 +58,19 @@ blendingsimulator::BlendingSimulatorLattice<Parameters>::BlendingSimulatorLattic
 	slices.resize(this->heapSizeX, static_cast<float>(diameter));
 
 	clear();
+}
+
+template<typename Parameters>
+double blendingsimulator::BlendingSimulatorLattice<Parameters>::nativeTanAngleOfRepose()
+{
+	const double pi = std::atan(1.0) * 4.0;
+	return 4.0 / 3.0 * std::sqrt(pi / std::sqrt(3.0));
+}
+
+template<typename Parameters>
+double blendingsimulator::BlendingSimulatorLattice<Parameters>::nativeAngleOfRepose()
+{
+	return std::atan(nativeTanAngleOfRepose()) * 45.0 / std::atan(1.0);
 }
 
 template<typename Parameters>
