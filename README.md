@@ -45,3 +45,7 @@ the reclaimed slices with `--reclaim <file|stdout>` and the height map with `--h
 ```bash
 BlendingSimulatorCli --lattice --length 60 --depth 20 --ppm3 8 --reclaim stdout < deposition.txt
 ```
+
+## Releasing
+
+How versions are numbered and releases are tagged, with a complete example, is described in [RELEASING.md](RELEASING.md).
