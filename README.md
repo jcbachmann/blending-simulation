@@ -33,7 +33,7 @@ and reclaim the stockpile with a reclaimer at `reclaimAngle` moving along x. The
 | Simulator | CLI | Model | Specific parameters |
 |---|---|---|---|
 | `BlendingSimulatorFast` | default | Cubes in columns of a square height grid. A particle falls to a lower neighbor column (of 8, or of 4 with probability `1 - eightLikelihood`, which gives pyramids instead of cones) until no neighbor is lower; cones reach about 44°. | `eightLikelihood`, `seed` |
-| `BlendingSimulatorLattice` | `--lattice` | Spheres on a hexagonal close-packed lattice (port of the hexsim proof of concept). A particle rests once all three sites below it are filled. Piles are hexagonal pyramids whose volume equals that of a cone of 60.89° (faces 62.06°, edges 58.52°); the lattice is compressed vertically so that this equivalent cone reaches `latticeAngleOfRepose`, and the particles become spheroids of the same volume. Faces then stand about 1.4° steeper and edges 2.7° flatter (at 45°). Deterministic. No circular stockpiles. | `latticeAngleOfRepose` (`--latticeangle`) |
+| `BlendingSimulatorLattice` | `--lattice` | Spheres on a hexagonal close-packed lattice (port of the hexsim proof of concept). A particle rests once all three sites below it are filled. Piles are hexagonal pyramids whose volume equals that of a cone of 60.89° (faces 62.06°, edges 58.52°); the lattice is compressed vertically so that this equivalent cone reaches 45°, and the particles become spheroids of the same volume. Faces then stand at 46.4° and edges at 42.3°. Deterministic. No circular stockpiles. | *none* |
 | `BlendingSimulatorDetailed` | `--detailed` | Rigid-body cubes in Bullet physics, thrown from the stacker belt; the angle of repose follows from the friction. Seconds to hours per run. | `dropHeight`, `bulkDensityFactor`, `seed` |
 
 Fast and lattice simulation cost about the same per particle (a chevron stockpile of 323,000 particles stacks and reclaims in about 0.2 s).
@@ -43,5 +43,5 @@ The CLI reads the stacked material from stdin, one line per increment: `time x z
 the reclaimed slices with `--reclaim <file|stdout>` and the height map with `--heights <file>`:
 
 ```bash
-BlendingSimulatorCli --lattice --latticeangle 45 --length 60 --depth 20 --ppm3 8 --reclaim stdout < deposition.txt
+BlendingSimulatorCli --lattice --length 60 --depth 20 --ppm3 8 --reclaim stdout < deposition.txt
 ```

@@ -48,12 +48,6 @@ struct SimulationParameters
 
 	/// Seed of the random number generator, a simulator without seed draws a random one so that its results cannot be repeated
 	std::optional<std::uint32_t> seed;
-
-
-	/* Lattice simulation */
-
-	/// Angle of repose in degrees the lattice is compressed to vertically
-	float latticeAngleOfRepose = 45.0f;
 };
 }
 

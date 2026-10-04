@@ -7,7 +7,7 @@
 #include "BlendingSimulator/Particle.h"
 
 template<typename Parameters>
-blendingsimulator::BlendingSimulatorLattice<Parameters>::BlendingSimulatorLattice(SimulationParameters simulationParameters)
+blendingsimulator::BlendingSimulatorLattice<Parameters>::BlendingSimulatorLattice(SimulationParameters simulationParameters, double angleOfRepose)
 	: BlendingSimulator<Parameters>(simulationParameters)
 {
 	if (simulationParameters.circular) {
@@ -15,7 +15,7 @@ blendingsimulator::BlendingSimulatorLattice<Parameters>::BlendingSimulatorLattic
 	}
 
 	const double degrees = std::atan(1.0) * 4.0 / 180.0;
-	verticalScale = std::tan(simulationParameters.latticeAngleOfRepose * degrees) / nativeTanAngleOfRepose();
+	verticalScale = std::tan(angleOfRepose * degrees) / nativeTanAngleOfRepose();
 
 	// A close-packed sphere of diameter d occupies d^3 / sqrt(2), compressed by the vertical scale; that is the particle volume
 	const double particleVolume = 1.0 / simulationParameters.particlesPerCubicMeter;

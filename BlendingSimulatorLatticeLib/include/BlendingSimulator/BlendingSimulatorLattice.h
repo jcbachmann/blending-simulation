@@ -15,7 +15,8 @@ namespace blendingsimulator
 // Lattice coordinates (xi, yi, zi) follow the hexsim proof of concept: (xi, yi - 1, zi) is always one of the three sites below, so filled
 // sites form contiguous columns and one height per (xi, zi) describes the pile. The resting rule only depends on which sites are filled, so
 // compressing the lattice vertically keeps every pile and scales all slopes: the compression maps nativeAngleOfRepose() of the uncompressed
-// lattice to SimulationParameters::latticeAngleOfRepose. The particles become spheroids that keep their volume.
+// lattice to the angle of repose of the material, 45° like everywhere else in the project. The particles become spheroids that keep their
+// volume.
 template<typename Parameters>
 class BlendingSimulatorLattice : public BlendingSimulator<Parameters>
 {
@@ -28,7 +29,10 @@ class BlendingSimulatorLattice : public BlendingSimulator<Parameters>
 		static double nativeTanAngleOfRepose();
 		static double nativeAngleOfRepose();
 
-		explicit BlendingSimulatorLattice(SimulationParameters simulationParameters);
+		// Angle of repose in degrees the lattice is compressed to; not a simulation parameter for now, other angles are for tests
+		static constexpr double defaultAngleOfRepose = 45.0;
+
+		explicit BlendingSimulatorLattice(SimulationParameters simulationParameters, double angleOfRepose = defaultAngleOfRepose);
 
 		void clear() override;
 		void finishStacking() override;

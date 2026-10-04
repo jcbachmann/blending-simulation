@@ -11,20 +11,19 @@
 
 namespace bs = blendingsimulator;
 
-bs::SimulationParameters latticeParameters(float size, float particlesPerCubicMeter, float angle = 45.0f)
+bs::SimulationParameters latticeParameters(float size, float particlesPerCubicMeter)
 {
 	bs::SimulationParameters simulationParameters;
 	simulationParameters.heapWorldSizeX = size;
 	simulationParameters.heapWorldSizeZ = size;
 	simulationParameters.reclaimAngle = 45.0f;
 	simulationParameters.particlesPerCubicMeter = particlesPerCubicMeter;
-	simulationParameters.latticeAngleOfRepose = angle;
 	return simulationParameters;
 }
 
 using Lattice = bs::BlendingSimulatorLattice<bs::AveragedParameters>;
 
-const float nativeAngle = static_cast<float>(Lattice::nativeAngleOfRepose());
+const double nativeAngle = Lattice::nativeAngleOfRepose();
 
 double scaleFor(double angle)
 {
@@ -54,17 +53,17 @@ double fitSlope(const std::vector<std::pair<double, double>>& points, double pea
 }
 
 // A pile of the given volume stacked at the center of a 20 m by 20 m bed with fine particles
-std::unique_ptr<Lattice> centerPile(float angle, double volume)
+std::unique_ptr<Lattice> centerPile(double angle, double volume)
 {
-	auto simulator = std::make_unique<Lattice>(latticeParameters(20.0f, 512.0f, angle));
+	auto simulator = std::make_unique<Lattice>(latticeParameters(20.0f, 512.0f), angle);
 	simulator->stack(10.0f, 10.0f, bs::AveragedParameters(volume, {1.0}));
 	return simulator;
 }
 
 TEST(BlendingSimulatorLattice, test_particle_volume)
 {
-	for (float angle : {30.0f, 45.0f, nativeAngle}) {
-		bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(latticeParameters(10.0f, 8.0f, angle));
+	for (double angle : {30.0, 45.0, nativeAngle}) {
+		bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(latticeParameters(10.0f, 8.0f), angle);
 		const double d = simulator.getParticleDiameter();
 		const double h = simulator.getParticleHeight();
 		// Close-packed spheres occupy d^3 / sqrt(2), compressed by the vertical scale h / d
@@ -90,9 +89,9 @@ TEST(BlendingSimulatorLattice, test_single_particle)
 TEST(BlendingSimulatorLattice, test_no_overlap)
 {
 	// Uncompressed lattice, so that touching spheres have one diameter between their centers
-	bs::SimulationParameters simulationParameters = latticeParameters(10.0f, 8.0f, nativeAngle);
+	bs::SimulationParameters simulationParameters = latticeParameters(10.0f, 8.0f);
 	simulationParameters.visualize = true;
-	bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(simulationParameters);
+	bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(simulationParameters, nativeAngle);
 
 	simulator.stack(5.0f, 5.0f, bs::AveragedParameters(40.0, {1.0}));
 
@@ -144,8 +143,8 @@ TEST(BlendingSimulatorLattice, test_compression_scales_heights)
 {
 	// Same diameter: the uncompressed particles hold the volume of the compressed ones divided by the scale
 	const double scale = scaleFor(45.0);
-	bs::BlendingSimulatorLattice<bs::AveragedParameters> compressed(latticeParameters(10.0f, 8.0f, 45.0f));
-	bs::BlendingSimulatorLattice<bs::AveragedParameters> native(latticeParameters(10.0f, static_cast<float>(8.0 * scale), nativeAngle));
+	bs::BlendingSimulatorLattice<bs::AveragedParameters> compressed(latticeParameters(10.0f, 8.0f));
+	bs::BlendingSimulatorLattice<bs::AveragedParameters> native(latticeParameters(10.0f, static_cast<float>(8.0 * scale)), nativeAngle);
 	ASSERT_NEAR(compressed.getParticleDiameter(), native.getParticleDiameter(), 1e-6);
 
 	// A drop position off the symmetry points of the lattice, where equally distant sites would be chosen by rounding differences, and a
@@ -223,7 +222,7 @@ TEST(BlendingSimulatorLattice, test_native_pile_is_hexagonal_pyramid)
 
 TEST(BlendingSimulatorLattice, test_pile_matches_cone_of_angle_of_repose)
 {
-	for (float angle : {30.0f, 45.0f}) {
+	for (double angle : {30.0, 45.0}) {
 		const auto simulator = centerPile(angle, 300.0);
 		auto size = simulator->getHeapMapSize();
 		const float* heights = simulator->getHeapMap();
