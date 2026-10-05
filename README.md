@@ -46,6 +46,18 @@ the reclaimed slices with `--reclaim <file|stdout>` and the height map with `--h
 BlendingSimulatorCli --lattice --length 60 --depth 20 --ppm3 8 --reclaim stdout < deposition.txt
 ```
 
+## Visualizer
+
+`BlendingVisualizer` shows the stockpile in 3D while it is stacked (OGRE and SDL2; built with `-DBUILD_VISUALIZER=ON`, started with
+`--visualize`, nicer rendering with `--pretty`). It loads its runtime files from the working directory, and they are not part of this
+repository:
+
+- `plugins.cfg` (`plugins_d.cfg` for debug builds): the OGRE plugin folder and the plugins, at least the OpenGL render system
+  (`RenderSystem_GL`), the scene managers and `Plugin_ParticleFX`.
+- `resources.cfg` (`resources_d.cfg`): the resource locations, a `media` folder and the `SdkTrays.zip` of the OGRE samples.
+- In the media: the mesh `Particle.mesh` with the materials `Particle_red`, `Particle_blue` and `Particle_yellow`, the textures
+  `Heap.dds`, `Ground_diffusespecular.dds` and `Ground_normalheight.dds`, and the instancing and shadow shaders of the OGRE samples.
+
 ## Releasing
 
 How versions are numbered and releases are tagged, with a complete example, is described in [RELEASING.md](RELEASING.md).
