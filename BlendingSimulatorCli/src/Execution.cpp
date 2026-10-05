@@ -180,7 +180,7 @@ void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator,
 				}
 				out << "\n";
 
-				position += parameters.reclaimIncrement;
+				position += parameters.reclaimIncrement.value();
 			}
 			out.flush();
 			if (of) {
@@ -193,8 +193,11 @@ void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator,
 	}
 }
 
-void executeSimulation(const ExecutionParameters& executionParameters, const bs::SimulationParameters& simulationParameters)
+void executeSimulation(const ExecutionParameters& givenParameters, const bs::SimulationParameters& simulationParameters)
 {
+	ExecutionParameters executionParameters = givenParameters;
+	executionParameters.reclaimIncrement = getReclaimIncrement(givenParameters, simulationParameters);
+
 	if (executionParameters.lattice) {
 #ifdef LATTICE_SIMULATOR_AVAILABLE
 		bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(simulationParameters);

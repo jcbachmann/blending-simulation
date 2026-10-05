@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.15)
 set(
 	SOURCE_FILES
 	src/HeightMap-test.cpp
+	src/ExecutionParameters-test.cpp
 	../src/HeightMap.cpp
 )
 

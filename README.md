@@ -43,7 +43,8 @@ Fast and lattice simulation cost about the same per particle (a chevron stockpil
 With `visualize` set, the simulators keep every particle (`inactiveOutputParticles`) for visualization and export.
 
 The CLI reads the stacked material from stdin, one line per increment: `time x z volume parameter...` (whitespace separated), and writes
-the reclaimed slices with `--reclaim <file|stdout>` and the height map with `--heights <file>`:
+the reclaimed material with `--reclaim <file|stdout>`, every particle size or every `--reclaimincrement` meters, and the height map with
+`--heights <file>`:
 
 ```bash
 BlendingSimulatorCli --lattice --length 60 --depth 20 --ppm3 8 --reclaim stdout < deposition.txt

@@ -55,8 +55,7 @@ int main(const int argc, char* argv[]) try
 		->default_val(simulationParameters.dropHeight)
 		->group("Simulation Options")
 		->check(CLI::Range(0.001f, 1000.0f));
-	app.add_option("--reclaimincrement", executionParameters.reclaimIncrement, "Reclaimer position increment")
-		->default_val(executionParameters.reclaimIncrement)
+	app.add_option("--reclaimincrement", executionParameters.reclaimIncrement, "Reclaimer position increment (default: particle size, 1 / ppm3^(1/3))")
 		->group("Simulation Options")
 		->check(CLI::Range(0.001f, 1000.0f));
 	app.add_option("--seed", simulationParameters.seed, "Random number generator seed for repeatable results (random if not set)")
