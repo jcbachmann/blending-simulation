@@ -29,6 +29,9 @@ External dependencies are automatically downloaded by CMake via `FetchContent`.
 All simulators split the stacked material into particles of `1 / particlesPerCubicMeter` m³, track where each particle comes to rest
 and reclaim the stockpile with a reclaimer at `reclaimAngle` moving along x. The parameters are in
 [`SimulationParameters.h`](BlendingSimulatorLib/include/BlendingSimulator/SimulationParameters.h).
+Cells and reclaim slices are one particle size wide, cell or slice i covering the positions from i to i + 1 particle sizes. A particle is
+reclaimed where the reclaimer face meets its center, at x - y / tan(reclaimAngle), and its volume is spread over the slices the face cuts
+it in.
 
 | Simulator | CLI | Model | Specific parameters |
 |---|---|---|---|

@@ -1,3 +1,4 @@
+#include <cmath>
 #include <limits>
 #include <random>
 #include <thread>
@@ -89,8 +90,9 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, 
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
 
-	int xi = std::max(0, std::min(int(x / realWorldSizeFactor + 0.5), int(this->heapSizeX - 1))) + 1;
-	int zi = std::max(0, std::min(int(z / realWorldSizeFactor + 0.5), int(this->heapSizeZ - 1))) + 1;
+	// Cell i (stackedHeights index i + 1 because of the border) covers the positions from i to i + 1 particle sizes
+	int xi = std::max(0, std::min(static_cast<int>(std::floor(x / realWorldSizeFactor)), int(this->heapSizeX - 1))) + 1;
+	int zi = std::max(0, std::min(static_cast<int>(std::floor(z / realWorldSizeFactor)), int(this->heapSizeZ - 1))) + 1;
 
 	int minHeightX;
 	int minHeightZ;
@@ -208,56 +210,33 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, 
 		}
 	}
 
-	int reclaimIndex = 0;
+	// Prepare reclaiming: the particle center is reclaimed at its horizontal position minus its height divided by tan(reclaim angle), and
+	// the particle is spread over the slices the reclaimer cuts it in
+	const double size = realWorldSizeFactor;
+	const double centerX = (double(xi) - 0.5) * size;
+	const double centerZ = (double(zi) - 0.5) * size;
+	const double centerY = (double(minHeight) + 0.5) * size;
+	const bool vertical = tanReclaimAngle > 1e10;
+	const bool horizontal = tanReclaimAngle < 1e-10;
+	const double depth = vertical || horizontal ? 0.0 : size / std::abs(double(tanReclaimAngle));
 
-	// Prepare reclaiming
 	if (this->simulationParameters.circular) {
-		// Position is along the radius
-
-		double dx = double(xi - 0.5f) * realWorldSizeFactor - 0.5 * this->simulationParameters.heapWorldSizeX + 0.5f;
-		double dz = double(zi - 0.5f) * realWorldSizeFactor - 0.5 * this->simulationParameters.heapWorldSizeZ + 0.5f;
+		// Position along the circumference, from the angle around the bed center
+		const double dx = centerX - 0.5 * this->simulationParameters.heapWorldSizeX;
+		const double dz = centerZ - 0.5 * this->simulationParameters.heapWorldSizeZ;
 		double posOnCircumference = 0.5 * (1.0 - std::atan2(dz, dx) / this->pi) * this->circumference;
 
-		if (tanReclaimAngle > 1e10) {
-			// Vertical
-		} else if (tanReclaimAngle < 1e-10) {
-			// Horizontal
-			// Ignore horizontal reclaiming for circular stockpiles - it is useless anyway
-		} else {
-			posOnCircumference -= float(minHeight) * realWorldSizeFactor / tanReclaimAngle;
+		// Horizontal reclaiming is ignored for circular stockpiles - it is useless anyway
+		if (!vertical && !horizontal) {
+			posOnCircumference -= centerY / tanReclaimAngle;
 		}
 
-		reclaimIndex = (unsigned int)(posOnCircumference / realWorldSizeFactor + 0.5);
-
-		// Acquire positive modulo
-		int n = static_cast<int>(slices.size());
-		reclaimIndex = (reclaimIndex % n + n) % n;
+		slices.push(posOnCircumference, size, depth, parameters, true);
+	} else if (horizontal) {
+		slices.push(this->simulationParameters.reclaimAngle < 90.0f ? 0 : static_cast<int>(slices.size() - 1), parameters);
 	} else {
-		reclaimIndex = xi - 1;
-
-		if (tanReclaimAngle > 1e10) {
-			// Vertical
-		} else if (tanReclaimAngle < 1e-10) {
-			// Horizontal
-			if (this->simulationParameters.reclaimAngle < 90.0f) {
-				reclaimIndex = 0;
-			} else {
-				reclaimIndex = static_cast<int>(slices.size() - 1);
-			}
-		} else {
-			reclaimIndex -= int(float(minHeight) / tanReclaimAngle + 0.5f);
-		}
-
-		if (reclaimIndex < 0) {
-			reclaimIndex = 0;
-		}
-
-		if (reclaimIndex >= static_cast<int>(slices.size())) {
-			reclaimIndex = static_cast<int>(slices.size() - 1);
-		}
+		slices.push(vertical ? centerX : centerX - centerY / tanReclaimAngle, size, depth, parameters);
 	}
-
-	slices.push(reclaimIndex, parameters);
 }
 
 template<typename Parameters>

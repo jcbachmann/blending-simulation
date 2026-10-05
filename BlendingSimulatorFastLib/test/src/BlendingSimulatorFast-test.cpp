@@ -2,6 +2,7 @@
 
 #include "BlendingSimulator/BlendingSimulatorFast.h"
 #include "BlendingSimulator/ParticleParameters.h"
+#include "BlendingSimulator/ReclaimSlices.h"
 
 namespace bs = blendingsimulator;
 
@@ -261,17 +262,19 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_45)
 		simulator.stack(x, z, p);
 		simulator.finishStacking();
 
+		// The center and its four neighbors on the ground, one more particle on top of the center. A cut at 45° spreads a ground
+		// particle of column i half over slices i - 1 and i, the particle on top entirely over slices -1 and 0; slice -1 counts as 0.
 		EXPECT_FALSE(simulator.reclaimingFinished());
 		bs::AveragedParameters pOut = simulator.reclaim(1.0);
-		EXPECT_NEAR(pOut.getVolume(), 2, 1e-10);
+		EXPECT_NEAR(pOut.getVolume(), 3.5, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
 		bs::AveragedParameters pOut2 = simulator.reclaim(2.0);
-		EXPECT_NEAR(pOut2.getVolume(), 3, 1e-10);
+		EXPECT_NEAR(pOut2.getVolume(), 2, 1e-10);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
 		bs::AveragedParameters pOut3 = simulator.reclaim(3.0);
-		EXPECT_NEAR(pOut3.getVolume(), 1, 1e-10);
+		EXPECT_NEAR(pOut3.getVolume(), 0.5, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());
 	}
@@ -504,4 +507,66 @@ TEST(BlendingSimulatorFast, test_seed_repeatable)
 TEST(BlendingSimulatorFast, test_seed_different)
 {
 	EXPECT_NE(stackConeWithSeed(1), stackConeWithSeed(2));
+}
+
+TEST(BlendingSimulatorFast, test_drop_position_cell)
+{
+	bs::SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 3.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+
+	// Cell i covers the positions from i to i + 1, so positions up to just below the next integer stay in the cell
+	for (float position : {1.0f, 1.5f, 1.99f}) {
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
+		simulator.stack(position, position, bs::AveragedParameters(1.0, {1.0}));
+		std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
+		const float* heapMap = simulator.getHeapMap();
+		for (unsigned int zi = 0; zi < heapMapSize.second; zi++) {
+			for (unsigned int xi = 0; xi < heapMapSize.first; xi++) {
+				EXPECT_NEAR(heapMap[zi * heapMapSize.first + xi], xi == 1 && zi == 1 ? 1.0 : 0.0, 1e-10) << "position " << position;
+			}
+		}
+	}
+}
+
+TEST(BlendingSimulatorFast, test_reclaim_particle_center)
+{
+	bs::SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 4.0f;
+	simulationParameters.heapWorldSizeZ = 3.0f;
+	simulationParameters.reclaimAngle = 45.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
+
+	// A particle on the ground in cell 2 has its center at x = 2.5 and y = 0.5, reclaimed at 2.0, spread over slices 1 and 2
+	simulator.stack(2.5f, 1.5f, bs::AveragedParameters(1.0, {1.0}));
+	EXPECT_NEAR(simulator.reclaim(1.0f).getVolume(), 0.0, 1e-10);
+	EXPECT_NEAR(simulator.reclaim(2.0f).getVolume(), 0.5, 1e-10);
+	EXPECT_NEAR(simulator.reclaim(3.0f).getVolume(), 0.5, 1e-10);
+	EXPECT_NEAR(simulator.reclaim(4.0f).getVolume(), 0.0, 1e-10);
+}
+
+TEST(ReclaimSlices, test_spread_trapezoid)
+{
+	bs::ReclaimSlices<bs::AveragedParameters> slices;
+	slices.resize(4, 1.0f);
+
+	// Widths 0.5 and 1 around 2.25: ramps from 1.5 to 2.0 and from 2.5 to 3.0, so a quarter falls below 2.0
+	slices.push(2.25, 0.5, 1.0, bs::AveragedParameters(1.0, {1.0}));
+	// A uniform distribution of width 1 around 0.75, of which the part below 0 stays in the first slice
+	slices.push(0.75, 1.0, 0.0, bs::AveragedParameters(2.0, {1.0}));
+	// Around the circle: half of a uniform distribution around 0 goes into the last slice
+	bs::ReclaimSlices<bs::AveragedParameters> circle;
+	circle.resize(4, 1.0f);
+	circle.push(0.0, 1.0, 0.0, bs::AveragedParameters(1.0, {1.0}), true);
+
+	EXPECT_NEAR(slices.reclaim(1.0f).getVolume(), 1.5, 1e-10);
+	EXPECT_NEAR(slices.reclaim(2.0f).getVolume(), 0.5 + 0.25, 1e-10);
+	EXPECT_NEAR(slices.reclaim(3.0f).getVolume(), 0.75, 1e-10);
+	EXPECT_NEAR(slices.reclaim(4.0f).getVolume(), 0.0, 1e-10);
+
+	EXPECT_NEAR(circle.reclaim(1.0f).getVolume(), 0.5, 1e-10);
+	EXPECT_NEAR(circle.reclaim(3.0f).getVolume(), 0.0, 1e-10);
+	EXPECT_NEAR(circle.reclaim(4.0f).getVolume(), 0.5, 1e-10);
 }

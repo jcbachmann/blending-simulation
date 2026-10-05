@@ -292,17 +292,16 @@ void blendingsimulator::BlendingSimulatorLattice<Parameters>::stackSingle(float 
 		this->inactiveOutputParticles.push_back(particle);
 	}
 
-	// A particle with its base at height y above ground position x is reclaimed at x - y / tan(reclaim angle)
-	int reclaimIndex;
-	const int last = static_cast<int>(slices.size()) - 1;
+	// The particle center at height y above ground position x is reclaimed at x - y / tan(reclaim angle), and the particle, taken as a box
+	// of its diameter and height, is spread over the slices the reclaimer cuts it in
+	const double centerY = base + 0.5 * getParticleHeight();
 	if (tanReclaimAngle > 1e10) {
-		reclaimIndex = static_cast<int>(std::floor(worldX / diameter));
+		slices.push(worldX, diameter, 0.0, parameters);
 	} else if (tanReclaimAngle < 1e-10) {
-		reclaimIndex = this->simulationParameters.reclaimAngle < 90.0f ? 0 : last;
+		slices.push(this->simulationParameters.reclaimAngle < 90.0f ? 0 : static_cast<int>(slices.size()) - 1, parameters);
 	} else {
-		reclaimIndex = static_cast<int>(std::floor((worldX - base / tanReclaimAngle) / diameter));
+		slices.push(worldX - centerY / tanReclaimAngle, diameter, getParticleHeight() / std::abs(tanReclaimAngle), parameters);
 	}
-	slices.push(std::max(0, std::min(reclaimIndex, last)), parameters);
 }
 
 template<typename Parameters>
