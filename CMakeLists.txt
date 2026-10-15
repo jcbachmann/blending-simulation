@@ -10,6 +10,11 @@ option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
 
 project(BlendingSimulator VERSION 2026.2.1)
 
+# Without a build type CMake compiles without optimization; projects that include this one (the Python bindings) make their own choice
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif ()
+
 include(cmake/Dependencies.cmake)
 
 if (ENABLE_COVERAGE AND (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
