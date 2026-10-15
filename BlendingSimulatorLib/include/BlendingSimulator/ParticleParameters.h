@@ -1,8 +1,9 @@
 #ifndef Parameters_H
 #define Parameters_H
 
-#include <vector>
+#include <cstddef>
 #include <stdexcept>
+#include <vector>
 
 namespace blendingsimulator
 {
@@ -61,22 +62,50 @@ class AveragedParameters
 			return volume >= otherVolume;
 		}
 
+		// Adds `otherVolume` of material with the composition of `other`, whatever volume `other` holds itself; does not allocate once the
+		// values are sized
+		void push(const AveragedParameters& other, double otherVolume)
+		{
+			if (otherVolume <= 0.0 || other.volume < 1e-100) {
+				return;
+			}
+
+			if (values.empty()) {
+				values.resize(other.values.size(), 0.0);
+			}
+
+			if (values.size() != other.values.size()) {
+				throw std::runtime_error("invalid parameter count");
+			}
+
+			const double factor = otherVolume / other.volume;
+			volume += otherVolume;
+			for (std::size_t i = 0; i < values.size(); i++) {
+				values[i] += factor * other.values[i];
+			}
+		}
+
 		AveragedParameters pop(double otherVolume)
+		{
+			AveragedParameters result;
+			result.push(*this, otherVolume);
+			remove(otherVolume);
+			return result;
+		}
+
+		// Takes away `otherVolume` without changing the composition
+		void remove(double otherVolume)
 		{
 			if (volume < otherVolume) {
 				throw std::runtime_error("could not pop volume, not enough volume left");
 			}
 
-			AveragedParameters result(otherVolume, getValues());
-
-			double newVolume = volume - otherVolume;
+			const double newVolume = volume - otherVolume;
+			const double factor = volume > 0.0 ? newVolume / volume : 0.0;
 			for (double& value : values) {
-				// A slice can hold no volume; taking nothing from it must not divide zero by zero
-				value *= volume > 0.0 ? newVolume / volume : 0.0;
+				value *= factor;
 			}
 			volume = newVolume;
-
-			return result;
 		}
 
 		double getVolume() const

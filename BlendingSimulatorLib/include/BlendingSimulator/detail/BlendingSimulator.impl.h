@@ -66,9 +66,16 @@ void blendingsimulator::BlendingSimulator<Parameters>::stack(float x, float z, c
 	float volumePerParticle = 1.0f / simulationParameters.particlesPerCubicMeter;
 	parameterBuffer.push(parameters);
 
+	if (!parameterBuffer.contains(volumePerParticle)) {
+		return;
+	}
+
+	// Taking volume out of the buffer does not change its composition, so all particles of this call are alike
+	const Parameters particle = parameterBuffer.pop(volumePerParticle);
+	this->stackSingle(x, z, particle);
 	while (parameterBuffer.contains(volumePerParticle)) {
-		Parameters p = parameterBuffer.pop(volumePerParticle);
-		this->stackSingle(x, z, p);
+		parameterBuffer.remove(volumePerParticle);
+		this->stackSingle(x, z, particle);
 	}
 }
 

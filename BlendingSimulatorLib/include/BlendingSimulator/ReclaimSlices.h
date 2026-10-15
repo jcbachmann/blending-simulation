@@ -49,19 +49,20 @@ class ReclaimSlices
 			const int last = static_cast<int>(std::floor((center + half) / width));
 			const double volume = parameters.getVolume();
 
-			Parameters rest = parameters;
+			double rest = volume;
 			double below = 0.0;
 			for (int i = first; i <= last; i++) {
 				const int index = wrap ? ((i % count) + count) % count : std::max(0, std::min(i, count - 1));
 				if (i == last) {
-					slices[index].push(rest);
+					slices[index].push(parameters, rest);
 					break;
 				}
 				const double upTo = trapezoidCdf((i + 1) * double(width) - center, length, depth);
-				const double share = std::min((upTo - below) * volume, rest.getVolume());
+				const double share = std::min((upTo - below) * volume, rest);
 				below = upTo;
 				if (share > 0.0) {
-					slices[index].push(rest.pop(share));
+					slices[index].push(parameters, share);
+					rest -= share;
 				}
 			}
 		}
