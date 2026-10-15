@@ -124,7 +124,7 @@ Parameters blendingsimulator::BlendingSimulatorLattice<Parameters>::reclaim(floa
 template<typename Parameters>
 int blendingsimulator::BlendingSimulatorLattice<Parameters>::parity(int i)
 {
-	return ((i % 2) + 2) % 2;
+	return i & 1; // also 1 for negative odd numbers in two's complement
 }
 
 template<typename Parameters>
@@ -132,7 +132,8 @@ int blendingsimulator::BlendingSimulatorLattice<Parameters>::column(int xi, int 
 {
 	const int x = xi - minX;
 	const int z = zi - minZ;
-	if (x < 0 || x >= columnsX || z < 0 || z >= columnsZ) {
+	// One unsigned comparison per coordinate also catches negative values
+	if (unsigned(x) >= unsigned(columnsX) || unsigned(z) >= unsigned(columnsZ)) {
 		return -1;
 	}
 	return z * columnsX + x;
@@ -242,7 +243,10 @@ bool blendingsimulator::BlendingSimulatorLattice<Parameters>::drop(double xu, do
 			double sxu;
 			double szu;
 			toUnits(s, sxu, szu);
-			const double distance = std::hypot((xu - sxu) * diameter, (zu - szu) * rowDistance);
+			// Squared distance: only the order matters, and std::hypot took a fifth of the run time
+			const double dx = (xu - sxu) * diameter;
+			const double dz = (zu - szu) * rowDistance;
+			const double distance = dx * dx + dz * dz;
 			if (freeCount == 0 || distance < bestDistance) {
 				best = s;
 				bestDistance = distance;
