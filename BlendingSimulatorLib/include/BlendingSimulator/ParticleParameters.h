@@ -71,7 +71,8 @@ class AveragedParameters
 
 			double newVolume = volume - otherVolume;
 			for (double& value : values) {
-				value *= newVolume / volume;
+				// A slice can hold no volume; taking nothing from it must not divide zero by zero
+				value *= volume > 0.0 ? newVolume / volume : 0.0;
 			}
 			volume = newVolume;
 

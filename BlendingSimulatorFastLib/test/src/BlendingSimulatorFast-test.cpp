@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <gtest/gtest.h>
 
 #include "BlendingSimulator/BlendingSimulatorFast.h"
@@ -569,4 +571,40 @@ TEST(ReclaimSlices, test_spread_trapezoid)
 	EXPECT_NEAR(circle.reclaim(1.0f).getVolume(), 0.5, 1e-10);
 	EXPECT_NEAR(circle.reclaim(3.0f).getVolume(), 0.0, 1e-10);
 	EXPECT_NEAR(circle.reclaim(4.0f).getVolume(), 0.5, 1e-10);
+}
+
+TEST(AveragedParameters, test_pop_without_volume_keeps_values_finite)
+{
+	// A slice can receive a share of zero volume; taking nothing from it must not divide zero by zero
+	bs::AveragedParameters parameters(0.0, {2.0});
+	EXPECT_NEAR(parameters.pop(0.0).getVolume(), 0.0, 1e-10);
+	parameters.push(1.0, {3.0});
+	EXPECT_NEAR(parameters.getValue(0), 3.0, 1e-10);
+}
+
+TEST(BlendingSimulatorFast, test_reclaimed_parameters_finite)
+{
+	bs::SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 59.0f;
+	simulationParameters.heapWorldSizeZ = 20.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	simulationParameters.seed = 3;
+
+	bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
+	for (int i = 0; i < 50; i++) {
+		simulator.stack(10.0f + 39.0f * float(i % 7) / 6.0f, 10.0f, bs::AveragedParameters(50.0, {double(i % 5)}));
+	}
+
+	double volume = 0.0;
+	float position = 0.0f;
+	while (!simulator.reclaimingFinished()) {
+		// Also beyond the end of the pile, where slices are empty: the Python bindings return getValues() of every slice
+		bs::AveragedParameters reclaimed = simulator.reclaim(position);
+		for (double value : reclaimed.getValues()) {
+			EXPECT_TRUE(std::isfinite(value)) << "position " << position;
+		}
+		volume += reclaimed.getVolume();
+		position += 1.0f;
+	}
+	EXPECT_NEAR(volume, 2500.0, 1e-6);
 }
