@@ -1,7 +1,7 @@
 #ifndef BlendingSimulatorFast_H
 #define BlendingSimulatorFast_H
 
-#include <random>
+#include <cstdint>
 #include <vector>
 
 #include "BlendingSimulator/BlendingSimulator.h"
@@ -34,17 +34,24 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 		// Circumference of circular stockpile ridge
 		double circumference = 0.0;
 
-		// Variable tracking the height at each position for falling simulation
-		std::vector<std::vector<int>> stackedHeights;
+		// Height in particles at each position for falling simulation, x-major with a border of one cell that particles cannot fall into:
+		// cell (x, z) of the bed is at index (x + 1) * rowLength + z + 1
+		std::vector<int> stackedHeights;
+
+		// Number of cells along z including the border
+		int rowLength;
+
+		// Index differences of the neighbors in the order of offsets: 4 direct neighbors first, then the 4 diagonals
+		int neighborIndexOffsets[8];
 
 		// Particles grouped per cross section
 		ReclaimSlices<Parameters> slices;
 
-		// Decides between 4 and 8 fall directions by comparison with eightLikelihood
-		std::uniform_real_distribution<double> coneDistribution{0.0, 1.0};
+		// A fall step considers 8 instead of 4 directions if the upper 29 bits of its random number are below this threshold
+		std::uint32_t eightThreshold;
 
-		// Rotates the order in which the fall directions are checked
-		std::uniform_int_distribution<int> directionDistribution{0, 7};
+		// Index of the neighbor a particle falls to from cell `index` at height `height`, or -1 if it rests there
+		int fallStep(int index, int height, std::uint32_t random) const;
 };
 }
 

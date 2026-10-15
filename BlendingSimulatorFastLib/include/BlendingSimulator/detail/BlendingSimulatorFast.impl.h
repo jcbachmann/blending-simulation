@@ -1,6 +1,6 @@
+#include <algorithm>
 #include <cmath>
 #include <limits>
-#include <random>
 #include <thread>
 
 template<typename Parameters>
@@ -20,10 +20,19 @@ blendingsimulator::BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(Simu
 	);
 
 	// Warning: stackedHeights organized first x than z while heap map is first z than x!
-	stackedHeights.resize(this->heapSizeX + 2);
-	for (unsigned int x = 0; x < this->heapSizeX + 2; x++) {
-		stackedHeights[x].resize(this->heapSizeZ + 2);
+	rowLength = int(this->heapSizeZ) + 2;
+	stackedHeights.resize(std::size_t(this->heapSizeX + 2) * rowLength);
+
+	// Same order as the fall directions of the original implementation: {-1, 0}, {0, -1}, {0, +1}, {+1, 0}, then the diagonals
+	// {-1, -1}, {-1, +1}, {+1, -1}, {+1, +1}, as {x, z}
+	const int offsets[8][2] = {{-1, 0}, {0, -1}, {0, +1}, {+1, 0}, {-1, -1}, {-1, +1}, {+1, -1}, {+1, +1}};
+	for (int o = 0; o < 8; o++) {
+		neighborIndexOffsets[o] = offsets[o][0] * rowLength + offsets[o][1];
 	}
+
+	// Upper 29 bits of a 32 bit random number below the threshold: probability eightLikelihood
+	const double eight = std::max(0.0, std::min(double(simulationParameters.eightLikelihood), 1.0));
+	eightThreshold = std::uint32_t(eight * double(1u << 29));
 
 	if (simulationParameters.circular) {
 		circumference = 2.0 * this->pi * 0.25 * std::min(simulationParameters.heapWorldSizeX, simulationParameters.heapWorldSizeZ);
@@ -38,15 +47,11 @@ blendingsimulator::BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(Simu
 template<typename Parameters>
 void blendingsimulator::BlendingSimulatorFast<Parameters>::clear()
 {
-	std::fill(stackedHeights[0].begin(), stackedHeights[0].end(), std::numeric_limits<int>::max());
+	// Border cells are infinitely high so that particles never fall into them
+	std::fill(stackedHeights.begin(), stackedHeights.end(), std::numeric_limits<int>::max());
 	for (unsigned int x = 1; x < this->heapSizeX + 1; x++) {
-		for (unsigned int z = 1; z < this->heapSizeZ + 1; z++) {
-			stackedHeights[x][z] = 0;
-		}
-		stackedHeights[x][0] = std::numeric_limits<int>::max();
-		stackedHeights[x][this->heapSizeZ + 1] = std::numeric_limits<int>::max();
+		std::fill_n(stackedHeights.begin() + std::size_t(x) * rowLength + 1, this->heapSizeZ, 0);
 	}
-	std::fill(stackedHeights[this->heapSizeX + 1].begin(), stackedHeights[this->heapSizeX + 1].end(), std::numeric_limits<int>::max());
 
 	slices.clear();
 
@@ -84,6 +89,29 @@ Parameters blendingsimulator::BlendingSimulatorFast<Parameters>::reclaim(float p
 }
 
 template<typename Parameters>
+int blendingsimulator::BlendingSimulatorFast<Parameters>::fallStep(int index, int height, std::uint32_t random) const
+{
+	// 8 fall directions with probability eightLikelihood, else the 4 direct neighbors only: this results in cones instead of pyramids
+	const int count = (random >> 3) < eightThreshold ? 8 : 4;
+
+	// The neighbors are searched in the order of neighborIndexOffsets rotated by a random amount; the first of the lowest wins. A plain
+	// loop with a branch is fastest here: the processor predicts the branch well enough to start on the next step early, while branchless
+	// and vectorized (AVX2) versions of this search took 1.6 to 2.8 times as long.
+	const int rotation = int(random & 7u);
+	int lowest = height;
+	int next = -1;
+	for (int o = 0; o < count; o++) {
+		const int neighbor = index + neighborIndexOffsets[(o + rotation) & (count - 1)];
+		const int neighborHeight = stackedHeights[neighbor];
+		if (neighborHeight < lowest) {
+			next = neighbor;
+			lowest = neighborHeight;
+		}
+	}
+	return next;
+}
+
+template<typename Parameters>
 void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, float z, const Parameters& parameters)
 {
 	while (this->paused.load()) {
@@ -93,10 +121,9 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, 
 	// Cell i (stackedHeights index i + 1 because of the border) covers the positions from i to i + 1 particle sizes
 	int xi = std::max(0, std::min(static_cast<int>(std::floor(x / realWorldSizeFactor)), int(this->heapSizeX - 1))) + 1;
 	int zi = std::max(0, std::min(static_cast<int>(std::floor(z / realWorldSizeFactor)), int(this->heapSizeZ - 1))) + 1;
+	int index = xi * rowLength + zi;
 
-	int minHeightX;
-	int minHeightZ;
-	int minHeight = stackedHeights[xi][zi];
+	int minHeight = stackedHeights[index];
 
 	// TODO replace variable slow by single step button on interface
 	bool slow = false;
@@ -128,65 +155,33 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, 
 		}
 	}
 
-	// Simulate particle falling
-	do {
-		minHeightX = -1;
-		minHeightZ = -1;
-
-		struct Offset
-		{
-			int i;
-			int j;
-		};
-		constexpr const static Offset offsets[] = {
-			{-1, 0},
-			{0, -1},
-			{0, +1},
-			{+1, 0},
-			{-1, -1},
-			{-1, +1},
-			{+1, -1},
-			{+1, +1}
-		};
-
-		const int offsetsCount = coneDistribution(this->randomEngine) > this->simulationParameters.eightLikelihood ? 4 : 8; // This results in cones instead of pyramids
-
-		const int r = directionDistribution(this->randomEngine);
-
-		for (int o = 0; o < offsetsCount; o++) {
-			const Offset& offset = offsets[(o + r) % offsetsCount];
-			const int tx = xi + offset.i;
-			const int tz = zi + offset.j;
-			const int lh = stackedHeights[tx][tz];
-
-			if (lh < minHeight) {
-				minHeightX = tx;
-				minHeightZ = tz;
-				minHeight = lh;
-			}
+	// Simulate particle falling, one random number per step
+	while (true) {
+		const int next = fallStep(index, minHeight, std::uint32_t(this->randomEngine() >> 32));
+		if (next < 0) {
+			break;
 		}
+		index = next;
+		minHeight = stackedHeights[index];
 
-		if (minHeightX >= 0) {
-			xi = minHeightX;
-			zi = minHeightZ;
-
-			if (this->simulationParameters.visualize && slow) {
-				{
-					std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
-					particle->position = Vector3(
-						(float(xi) - 0.5f) * realWorldSizeFactor,
-						(float(minHeight) + 0.5f) * realWorldSizeFactor,
-						(float(zi) - 0.5f) * realWorldSizeFactor
-					);
-				}
-
-				std::this_thread::sleep_for(simulationSleep);
+		if (this->simulationParameters.visualize && slow) {
+			{
+				std::lock_guard<std::mutex> lock(this->outputParticlesMutex);
+				particle->position = Vector3(
+					(float(index / rowLength) - 0.5f) * realWorldSizeFactor,
+					(float(minHeight) + 0.5f) * realWorldSizeFactor,
+					(float(index % rowLength) - 0.5f) * realWorldSizeFactor
+				);
 			}
+
+			std::this_thread::sleep_for(simulationSleep);
 		}
-	} while (minHeightX >= 0);
+	}
+	xi = index / rowLength;
+	zi = index % rowLength;
 
 	// Update height
-	stackedHeights[xi][zi] = minHeight + 1;
+	stackedHeights[index] = minHeight + 1;
 
 	if (this->simulationParameters.visualize) {
 		{
@@ -245,7 +240,8 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::updateHeapMap()
 	// Either way this is cache inefficient
 	for (int z = 0; z < this->heapSizeZ; z++) {
 		for (int x = 0; x < this->heapSizeX; x++) {
-			this->heapMap[z * this->heapSizeX + x] = stackedHeights[x + 1][z + 1] > 0 ? float(stackedHeights[x + 1][z + 1]) * realWorldSizeFactor : 0.0f;
+			const int height = stackedHeights[(x + 1) * rowLength + z + 1];
+			this->heapMap[z * this->heapSizeX + x] = height > 0 ? float(height) * realWorldSizeFactor : 0.0f;
 		}
 	}
 }

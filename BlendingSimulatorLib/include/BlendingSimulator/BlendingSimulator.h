@@ -8,6 +8,7 @@
 #include <atomic>
 #include <random>
 
+#include "RandomEngine.h"
 #include "SimulationParameters.h"
 
 namespace blendingsimulator
@@ -49,7 +50,7 @@ class BlendingSimulator
 		std::atomic<bool> paused;
 
 		// Random number generator of this simulator instance, seeded from simulationParameters.seed if set
-		std::mt19937 randomEngine;
+		RandomEngine randomEngine;
 
 		unsigned int heapSizeX;
 		unsigned int heapSizeZ;
