@@ -21,6 +21,7 @@ RUN mkdir -p build \
     -DBUILD_FAST_SIMULATOR=ON \
     -DBUILD_DETAILED_SIMULATOR=ON \
     -DBUILD_LATTICE_SIMULATOR=ON \
+    -DBUILD_CONE_SIMULATOR=ON \
  && cmake --build . --target BlendingSimulatorCli -j$(nproc) \
  && strip BlendingSimulatorCli/BlendingSimulatorCli
 

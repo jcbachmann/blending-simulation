@@ -28,6 +28,12 @@
 
 #endif
 
+#ifdef CONE_SIMULATOR_AVAILABLE
+
+#include "BlendingSimulator/BlendingSimulatorCone.h"
+
+#endif
+
 #include "BlendingSimulator/ParticleParameters.h"
 #include "HeightMap.h"
 
@@ -198,7 +204,14 @@ void executeSimulation(const ExecutionParameters& givenParameters, const bs::Sim
 	ExecutionParameters executionParameters = givenParameters;
 	executionParameters.reclaimIncrement = getReclaimIncrement(givenParameters, simulationParameters);
 
-	if (executionParameters.lattice) {
+	if (executionParameters.cone) {
+#ifdef CONE_SIMULATOR_AVAILABLE
+		bs::BlendingSimulatorCone<bs::AveragedParameters> simulator(simulationParameters);
+		executeSimulation(simulator, executionParameters);
+#else
+		throw std::runtime_error("Cone simulation not available");
+#endif
+	} else if (executionParameters.lattice) {
 #ifdef LATTICE_SIMULATOR_AVAILABLE
 		bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(simulationParameters);
 		executeSimulation(simulator, executionParameters);

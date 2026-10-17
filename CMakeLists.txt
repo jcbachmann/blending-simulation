@@ -5,6 +5,7 @@ option(BUILD_TESTS "Build the tests" OFF)
 option(BUILD_FAST_SIMULATOR "Build fast simulator" OFF)
 option(BUILD_DETAILED_SIMULATOR "Build detailed simulator" OFF)
 option(BUILD_LATTICE_SIMULATOR "Build lattice simulator" OFF)
+option(BUILD_CONE_SIMULATOR "Build cone simulator" OFF)
 option(BUILD_CLI "Build simulator CLI" OFF)
 option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
 
@@ -39,6 +40,10 @@ endif ()
 
 if (BUILD_LATTICE_SIMULATOR)
 	add_subdirectory(BlendingSimulatorLatticeLib)
+endif ()
+
+if (BUILD_CONE_SIMULATOR)
+	add_subdirectory(BlendingSimulatorConeLib)
 endif ()
 
 if (BUILD_CLI)
