@@ -37,17 +37,28 @@ class ReclaimSlices
 			slices[index].push(parameters);
 		}
 
+		// The given volume of material of the composition of parameters into one slice
+		void push(int index, const Parameters& parameters, double volume)
+		{
+			slices[index].push(parameters, volume);
+		}
+
 		// Spreads a particle over the slices the reclaimer cuts it in. A box of horizontal extent `length` and vertical extent `height` is
 		// cut by faces at the reclaim angle, so its reclaim positions are the sum of two uniform distributions of widths `length` and
 		// `height / tan(reclaim angle)` (passed as `depth`): a trapezoid around `center`, the reclaim position of the box center. Material
 		// beyond the ends goes into the first or last slice, or around the circle if `wrap` is set.
 		void push(double center, double length, double depth, const Parameters& parameters, bool wrap = false)
 		{
+			push(center, length, depth, parameters, parameters.getVolume(), wrap);
+		}
+
+		// The same for the given volume of material of the composition of parameters (a part of a portion, e.g. one grid column of it)
+		void push(double center, double length, double depth, const Parameters& parameters, double volume, bool wrap = false)
+		{
 			const int count = static_cast<int>(slices.size());
 			const double half = 0.5 * (length + depth);
 			const int first = static_cast<int>(std::floor((center - half) / width));
 			const int last = static_cast<int>(std::floor((center + half) / width));
-			const double volume = parameters.getVolume();
 
 			double rest = volume;
 			double below = 0.0;
@@ -109,6 +120,15 @@ class ReclaimSlices
 					popVolume = r.getVolume() * (newPos - double(endPos));
 				}
 				p.push(r.pop(popVolume));
+			}
+
+			// The last step, after which finished() holds, takes everything left, also beyond its position: the rest of the last slice
+			// when the slices do not end on a reclaim step (e.g. on circular beds), which stayed behind before
+			if (static_cast<int>(newPos + 0.5) >= static_cast<int>(slices.size())) {
+				for (int i = std::max(startPos, endPos); i < static_cast<int>(slices.size()); i++) {
+					p.push(slices[i]);
+					slices[i].clear();
+				}
 			}
 
 			reclaimerPos = position;

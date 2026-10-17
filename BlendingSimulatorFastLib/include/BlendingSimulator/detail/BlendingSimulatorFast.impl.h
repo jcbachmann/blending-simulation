@@ -73,7 +73,8 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::clear()
 template<typename Parameters>
 void blendingsimulator::BlendingSimulatorFast<Parameters>::finishStacking()
 {
-	// Nothing to do
+	// The rest of the buffer, less than one particle, would be lost otherwise
+	this->stackRest();
 }
 
 template<typename Parameters>

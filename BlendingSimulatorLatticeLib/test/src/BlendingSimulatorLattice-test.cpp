@@ -263,3 +263,23 @@ TEST(BlendingSimulatorLattice, test_circular_not_supported)
 	simulationParameters.circular = true;
 	EXPECT_THROW(bs::BlendingSimulatorLattice<bs::AveragedParameters> simulator(simulationParameters), std::invalid_argument);
 }
+
+TEST(BlendingSimulatorLattice, test_no_volume_lost)
+{
+	// Portions that are not whole particles: the rest of the buffer is stacked by finishStacking as a last, smaller particle
+	Lattice simulator(latticeParameters(30.0f, 4.0f));
+	double stacked = 0.0;
+	for (int k = 0; k < 13; k++) {
+		const double volume = 2.13 + 0.17 * k;
+		simulator.stack(float(8.0 + k), 15.0f, bs::AveragedParameters(volume, {1.0}));
+		stacked += volume;
+	}
+	simulator.finishStacking();
+	double total = 0.0;
+	float position = 0.0f;
+	while (!simulator.reclaimingFinished()) {
+		total += simulator.reclaim(position).getVolume();
+		position += 1.0f;
+	}
+	EXPECT_NEAR(total, stacked, 1e-6);
+}

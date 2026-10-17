@@ -65,6 +65,8 @@ void blendingsimulator::BlendingSimulator<Parameters>::stack(float x, float z, c
 {
 	float volumePerParticle = 1.0f / simulationParameters.particlesPerCubicMeter;
 	parameterBuffer.push(parameters);
+	lastX = x;
+	lastZ = z;
 
 	if (!parameterBuffer.contains(volumePerParticle)) {
 		return;
@@ -76,6 +78,16 @@ void blendingsimulator::BlendingSimulator<Parameters>::stack(float x, float z, c
 	while (parameterBuffer.contains(volumePerParticle)) {
 		parameterBuffer.remove(volumePerParticle);
 		this->stackSingle(x, z, particle);
+	}
+}
+
+template<typename Parameters>
+void blendingsimulator::BlendingSimulator<Parameters>::stackRest()
+{
+	if (parameterBuffer.getVolume() > 1e-12) {
+		const Parameters rest = parameterBuffer;
+		parameterBuffer.clear();
+		this->stackSingle(lastX, lastZ, rest);
 	}
 }
 

@@ -230,15 +230,17 @@ TEST(BlendingSimulatorFast, test_reclaim_angle_90)
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
 		bs::AveragedParameters pOut = simulator.reclaim(1.0);
-		EXPECT_NEAR(pOut.getVolume(), 1, 1e-10);
+		EXPECT_NEAR(pOut.getVolume(), 1, 1.001e-3);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
 		bs::AveragedParameters pOut2 = simulator.reclaim(2.0);
-		EXPECT_NEAR(pOut2.getVolume(), 4, 1e-10);
+		EXPECT_NEAR(pOut2.getVolume(), 4, 1.001e-3);
 
 		EXPECT_FALSE(simulator.reclaimingFinished());
 		bs::AveragedParameters pOut3 = simulator.reclaim(3.0);
-		EXPECT_NEAR(pOut3.getVolume(), 1, 1e-10);
+		EXPECT_NEAR(pOut3.getVolume(), 1, 1.001e-3);
+		// finishStacking stacked the remaining 0.001 m3 as a last, smaller particle, which falls into one of the columns
+		EXPECT_NEAR(pOut.getVolume() + pOut2.getVolume() + pOut3.getVolume(), volume, 1e-10);
 
 		EXPECT_TRUE(simulator.reclaimingFinished());
 	}
@@ -607,4 +609,55 @@ TEST(BlendingSimulatorFast, test_reclaimed_parameters_finite)
 		position += 1.0f;
 	}
 	EXPECT_NEAR(volume, 2500.0, 1e-6);
+}
+
+// Reclaims everything in steps of 1 m like the Python bindings and returns the total volume
+double reclaimTotal(bs::BlendingSimulator<bs::AveragedParameters>& simulator)
+{
+	simulator.finishStacking();
+	double total = 0.0;
+	float position = 0.0f;
+	while (!simulator.reclaimingFinished()) {
+		total += simulator.reclaim(position).getVolume();
+		position += 1.0f;
+	}
+	return total;
+}
+
+TEST(BlendingSimulatorFast, test_no_volume_lost)
+{
+	// Portions that are not whole particles: what stays in the buffer is stacked by finishStacking as a last, smaller particle
+	for (float ppm3 : {1.0f, 4.0f, 16.0f}) {
+		bs::SimulationParameters simulationParameters;
+		simulationParameters.heapWorldSizeX = 59.0f;
+		simulationParameters.heapWorldSizeZ = 20.0f;
+		simulationParameters.particlesPerCubicMeter = ppm3;
+		simulationParameters.seed = 3;
+		bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
+		double stacked = 0.0;
+		for (int k = 0; k < 37; k++) {
+			const double volume = 1.37 + 0.11 * k;
+			simulator.stack(float(12.0 + k), 10.0f, bs::AveragedParameters(volume, {1.0}));
+			stacked += volume;
+		}
+		EXPECT_NEAR(reclaimTotal(simulator), stacked, 1e-6) << "ppm3 " << ppm3;
+	}
+}
+
+TEST(BlendingSimulatorFast, test_no_volume_lost_circular)
+{
+	// On a circular bed the slices do not end on a 1 m reclaim step: the last step takes the rest of the last slice
+	bs::SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 60.0f;
+	simulationParameters.heapWorldSizeZ = 60.0f;
+	simulationParameters.particlesPerCubicMeter = 16.0f;
+	simulationParameters.circular = true;
+	simulationParameters.seed = 5;
+	bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
+	const double pi = std::atan(1.0) * 4.0;
+	for (int k = 0; k < 200; k++) {
+		const double angle = 2.0 * pi * k / 50.0;
+		simulator.stack(float(30.0 + 15.0 * std::cos(angle)), float(30.0 + 15.0 * std::sin(angle)), bs::AveragedParameters(5.0, {1.0}));
+	}
+	EXPECT_NEAR(reclaimTotal(simulator), 1000.0, 1e-6);
 }

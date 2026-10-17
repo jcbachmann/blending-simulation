@@ -60,12 +60,18 @@ class BlendingSimulator
 
 		virtual void stackSingle(float x, float z, const Parameters& parameters) = 0;
 
+		// Stacks what stack() keeps in its buffer, less than one particle, as a last, smaller particle at the last stack position, so that
+		// no material is lost; the particle simulators call it in finishStacking
+		void stackRest();
+
 		virtual void updateHeapMap()
 		{
 		};
 
 	private:
 		Parameters parameterBuffer;
+		float lastX = 0.0f;
+		float lastZ = 0.0f;
 };
 }
 
