@@ -24,6 +24,13 @@ struct ContinuousDrop
 // consecutive pieces in the same cell and portion become one drop at their volume-weighted mean position. Every cell along the path gets
 // the volume of the time the stacker spends over it, the first and last cell of a pass only the share of their overlap, and a stacker
 // standing still makes one drop per portion. Same results as bmh.helpers.continuous_drops (numpy).
+//
+// The drops change continuously with the path except where a turnaround of the stacker crosses a cell boundary: while its tip lies inside
+// a cell, the pieces before and after the tip are merged into one drop; once the tip enters the next cell, a tiny piece lies between them
+// and they become two drops at different positions. Results then jump slightly (for a 19-pass chevron with 1 m cells in the cone
+// simulation, by 0.1 % in F1 and 0.01 % in F2), which matters for finite differences and line searches. Merging only pieces of the same
+// path segment removes the jumps but approximated a fine-grained reference no better (measured
+// 2026-10-17), so both sides of a turnaround stay merged.
 inline std::vector<ContinuousDrop> continuousDrops(const std::vector<double>& volumes, const std::vector<double>& portionTimes,
 	const std::vector<double>& pathTimes, const std::vector<double>& pathX, const std::vector<double>& pathZ, double cellX, double cellZ)
 {

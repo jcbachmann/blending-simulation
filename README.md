@@ -51,6 +51,8 @@ cells, and with continuous flow (one portion per grid cell the stacker crosses, 
 it crosses a cell boundary of the simulator's grid or a portion starts or ends, every piece gets the volume that flows during it, and the
 pieces of one cell and portion become one drop. Each cell then gets the volume of the time the stacker spends over it (the first and last
 cell of a pass only their overlap), which is all a simulator with that grid can resolve; one drop per particle gives the same result.
+The drops follow the path continuously except where a turnaround crosses a cell boundary: the two sides of a turnaround inside one cell
+are one drop, and become two once the tip reaches the next cell, a small jump of the results (0.1 % in F1 for a chevron with 1 m cells).
 With `visualize` set, the simulators keep every particle (`inactiveOutputParticles`) for visualization and export.
 
 The CLI reads the stacked material from stdin, one line per increment: `time x z volume parameter...` (whitespace separated), and writes
