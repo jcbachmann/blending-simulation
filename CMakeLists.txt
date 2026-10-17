@@ -7,6 +7,7 @@ option(BUILD_DETAILED_SIMULATOR "Build detailed simulator" OFF)
 option(BUILD_LATTICE_SIMULATOR "Build lattice simulator" OFF)
 option(BUILD_CONE_SIMULATOR "Build cone simulator" OFF)
 option(BUILD_CLI "Build simulator CLI" OFF)
+option(BUILD_TOOLS "Build the calibration tools of the detailed simulator" OFF)
 option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
 
 project(BlendingSimulator VERSION 2026.2.1)

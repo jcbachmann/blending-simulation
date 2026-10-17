@@ -14,10 +14,6 @@ if (BUILD_TESTS)
 	include(cmake/GoogleTest.cmake)
 endif ()
 
-if (BUILD_DETAILED_SIMULATOR)
-	include(cmake/Bullet.cmake)
-endif ()
-
 if (BUILD_VISUALIZER)
 	include(cmake/Ogre.cmake)
 	include(cmake/SDL2.cmake)

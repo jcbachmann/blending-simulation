@@ -11,6 +11,7 @@ RUN apt-get update \
 
 COPY . .
 
+# The distroless runtime image has no OpenMP runtime: the detailed simulation runs on one thread in the container
 RUN mkdir -p build \
  && cd build \
  && cmake .. \
@@ -22,6 +23,7 @@ RUN mkdir -p build \
     -DBUILD_DETAILED_SIMULATOR=ON \
     -DBUILD_LATTICE_SIMULATOR=ON \
     -DBUILD_CONE_SIMULATOR=ON \
+    -DUSE_OPENMP=OFF \
  && cmake --build . --target BlendingSimulatorCli -j$(nproc) \
  && strip BlendingSimulatorCli/BlendingSimulatorCli
 

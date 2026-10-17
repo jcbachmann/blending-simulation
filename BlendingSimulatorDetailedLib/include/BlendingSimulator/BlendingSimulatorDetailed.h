@@ -1,128 +1,91 @@
 #ifndef BlendingSimulatorDetailed_H
 #define BlendingSimulatorDetailed_H
 
-// STL
-#include <deque>
+#include <memory>
 #include <vector>
-#include <map>
-#include <mutex>
-#include <atomic>
-#include <random>
 
-// Bullet
-#include <LinearMath/btVector3.h>
-#include <LinearMath/btQuaternion.h>
-
-class btCollisionShape;
-
-class btRigidBody;
-
-class btDefaultMotionState;
-
-class btBroadphaseInterface;
-
-class btDefaultCollisionConfiguration;
-
-class btCollisionDispatcher;
-
-class btSequentialImpulseConstraintSolver;
-
-class btCollisionShape;
-
-class btDefaultMotionState;
-
-class btRigidBody;
-
-class btCollisionShape;
-
-class btDefaultMotionState;
-
-class btRigidBody;
-
-class btDefaultMotionState;
-
-class btRigidBody;
-
-class btDiscreteDynamicsWorld;
-
-// Local
 #include "BlendingSimulator/BlendingSimulator.h"
+#include "BlendingSimulator/ReclaimSlices.h"
+#include "BlendingSimulator/dem/World.h"
 
 namespace blendingsimulator
 {
 template<typename Parameters>
-class Particle;
+struct Particle;
 
-template<typename Parameters>
-struct ParticleDetailed;
-
+// Detailed simulation with the discrete element method (dem::World): every particle is a sphere that falls from the stacker's material
+// stream, collides, slides and rolls with Hertz-Mindlin contacts and rolling resistance, and comes to rest on the pile. Particles stand for
+// parcels of 1/particlesPerCubicMeter m³ of bulk material; their radii follow from DetailedParameters::packingFraction so that the
+// settled pile has the stacked volume.
+//
+// The stacker releases the material of each stack() call at the flow rate of DetailedParameters::flowRate: a particle leaves the boom
+// dischargeHeight above the pile surface at the stacker position, with beltSpeed along +z, aimed so that the stream lands at the stacker
+// position. Reclaiming happens after stacking from the final particle positions: a reclaimer face at reclaimAngle moving along x (or around
+// the circle of a circular stockpile), each particle spread over the slices it cuts like in the other simulators.
 template<typename Parameters>
 class BlendingSimulatorDetailed : public BlendingSimulator<Parameters>
 {
 	public:
 		explicit BlendingSimulatorDetailed(SimulationParameters simulationParameters);
-		~BlendingSimulatorDetailed();
+		~BlendingSimulatorDetailed() override;
 
 		void clear() override;
 		void finishStacking() override;
 		bool reclaimingFinished() override;
 		Parameters reclaim(float position) override;
 
+		// The physics world, for diagnostics
+		const dem::World& getWorld() const { return *world; }
+
+		// Bulk volume in m³ of the particles that left the bed area and are not reclaimed
+		double getLostVolume() const;
+
+		// Mean particle radius in m
+		double getMeanRadius() const { return meanRadius; }
+
+		// Simulated seconds the discharge was blocked (all release points taken), by which stacking took longer than the flow rate gives
+		double getBlockedTime() const { return blockedTime; }
+
 	protected:
 		void stackSingle(float x, float z, const Parameters& parameters) override;
+		void updateHeapMap() override;
 
 	private:
-		// System constants
-		static constexpr const float stackerDropOffAngle = 20 * BlendingSimulator<Parameters>::pi / 180.0; // Radians above horizon
-		static constexpr const float stackerBeltSpeed = 3.0f; // In m/s
-		static constexpr const float stackerBeltWidth = 1.5f; // In m
-		static constexpr const float cubicMetersPerSecond = 1.0; // in m³/s
+		// Seconds of simulated time after the last release within which the pile must come to rest in finishStacking
+		static constexpr double maxSettleTime = 120.0;
+		// Interval in simulated seconds of the particle output for a visualizer
+		static constexpr double outputInterval = 0.1;
 
-		// Simulator constants
-		static const int minFreezeTimeout = 15000;
-		static const int maxFreezeTimeout = 25000;
-		static const unsigned long long simulationIntervalMs = 30;
-		static const int simulationIntervalSubSteps = 3;
+		double particleVolume; // Bulk volume per particle in m³
+		double meanRadius; // Mean particle radius in m
+		double cellSize; // Heap map cell in m
 
-		std::mutex simulationMutex;
-		std::deque<ParticleDetailed<Parameters>*> activeParticles;
-		std::atomic_bool activeParticlesAvailable;
-		std::deque<ParticleDetailed<Parameters>*> allParticles;
+		// The stream at the discharge (see the constructor): a lattice of release points in a horizontal plane, streamColumns across the belt
+		// (x) by streamRows along it (z), which the material crosses downward at streamDropSpeed after falling streamDrop from the head pulley
+		int streamColumns = 1;
+		int streamRows = 1;
+		double streamCellWidth = 0.0; // in x, in m
+		double streamSpacing = 0.0; // in z, and the least distance of two release points, in m
+		double streamDrop = 0.0; // in m
+		double streamDropSpeed = 0.0; // in m/s
+		double streamClearTime = 0.0; // in s, after which a particle released at a point has left it
 
-		const float particleSize; // In m cube side length
-		const float resolutionPerWorldSize; // Cells per meter
+		std::unique_ptr<dem::World> world;
+		std::vector<Parameters> particleParameters; // By particle index of the world
+		double releaseTime = 0.0;
+		double blockedTime = 0.0;
+		double nextOutput = 0.0;
 
-		// Random variation of new particles
-		std::uniform_real_distribution<float> sizeDistribution; // In m, +/- 5 % of particleSize
-		std::uniform_real_distribution<float> positionDistribution; // In m across the stacker belt
-		std::uniform_real_distribution<float> variationDistribution; // Factor 1 +/- variation for speed, height, and angle
-		std::uniform_real_distribution<float> angleDistribution; // Orientation in radians
+		ReclaimSlices<Parameters> slices;
+		bool reclaimPrepared = false;
 
-		const unsigned long long simulationTicksPerParticle;
-		unsigned long long simulationTickCount;
-		unsigned long long nextParticleTickCount;
+		std::vector<Particle<Parameters>*> outputParticles; // By particle index, only when visualizing
 
-		// Counts simulation steps to run optimizeFrozenParticles every 100 steps
-		int optimizeFrozenParticlesCounter = 0;
-
-		btBroadphaseInterface* broadphase;
-		btDefaultCollisionConfiguration* collisionConfiguration;
-		btCollisionDispatcher* dispatcher;
-		btSequentialImpulseConstraintSolver* solver;
-		btCollisionShape* groundShape;
-		btDefaultMotionState* groundMotionState;
-		btRigidBody* groundRigidBody;
-		btDiscreteDynamicsWorld* dynamicsWorld;
-
-		void step();
-		void doOutputParticles();
-		void freezeParticles();
-		void freezeParticle(ParticleDetailed<Parameters>* particle);
-		void addParticleToHeapMap(float x, float y, float z);
-		void addParticleToHeapMapBilinear(float x, float y, float z);
-		void optimizeFrozenParticles();
-		ParticleDetailed<Parameters>* createParticle(btVector3 position, Parameters parameters, bool frozen, btQuaternion rotation, btVector3 velocity,
-			btVector3 size);
+		void createWorld();
+		void advanceTo(double t);
+		void prepareReclaim();
+		void updateOutputParticles(bool final);
+		void deleteOutputParticles();
 };
 }
 
