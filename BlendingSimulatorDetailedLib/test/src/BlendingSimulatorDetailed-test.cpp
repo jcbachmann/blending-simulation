@@ -260,8 +260,9 @@ dem::Vec3 pileCenter(double beltSpeed)
 	return center / double(world.particleCount());
 }
 
-// The center of mass of a 240-particle pile scatters by about 0.1 m between seeds (mean over 8 seeds: 10.008, 10.011); a throw of
-// 1 m/s moves it by 0.39 m on average
+// The center of mass of a 240-particle pile scatters by about 0.06 m between seeds (16 seeds: z 10.011 +- 0.056), and the pile is
+// chaotic: the same seed lands elsewhere with another compiler or optimization level. A throw of 2 m/s moves it by 0.31 +- 0.06 m
+// (paired by seed, at least 0.22), so the throw is checked against the vertical pile with a margin of several standard deviations
 TEST(BlendingSimulatorDetailed, test_pile_centered_at_stacker)
 {
 	const dem::Vec3 vertical = pileCenter(0.0);
@@ -270,7 +271,7 @@ TEST(BlendingSimulatorDetailed, test_pile_centered_at_stacker)
 
 	const dem::Vec3 thrown = pileCenter(2.0);
 	EXPECT_NEAR(thrown.x, 10.0, 0.3);
-	EXPECT_GT(thrown.z, 10.3);
+	EXPECT_GT(thrown.z - vertical.z, 0.1);
 }
 
 // Pausing the stacker (finishStacking while more is stacked afterwards) must not release the material that follows all at once
