@@ -30,8 +30,10 @@ blendingsimulator::BlendingSimulatorFast<Parameters>::BlendingSimulatorFast(Simu
 		neighborIndexOffsets[o] = offsets[o][0] * rowLength + offsets[o][1];
 	}
 
-	// Upper 29 bits of a 32 bit random number below the threshold: probability eightLikelihood
-	const double eight = std::max(0.0, std::min(double(simulationParameters.eightLikelihood), 1.0));
+	// Upper 29 bits of a 32 bit random number below the threshold: probability eightLikelihood (negative: fitted to the particle size)
+	const float likelihood = simulationParameters.eightLikelihood < 0.0f ? fittedEightLikelihood(simulationParameters.particlesPerCubicMeter)
+																		 : simulationParameters.eightLikelihood;
+	const double eight = std::max(0.0, std::min(double(likelihood), 1.0));
 	eightThreshold = std::uint32_t(eight * double(1u << 29));
 
 	if (simulationParameters.circular) {

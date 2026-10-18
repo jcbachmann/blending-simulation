@@ -1,6 +1,8 @@
 #ifndef BLENDINGSIMULATOR_SYSTEMPARAMETERS_H
 #define BLENDINGSIMULATOR_SYSTEMPARAMETERS_H
 
+#include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <optional>
 
@@ -63,6 +65,26 @@ struct DetailedParameters
 	int threads = 1;
 };
 
+/// Eight likelihood of the fast simulation fitted to the detailed simulation (discrete element method, 0.25 to 0.33 m spheres, calibrated
+/// to 45 degrees) on chevron, optimized and random depositions of a 59 m by 20 m bed: by level k = 1 + log4(particlesPerCubicMeter)
+/// (1, 4, 16, 64, 256, 1,024 particles per cubic meter are the levels 1 to 6) 0.60, 0.60, 0.70, 0.75, 0.80, 0.85, linear between
+/// levels and constant outside them. With these values the fast simulation agrees with the detailed one about equally well at every
+/// level from 16 particles per cubic meter up, where 0.87 was right only at 1,024
+inline float fittedEightLikelihood(float particlesPerCubicMeter)
+{
+	const float values[6] = {0.60f, 0.60f, 0.70f, 0.75f, 0.80f, 0.85f};
+	const double level = 1.0 + std::log(std::max(double(particlesPerCubicMeter), 1e-9)) / std::log(4.0);
+	if (level <= 1.0) {
+		return values[0];
+	}
+	if (level >= 6.0) {
+		return values[5];
+	}
+	const int lower = int(std::floor(level));
+	const double weight = level - lower;
+	return float(values[lower - 1] * (1.0 - weight) + values[lower] * weight);
+}
+
 struct SimulationParameters
 {
 	/* Generic */
@@ -85,8 +107,10 @@ struct SimulationParameters
 
 	/* Fast simulation */
 
-	/// Likelihood of considering 8 instead of 4 fall directions resulting in cone like shapes instead of pyramids
-	float eightLikelihood = 0.87f;
+	/// Likelihood of considering 8 instead of 4 fall directions resulting in cone like shapes instead of pyramids. Negative (the default
+	/// since 2026.4): the likelihood fitted to the detailed simulation for the particle size, fittedEightLikelihood(particlesPerCubicMeter);
+	/// releases up to 2026.3 used 0.87 at every particle size
+	float eightLikelihood = -1.0f;
 
 	/// If positive, replaces eightLikelihood by a likelihood that grows with the height h (in particles) of the cell a particle is dropped
 	/// on: max(0, 1 - eightHeightScale / h). A constant likelihood is tried at every step of the fall, and a particle takes more steps on

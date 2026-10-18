@@ -766,3 +766,22 @@ TEST(BlendingSimulatorFast, test_eight_height_scale_keeps_45_degrees_at_every_re
 	const PileShape constantFine = stackPileShape(1024.0f, 0.87f, 0.0f);
 	EXPECT_GT(constantFine.angle - constantCoarse.angle, 2.5);
 }
+
+TEST(BlendingSimulatorFast, test_fitted_eight_likelihood_by_level)
+{
+	EXPECT_FLOAT_EQ(bs::fittedEightLikelihood(1.0f), 0.60f);
+	EXPECT_FLOAT_EQ(bs::fittedEightLikelihood(16.0f), 0.70f);
+	EXPECT_FLOAT_EQ(bs::fittedEightLikelihood(64.0f), 0.75f);
+	EXPECT_FLOAT_EQ(bs::fittedEightLikelihood(1024.0f), 0.85f);
+	EXPECT_FLOAT_EQ(bs::fittedEightLikelihood(32.0f), 0.725f);  // halfway between levels 3 and 4
+	EXPECT_FLOAT_EQ(bs::fittedEightLikelihood(0.125f), 0.60f);
+	EXPECT_FLOAT_EQ(bs::fittedEightLikelihood(4096.0f), 0.85f);
+}
+
+TEST(BlendingSimulatorFast, test_default_eight_likelihood_is_the_fitted_one)
+{
+	EXPECT_LT(bs::SimulationParameters().eightLikelihood, 0.0f);
+	// The default and the fitted value of the particle size build the same pile from the same random numbers
+	EXPECT_EQ(stackPileHeights(-1.0f, 0.0f), stackPileHeights(bs::fittedEightLikelihood(1.0f), 0.0f));
+	EXPECT_NE(stackPileHeights(-1.0f, 0.0f), stackPileHeights(0.87f, 0.0f));
+}

@@ -77,10 +77,10 @@ int main(const int argc, char* argv[]) try
 		->default_val(simulationParameters.reclaimAngle)
 		->group("Simulation Options")
 		->check(CLI::Range(0.0f, 180.0f));
-	app.add_option("--eight", simulationParameters.eightLikelihood, "Likelihood of 8 vs 4 sides being considered")
+	app.add_option("--eight", simulationParameters.eightLikelihood, "Likelihood of 8 vs 4 sides being considered, negative for the value fitted to the particle size")
 		->default_val(simulationParameters.eightLikelihood)
 		->group("Simulation Options")
-		->check(CLI::Range(0.0f, 1.0f));
+		->check(CLI::Range(-1.0f, 1.0f));
 	app.add_option("--bulkdensity", simulationParameters.bulkDensityFactor, "Unused since 2026.3 (see --packing), kept for compatibility")
 		->default_val(simulationParameters.bulkDensityFactor)
 		->group("Simulation Options")
