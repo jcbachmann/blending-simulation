@@ -88,6 +88,13 @@ struct SimulationParameters
 	/// Likelihood of considering 8 instead of 4 fall directions resulting in cone like shapes instead of pyramids
 	float eightLikelihood = 0.87f;
 
+	/// If positive, replaces eightLikelihood by a likelihood that grows with the height h (in particles) of the cell a particle is dropped
+	/// on: max(0, 1 - eightHeightScale / h). A constant likelihood is tried at every step of the fall, and a particle takes more steps on
+	/// finer grids and larger piles, so its piles steepen with particlesPerCubicMeter and pile size; with this scaling the expected number
+	/// of 4-direction steps per particle stays the same, and 6.5 gives round piles at 45 degrees from 16 particles per cubic meter up,
+	/// independent of the resolution and the pile size
+	float eightHeightScale = 0.0f;
+
 	/// Sacrifice some speed to provide visualization output
 	bool visualize = false;
 

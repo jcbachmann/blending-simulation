@@ -90,10 +90,24 @@ Parameters blendingsimulator::BlendingSimulatorFast<Parameters>::reclaim(float p
 }
 
 template<typename Parameters>
-int blendingsimulator::BlendingSimulatorFast<Parameters>::fallStep(int index, int height, std::uint32_t random) const
+std::uint32_t blendingsimulator::BlendingSimulatorFast<Parameters>::eightThresholdAt(int dropHeight) const
+{
+	const double scale = this->simulationParameters.eightHeightScale;
+	if (scale <= 0.0) {
+		return eightThreshold;
+	}
+	// A particle falls about as many steps as the pile is high, and a constant likelihood tried at every step makes larger piles (in
+	// particles) steeper along the diagonals: scaled with the height the particle starts from, the expected number of 4-direction steps
+	// per particle stays the same at every resolution and pile size
+	const double eight = dropHeight > scale ? 1.0 - scale / double(dropHeight) : 0.0;
+	return std::uint32_t(eight * double(1u << 29));
+}
+
+template<typename Parameters>
+int blendingsimulator::BlendingSimulatorFast<Parameters>::fallStep(int index, int height, std::uint32_t random, std::uint32_t threshold) const
 {
 	// 8 fall directions with probability eightLikelihood, else the 4 direct neighbors only: this results in cones instead of pyramids
-	const int count = (random >> 3) < eightThreshold ? 8 : 4;
+	const int count = (random >> 3) < threshold ? 8 : 4;
 
 	// The neighbors are searched in the order of neighborIndexOffsets rotated by a random amount; the first of the lowest wins. A plain
 	// loop with a branch is fastest here: the processor predicts the branch well enough to start on the next step early, while branchless
@@ -157,8 +171,9 @@ void blendingsimulator::BlendingSimulatorFast<Parameters>::stackSingle(float x, 
 	}
 
 	// Simulate particle falling, one random number per step
+	const std::uint32_t threshold = eightThresholdAt(minHeight);
 	while (true) {
-		const int next = fallStep(index, minHeight, std::uint32_t(this->randomEngine() >> 32));
+		const int next = fallStep(index, minHeight, std::uint32_t(this->randomEngine() >> 32), threshold);
 		if (next < 0) {
 			break;
 		}

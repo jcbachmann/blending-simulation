@@ -50,8 +50,11 @@ class BlendingSimulatorFast : public BlendingSimulator<Parameters>
 		// A fall step considers 8 instead of 4 directions if the upper 29 bits of its random number are below this threshold
 		std::uint32_t eightThreshold;
 
+		// The threshold of a particle dropped on a cell of this height in particles (eightThreshold unless eightHeightScale is set)
+		std::uint32_t eightThresholdAt(int dropHeight) const;
+
 		// Index of the neighbor a particle falls to from cell `index` at height `height`, or -1 if it rests there
-		int fallStep(int index, int height, std::uint32_t random) const;
+		int fallStep(int index, int height, std::uint32_t random, std::uint32_t threshold) const;
 };
 }
 

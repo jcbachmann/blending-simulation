@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <cmath>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -660,4 +662,107 @@ TEST(BlendingSimulatorFast, test_no_volume_lost_circular)
 		simulator.stack(float(30.0 + 15.0 * std::cos(angle)), float(30.0 + 15.0 * std::sin(angle)), bs::AveragedParameters(5.0, {1.0}));
 	}
 	EXPECT_NEAR(reclaimTotal(simulator), 1000.0, 1e-6);
+}
+
+namespace
+{
+std::vector<float> stackPileHeights(float eightLikelihood, float eightHeightScale)
+{
+	bs::SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = 30.0f;
+	simulationParameters.heapWorldSizeZ = 30.0f;
+	simulationParameters.particlesPerCubicMeter = 1.0f;
+	simulationParameters.eightLikelihood = eightLikelihood;
+	simulationParameters.eightHeightScale = eightHeightScale;
+	simulationParameters.seed = 7;
+	bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
+	simulator.stack(15.0f, 15.0f, bs::AveragedParameters(300.0, {1.0}));
+	const std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
+	const float* heapMap = simulator.getHeapMap();
+	return {heapMap, heapMap + heapMapSize.first * heapMapSize.second};
+}
+
+struct PileShape
+{
+	double angle; // Angle of the cone with the same level-set areas between 20 and 80 % of the peak, in degrees
+	double roundness; // Extent at half the peak height along the diagonals divided by the extent along the axes
+};
+
+PileShape stackPileShape(float particlesPerCubicMeter, float eightLikelihood, float eightHeightScale)
+{
+	const float size = 24.0f;
+	bs::SimulationParameters simulationParameters;
+	simulationParameters.heapWorldSizeX = size;
+	simulationParameters.heapWorldSizeZ = size;
+	simulationParameters.particlesPerCubicMeter = particlesPerCubicMeter;
+	simulationParameters.eightLikelihood = eightLikelihood;
+	simulationParameters.eightHeightScale = eightHeightScale;
+	simulationParameters.seed = 11;
+	bs::BlendingSimulatorFast<bs::AveragedParameters> simulator(simulationParameters);
+	simulator.stack(0.5f * size, 0.5f * size, bs::AveragedParameters(500.0, {1.0}));
+
+	const std::pair<unsigned int, unsigned int> heapMapSize = simulator.getHeapMapSize();
+	const float* heapMap = simulator.getHeapMap();
+	const int n = int(heapMapSize.first);
+	const double cell = double(size) / n;
+	const int center = int(0.5f * size / float(cell));
+	const float peak = *std::max_element(heapMap, heapMap + n * n);
+
+	// Radius of the area above a level against the level: least squares between 20 and 80 % of the peak
+	double sr = 0.0, sl = 0.0, srr = 0.0, srl = 0.0;
+	int count = 0;
+	for (int k = 10; k <= 40; k++) {
+		const float level = peak * float(k) / 50.0f;
+		const auto above = std::count_if(heapMap, heapMap + n * n, [&](float h) { return h > level; });
+		const double r = std::sqrt(double(above) * cell * cell / (4.0 * std::atan(1.0)));
+		sr += r;
+		sl += level;
+		srr += r * r;
+		srl += r * level;
+		count++;
+	}
+	const double slope = (count * srl - sr * sl) / (count * srr - sr * sr);
+
+	// Extent at half height along the four axes and the four diagonals
+	double axis = 0.0, diagonal = 0.0;
+	const int directions[8][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+	for (int d = 0; d < 8; d++) {
+		int k = 0;
+		while (heapMap[(center + (k + 1) * directions[d][1]) * n + center + (k + 1) * directions[d][0]] > 0.5f * peak) {
+			k++;
+		}
+		(d < 4 ? axis : diagonal) += (d < 4 ? 1.0 : std::sqrt(2.0)) * (k + 0.5) * cell / 4.0;
+	}
+	return {-std::atan(slope) * 45.0 / std::atan(1.0), diagonal / axis};
+}
+}
+
+TEST(BlendingSimulatorFast, test_eight_height_scale_off_by_default)
+{
+	EXPECT_EQ(bs::SimulationParameters().eightHeightScale, 0.0f);
+	EXPECT_EQ(stackPileHeights(0.5f, 0.0f), stackPileHeights(0.5f, 0.0f));
+}
+
+TEST(BlendingSimulatorFast, test_eight_height_scale_low_pile_falls_in_four_directions)
+{
+	// A pile lower than the scale is built with the 4 direct neighbors only, as with eightLikelihood 0, from the same random numbers
+	EXPECT_EQ(stackPileHeights(0.87f, 1000.0f), stackPileHeights(0.0f, 0.0f));
+	EXPECT_NE(stackPileHeights(0.87f, 0.0f), stackPileHeights(0.0f, 0.0f));
+}
+
+TEST(BlendingSimulatorFast, test_eight_height_scale_keeps_45_degrees_at_every_resolution)
+{
+	// A 500 m³ pile at 16 and 1,024 particles per cubic meter: with the constant likelihood it steepens from about 42 to 46 degrees, with the
+	// height scale it is a round 45 degree cone at both
+	const PileShape coarse = stackPileShape(16.0f, 0.87f, 6.5f);
+	const PileShape fine = stackPileShape(1024.0f, 0.87f, 6.5f);
+	EXPECT_NEAR(coarse.angle, 45.0, 1.5);
+	EXPECT_NEAR(fine.angle, 45.0, 1.0);
+	EXPECT_NEAR(coarse.angle, fine.angle, 1.5);
+	// At 0.4 m cells one cell is a tenth of the extent at half height, too coarse for the roundness of a single pile
+	EXPECT_NEAR(fine.roundness, 1.0, 0.05);
+
+	const PileShape constantCoarse = stackPileShape(16.0f, 0.87f, 0.0f);
+	const PileShape constantFine = stackPileShape(1024.0f, 0.87f, 0.0f);
+	EXPECT_GT(constantFine.angle - constantCoarse.angle, 2.5);
 }
