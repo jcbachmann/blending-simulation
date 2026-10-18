@@ -1,5 +1,6 @@
 #include "Execution.h"
 
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -80,8 +81,15 @@ void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator,
 
 	std::string line;
 	int parameterCount = -1;
+	// A line that cannot be read is skipped; a drop the simulator rejects (e.g. off the stacker line of the formula simulation) stops the
+	// input, and the error is raised once the visualization has finished
+	std::exception_ptr stackError;
 	while (std::getline(std::cin, line) && !cancel.load()) {
 		std::stringstream lineStream(line);
+		float xPos = 0.0f;
+		float zPos = 0.0f;
+		double volume = 0.0;
+		std::vector<double> values;
 
 		try {
 			double time;
@@ -89,22 +97,17 @@ void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator,
 				throw std::runtime_error("invalid time");
 			}
 
-			float xPos;
 			if (!(lineStream >> xPos)) {
 				throw std::runtime_error("invalid x position");
 			}
 
-			float zPos;
 			if (!(lineStream >> zPos)) {
 				throw std::runtime_error("invalid z position");
 			}
 
-			double volume;
 			if (!(lineStream >> volume)) {
 				throw std::runtime_error("invalid volume");
 			}
-
-			std::vector<double> values;
 
 			if (parameterCount >= 0) {
 				values.resize(static_cast<unsigned long>(parameterCount));
@@ -127,10 +130,16 @@ void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator,
 				}
 				parameterCount = static_cast<int>(values.size());
 			}
-
-			simulator.stack(xPos, zPos, bs::AveragedParameters(volume, values));
 		} catch (std::exception& e) {
 			std::cerr << "could not match line '" << line << "': " << e.what() << std::endl;
+			continue;
+		}
+
+		try {
+			simulator.stack(xPos, zPos, bs::AveragedParameters(volume, values));
+		} catch (std::exception&) {
+			stackError = std::current_exception();
+			break;
 		}
 	}
 
@@ -148,6 +157,10 @@ void executeSimulation(bs::BlendingSimulator<bs::AveragedParameters>& simulator,
 		std::cerr << "Visualization finished" << std::endl;
 	}
 #endif
+
+	if (stackError) {
+		std::rethrow_exception(stackError);
+	}
 
 	if (!parameters.heightsFile.empty()) {
 		std::cerr << "Writing height map into '" << parameters.heightsFile << "'" << std::endl;
