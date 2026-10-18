@@ -11,7 +11,7 @@ option(BUILD_CLI "Build simulator CLI" OFF)
 option(BUILD_TOOLS "Build the calibration tools of the detailed simulator" OFF)
 option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
 
-project(BlendingSimulator VERSION 2026.3.1)
+project(BlendingSimulator VERSION 2026.4)
 
 # Without a build type CMake compiles without optimization; projects that include this one (the Python bindings) make their own choice
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
