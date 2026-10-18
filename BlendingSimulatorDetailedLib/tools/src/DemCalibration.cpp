@@ -2,6 +2,7 @@
 //
 //   DemCalibration cone <volume m³> <ppm3> [key=value ...]     a pile poured at one point: angle of repose, packing, time
 //   DemCalibration chevron <passes> <ppm3> [key=value ...]     the bmh_ml bed (59 m x 20 m, 2,500 m³) stacked in Chevron passes
+//                                                             (the setup of bmh.helpers.bed_setup in blending-evaluation)
 //
 // key=value sets a DetailedParameters field: flowRate, dischargeHeight, beltSpeed, packingFraction, sizeSpread, friction,
 // rollingFriction, restitution, youngsModulus, timeStepFactor, threads.

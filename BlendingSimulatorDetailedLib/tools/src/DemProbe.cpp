@@ -71,6 +71,7 @@ static void settling()
 static void chevronTail()
 {
 	bs::SimulationParameters p;
+	// the bed of bmh.helpers.bed_setup in blending-evaluation
 	p.heapWorldSizeX = 59.0f;
 	p.heapWorldSizeZ = 20.0f;
 	p.particlesPerCubicMeter = 1.0f;
