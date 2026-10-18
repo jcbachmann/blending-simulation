@@ -59,6 +59,9 @@ int main(const int argc, char* argv[]) try
 	app.add_flag("--cone", executionParameters.cone, "Cone simulation (the pile surface at its angle of repose, every input row one portion)")
 		->default_val(executionParameters.cone)
 		->group("Simulation Options");
+	app.add_flag("--formula", executionParameters.formula, "Formula simulation (the cone simulation reduced to the stacker line, no lateral motion)")
+		->default_val(executionParameters.formula)
+		->group("Simulation Options");
 	app.add_flag("--circular", simulationParameters.circular, "Circular simulation")
 		->default_val(simulationParameters.circular)
 		->group("Simulation Options");

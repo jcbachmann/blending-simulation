@@ -74,6 +74,7 @@ jobs:
         -DBUILD_DETAILED_SIMULATOR=ON
         -DBUILD_LATTICE_SIMULATOR=ON
         -DBUILD_CONE_SIMULATOR=ON
+        -DBUILD_FORMULA_SIMULATOR=ON
         -DBUILD_CLI=ON
         -S ${{ github.workspace }}
 

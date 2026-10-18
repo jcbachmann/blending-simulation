@@ -16,6 +16,7 @@ struct ExecutionParameters
 	bool detailed = false;
 	bool lattice = false;
 	bool cone = false;
+	bool formula = false;
 
 #ifdef VISUALIZER_AVAILABLE
 	// Visualization

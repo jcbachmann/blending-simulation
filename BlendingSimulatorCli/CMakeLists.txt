@@ -43,6 +43,11 @@ if (BUILD_CONE_SIMULATOR)
 	target_compile_definitions(BlendingSimulatorCli PRIVATE CONE_SIMULATOR_AVAILABLE)
 endif ()
 
+if (BUILD_FORMULA_SIMULATOR)
+	target_link_libraries(BlendingSimulatorCli PRIVATE BlendingSimulator::FormulaLib)
+	target_compile_definitions(BlendingSimulatorCli PRIVATE FORMULA_SIMULATOR_AVAILABLE)
+endif ()
+
 if (BUILD_VISUALIZER)
 	message(STATUS "Building BlendingSimulatorCli with visualization")
 	target_compile_definitions(BlendingSimulatorCli PUBLIC VISUALIZER_AVAILABLE)

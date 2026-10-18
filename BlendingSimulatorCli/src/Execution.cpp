@@ -34,6 +34,12 @@
 
 #endif
 
+#ifdef FORMULA_SIMULATOR_AVAILABLE
+
+#include "BlendingSimulator/BlendingSimulatorFormula.h"
+
+#endif
+
 #include "BlendingSimulator/ParticleParameters.h"
 #include "HeightMap.h"
 
@@ -210,6 +216,13 @@ void executeSimulation(const ExecutionParameters& givenParameters, const bs::Sim
 		executeSimulation(simulator, executionParameters);
 #else
 		throw std::runtime_error("Cone simulation not available");
+#endif
+	} else if (executionParameters.formula) {
+#ifdef FORMULA_SIMULATOR_AVAILABLE
+		bs::BlendingSimulatorFormula<bs::AveragedParameters> simulator(simulationParameters);
+		executeSimulation(simulator, executionParameters);
+#else
+		throw std::runtime_error("Formula simulation not available");
 #endif
 	} else if (executionParameters.lattice) {
 #ifdef LATTICE_SIMULATOR_AVAILABLE
