@@ -59,7 +59,9 @@ The drops follow the path continuously except where a turnaround crosses a cell 
 are one drop, and become two once the tip reaches the next cell, a small jump of the results (0.1 % in F1 for a chevron with 1 m cells).
 With `visualize` set, the simulators keep every particle (`inactiveOutputParticles`) for visualization and export.
 
-The CLI reads the stacked material from stdin, one line per increment: `time x z volume parameter...` (whitespace separated), and writes
+The CLI reads the stacked material from stdin, one line per increment: `time x z volume parameter...` (whitespace separated); every line
+is one drop at one position, so a continuous flow along a stacker path has to be cut into drops by the caller (for example with the
+`continuous_drops` of the Python bindings, one drop per crossed cell), and it writes
 the reclaimed material with `--reclaim <file|stdout>`, every particle size or every `--reclaimincrement` meters, and the height map with
 `--heights <file>`:
 
