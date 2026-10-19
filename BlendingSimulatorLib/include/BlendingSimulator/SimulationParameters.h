@@ -123,6 +123,17 @@ struct SimulationParameters
 	bool visualize = false;
 
 
+	/* Cone simulation (see BlendingSimulatorCone) */
+
+	/// Half sizes in m of the area a portion lands on, along x (the bed) and across (z): the cone of a portion becomes the critical-slope
+	/// surface around that rectangle (a cone with a flat top of 2 coneFootprintX by 2 coneFootprintZ) instead of around a point, as the
+	/// stream of a real stacker spreads where it lands. 0 (the default) is the point source of releases 2026.3 and 2026.4, bit for bit.
+	/// Fitted to the calibrated detailed simulation at 0.25 m particles with 1 m cells: x 0.31 m, z 0. The formula simulation does not
+	/// have it.
+	float coneFootprintX = 0.0f;
+	float coneFootprintZ = 0.0f;
+
+
 	/* Detailed simulation (discrete element method, see BlendingSimulatorDetailed) */
 
 	/// Unused since 2026.3: the pile's packing is a result of the discrete element method now, particles are sized with

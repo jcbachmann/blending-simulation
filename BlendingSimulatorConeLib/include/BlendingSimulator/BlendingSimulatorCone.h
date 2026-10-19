@@ -22,6 +22,10 @@ namespace blendingsimulator
 // height grid, about 1 / particlesPerCubicMeter^(1/3) like the particle size of the other simulators (adjusted to tile the bed exactly).
 // A stacker that moves while it stacks is represented by one call of stack per grid cell it crosses (the caller splits the material); a
 // stacker standing still needs one call.
+//
+// Optionally the portion lands on a rectangle instead of a point (SimulationParameters::coneFootprintX / coneFootprintZ, half sizes along
+// and across the bed, default 0): the distance to the drop point becomes the distance to that rectangle, so the cone gets a flat top and
+// the stream's spread where it lands is represented. Still deterministic, volume-conserving and continuous; 0 is the point source.
 template<typename Parameters>
 class BlendingSimulatorCone : public BlendingSimulator<Parameters>
 {
@@ -58,6 +62,10 @@ class BlendingSimulatorCone : public BlendingSimulator<Parameters>
 		// Slope of the cones, tan(angle of repose)
 		double slope;
 
+		// Half sizes of the footprint in m along x and z (SimulationParameters::coneFootprintX / coneFootprintZ)
+		double footprintX;
+		double footprintZ;
+
 		// Reclaiming: tangent of the reclaim angle, vertical and horizontal faces, circumference of circular stockpiles
 		double tanReclaimAngle;
 		bool verticalReclaim;
@@ -67,7 +75,8 @@ class BlendingSimulatorCone : public BlendingSimulator<Parameters>
 		// Pile height in m per cell, x-major: cell (i, j) at index i * nz + j
 		std::vector<double> heights;
 
-		// Cells that may receive material from the current portion and their base b = height + slope * distance to the drop point
+		// Cells that may receive material from the current portion and their base b = height + slope * distance to the drop point (to the
+		// footprint)
 		std::vector<double> candidateBase;
 		std::vector<int> candidateCell;
 
@@ -77,6 +86,8 @@ class BlendingSimulatorCone : public BlendingSimulator<Parameters>
 
 		// Collects the cells with b below the bound into the candidate lists
 		void gather(double x, double z, double bound);
+		template<bool withFootprint>
+		void gatherCells(double x, double z, double bound);
 
 		// Apex height with exactly the given volume between the cone and the pile, starting from an upper bound
 		double solveApex(double bound, double volume);

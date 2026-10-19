@@ -7,6 +7,8 @@ blendingsimulator::BlendingSimulatorCone<Parameters>::BlendingSimulatorCone(Simu
 {
 	const double degrees = std::atan(1.0) * 4.0 / 180.0;
 	slope = std::tan(angleOfRepose * degrees);
+	footprintX = std::max(0.0, double(simulationParameters.coneFootprintX));
+	footprintZ = std::max(0.0, double(simulationParameters.coneFootprintZ));
 	verticalReclaim = std::abs(90.0f - simulationParameters.reclaimAngle) < 0.01f;
 	horizontalReclaim = std::abs(simulationParameters.reclaimAngle) < 0.01f;
 	tanReclaimAngle = std::tan(simulationParameters.reclaimAngle * degrees);
@@ -92,20 +94,33 @@ double blendingsimulator::BlendingSimulatorCone<Parameters>::getHeight(double x,
 template<typename Parameters>
 void blendingsimulator::BlendingSimulatorCone<Parameters>::gather(double x0, double z0, double bound)
 {
+	// The point source keeps its own loop, so that the footprint costs nothing when it is not used
+	if (footprintX > 0.0 || footprintZ > 0.0) {
+		gatherCells<true>(x0, z0, bound);
+	} else {
+		gatherCells<false>(x0, z0, bound);
+	}
+}
+
+template<typename Parameters>
+template<bool withFootprint>
+void blendingsimulator::BlendingSimulatorCone<Parameters>::gatherCells(double x0, double z0, double bound)
+{
 	candidateBase.clear();
 	candidateCell.clear();
-	const double reach = bound / slope + 2.0 * std::max(cellX, cellZ);
+	const double reach = bound / slope + 2.0 * std::max(cellX, cellZ) + std::max(footprintX, footprintZ);
 	const int i0 = std::max(0, int(std::floor((x0 - reach) / cellX)));
 	const int i1 = std::min(nx - 1, int(std::floor((x0 + reach) / cellX)));
 	const int j0 = std::max(0, int(std::floor((z0 - reach) / cellZ)));
 	const int j1 = std::min(nz - 1, int(std::floor((z0 + reach) / cellZ)));
 	for (int i = i0; i <= i1; i++) {
-		const double dx = (i + 0.5) * cellX - x0;
+		// With a footprint the distances are those to the rectangle of half sizes footprintX and footprintZ around the drop point
+		const double dx = withFootprint ? std::max(0.0, std::abs((i + 0.5) * cellX - x0) - footprintX) : (i + 0.5) * cellX - x0;
 		const double slopeDx = slope * std::abs(dx);
 		const double* row = &heights[std::size_t(i) * nz];
 		// (restricting j to the disc of radius reach measured slower: the cheap test below rejects those cells faster)
 		for (int j = j0; j <= j1; j++) {
-			const double dz = (j + 0.5) * cellZ - z0;
+			const double dz = withFootprint ? std::max(0.0, std::abs((j + 0.5) * cellZ - z0) - footprintZ) : (j + 0.5) * cellZ - z0;
 			// The distance is at least the larger of |dx| and |dz|: most cells are rejected before the square root
 			if (row[j] + std::max(slopeDx, slope * std::abs(dz)) >= bound) {
 				continue;
@@ -167,8 +182,9 @@ void blendingsimulator::BlendingSimulatorCone<Parameters>::drop(double x0, doubl
 	const double coneHeight = std::cbrt(3.0 * volume * slope * slope / this->pi);
 	const int ic = std::max(0, std::min(int(std::floor(x0 / cellX)), nx - 1));
 	const int jc = std::max(0, std::min(int(std::floor(z0 / cellZ)), nz - 1));
-	const double dropBase =
-		heights[std::size_t(ic) * nz + jc] + slope * std::hypot((ic + 0.5) * cellX - x0, (jc + 0.5) * cellZ - z0);
+	const double dropDx = std::max(0.0, std::abs((ic + 0.5) * cellX - x0) - footprintX);
+	const double dropDz = std::max(0.0, std::abs((jc + 0.5) * cellZ - z0) - footprintZ);
+	const double dropBase = heights[std::size_t(ic) * nz + jc] + slope * std::hypot(dropDx, dropDz);
 	double bound = dropBase + 1.05 * coneHeight + 2.0 * slope * std::max(cellX, cellZ);
 	while (true) {
 		gather(x0, z0, bound);

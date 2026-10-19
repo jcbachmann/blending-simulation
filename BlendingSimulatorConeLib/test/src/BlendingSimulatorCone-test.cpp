@@ -243,6 +243,74 @@ TEST(BlendingSimulatorCone, MatchesThePrototypeOfTheSimulatorTrial)
 	}
 }
 
+TEST(BlendingSimulatorCone, FootprintIsOffByDefaultAndZeroIsThePointSource)
+{
+	EXPECT_EQ(bs::SimulationParameters().coneFootprintX, 0.0f);
+	EXPECT_EQ(bs::SimulationParameters().coneFootprintZ, 0.0f);
+	Cone plain(coneParameters(59.0f, 20.0f, 8.0f));
+	bs::SimulationParameters zero = coneParameters(59.0f, 20.0f, 8.0f);
+	zero.coneFootprintX = 0.0f;
+	zero.coneFootprintZ = 0.0f;
+	Cone withZero(zero);
+	stackChevron(plain, 2500.0);
+	stackChevron(withZero, 2500.0);
+	const Reclaimed a = reclaimAll(plain), b = reclaimAll(withZero);
+	ASSERT_EQ(a.volume.size(), b.volume.size());
+	for (std::size_t k = 0; k < a.volume.size(); k++) {
+		EXPECT_EQ(a.volume[k], b.volume[k]) << "slice " << k;
+		EXPECT_EQ(a.values[k], b.values[k]) << "slice " << k;
+	}
+}
+
+TEST(BlendingSimulatorCone, FootprintGivesAFlatTopAndKeepsTheAngleOfRepose)
+{
+	// A single portion on a footprint of half sizes 2 m along x and 1 m across: the surface is H - slope * distance to the rectangle at
+	// every cell center, flat over the rectangle, at 45 degrees around it, and it holds the volume
+	bs::SimulationParameters parameters = coneParameters(40.0f, 40.0f, 64.0f);
+	parameters.coneFootprintX = 2.0f;
+	parameters.coneFootprintZ = 1.0f;
+	Cone simulator(parameters);
+	simulator.stack(20.0f, 20.0f, bs::AveragedParameters(300.0, {1.0}));
+	const double cx = simulator.getCellSizeX(), cz = simulator.getCellSizeZ();
+	double top = 0.0;
+	for (double x = 0.5 * cx; x < 40.0; x += cx) {
+		for (double z = 0.5 * cz; z < 40.0; z += cz) {
+			top = std::max(top, simulator.getHeight(x, z));
+		}
+	}
+	for (double x = 0.5 * cx; x < 40.0; x += cx) {
+		for (double z = 0.5 * cz; z < 40.0; z += cz) {
+			const double distance = std::hypot(std::max(0.0, std::abs(x - 20.0) - 2.0), std::max(0.0, std::abs(z - 20.0) - 1.0));
+			EXPECT_NEAR(simulator.getHeight(x, z), std::max(0.0, top - distance), 1e-9) << x << " " << z;
+		}
+	}
+	EXPECT_NEAR(reclaimAll(simulator).total(), 300.0, 1e-6);
+}
+
+TEST(BlendingSimulatorCone, FootprintMatchesThePrototypeOfTheKnobStudy)
+{
+	// Reclaimed volumes of the chevron above at 1 m cells with a footprint of 0.31 m along the bed (the value fitted to the calibrated
+	// detailed simulation), as computed by the knob prototype of 2026-10-17 (cone with physical knobs, footprint ax 0.31 m)
+	bs::SimulationParameters parameters = coneParameters(59.0f, 20.0f, 1.0f);
+	parameters.coneFootprintX = 0.31f;
+	Cone simulator(parameters);
+	stackChevron(simulator, 2500.0);
+	const Reclaimed reclaimed = reclaimAll(simulator);
+	const double expected[] = {
+		0.000000000, 0.000000000, 0.000000000, 0.000000000, 0.000133768, 7.025255001, 24.612266144, 35.019794352, 42.417023710,
+		47.689793332, 51.629487989, 54.589668354, 56.959831125, 58.626215117, 59.838990341, 60.805868511, 61.665405232, 62.293456893,
+		62.763329510, 63.114391718, 63.381211953, 63.583458504, 63.727808664, 63.825366495, 63.886759765, 63.920268489, 63.930264902,
+		63.918346365, 63.883374008, 63.821653356, 63.726935173, 63.589945240, 63.397370958, 63.131875130, 62.774381808, 62.305398314,
+		61.703127477, 60.932492132, 59.923037414, 58.676563214, 57.268950483, 55.591254040, 53.474654861, 50.766861066, 47.597728852,
+		43.500019432, 39.802566088, 35.136591053, 30.572441670, 25.163733548, 20.402452890, 14.970784239, 10.554848162, 5.543526332,
+		2.563036825, 0.000000000, 0.000000000, 0.000000000, 0.000000000, 0.000000000
+	};
+	ASSERT_EQ(reclaimed.volume.size(), sizeof(expected) / sizeof(expected[0]));
+	for (std::size_t k = 0; k < reclaimed.volume.size(); k++) {
+		EXPECT_NEAR(reclaimed.volume[k], expected[k], 1e-6) << "slice " << k;
+	}
+}
+
 TEST(ContinuousDrops, PartialCellsAtTheEndsGetTheirOverlap)
 {
 	// 1 m cells, one portion of 3 m3 while the stacker moves from 2.5 to 5.5 m at constant speed: half cells at both ends
