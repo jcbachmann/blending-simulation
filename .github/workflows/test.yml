@@ -86,8 +86,8 @@ jobs:
       if: runner.os == 'Linux'
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
-        lcov --directory . --capture --output-file coverage.info --ignore-errors mismatch --rc geninfo_unexecuted_blocks=1
-        lcov --remove coverage.info '/usr/*' '${{ github.workspace }}/build/_deps/*' '*/test/*' --output-file coverage.info --ignore-errors mismatch
+        lcov --directory . --capture --output-file coverage.info --ignore-errors mismatch,inconsistent --rc geninfo_unexecuted_blocks=1
+        lcov --remove coverage.info '/usr/*' '${{ github.workspace }}/build/_deps/*' '*/test/*' --output-file coverage.info --ignore-errors mismatch,inconsistent
         lcov --list coverage.info
 
     - name: Upload Coverage report
